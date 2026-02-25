@@ -4,9 +4,11 @@ import {
   Text,
   View,
   Pressable,
+  TouchableOpacity,
   StyleSheet,
   FlatList,
 } from "react-native";
+import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { getCurrentMoonPhase, getMoonCalendar, MOON_PHASES } from "@/lib/moon-phase";
@@ -165,6 +167,19 @@ export default function MondScreen() {
             </View>
           </View>
         ))}
+
+        {/* Mondtyp-Quiz Banner */}
+        <TouchableOpacity
+          style={[styles.quizBanner, { backgroundColor: "#3D2B1F" }]}
+          onPress={() => router.push("/mondtyp-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 28, marginRight: 12 }}>🌕</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#C9A84C", marginBottom: 3 }}>Welcher Mondtyp bist du?</Text>
+            <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Finde es mit unserem Quiz heraus →</Text>
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </ScreenContainer>
   );
@@ -341,5 +356,13 @@ const styles = StyleSheet.create({
   phaseGuideDesc: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  quizBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 20,
+    marginBottom: 8,
   },
 });

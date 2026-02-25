@@ -157,11 +157,11 @@ export default function AuraScreen() {
           </Text>
           <View style={s.bookingPreisRow}>
             <Text style={[s.bookingPreis, { color: C.brown }]}>77 €</Text>
-            <Text style={s.bookingUnit}>· ca. 60 Min · online</Text>
+            <Text style={s.bookingUnit}>· online</Text>
           </View>
           <TouchableOpacity
             style={[s.bookingBtn, { backgroundColor: aura.hex }]}
-            onPress={() => Linking.openURL("https://calendly.com/hallo-seelenplanerin/30min")}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/TuOzYS")}
             activeOpacity={0.85}
           >
             <Text style={s.bookingBtnText}>Jetzt buchen →</Text>

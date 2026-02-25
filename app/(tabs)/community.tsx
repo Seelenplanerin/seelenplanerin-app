@@ -12,7 +12,7 @@ const C = {
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
 
-const COMMUNITY_PASSWORD = "seele2026";
+const DEFAULT_COMMUNITY_PASSWORD = "seele2026";
 
 const POSTS = [
   {
@@ -48,16 +48,21 @@ export default function CommunityScreen() {
   const [password, setPassword] = useState("");
   const [fehler, setFehler] = useState("");
   const [checking, setChecking] = useState(true);
+  const [adminPw, setAdminPw] = useState(DEFAULT_COMMUNITY_PASSWORD);
 
   useEffect(() => {
-    AsyncStorage.getItem("community_auth").then(val => {
-      if (val === "true") setIsLoggedIn(true);
+    Promise.all([
+      AsyncStorage.getItem("community_auth"),
+      AsyncStorage.getItem("admin_community_pw"),
+    ]).then(([auth, pw]) => {
+      if (auth === "true") setIsLoggedIn(true);
+      if (pw) setAdminPw(pw);
       setChecking(false);
     });
   }, []);
 
   const handleLogin = () => {
-    if (password === COMMUNITY_PASSWORD) {
+    if (password === adminPw) {
       setIsLoggedIn(true);
       setFehler("");
       AsyncStorage.setItem("community_auth", "true");

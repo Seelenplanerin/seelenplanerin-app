@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, ImageBackground,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Image,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
@@ -31,21 +31,24 @@ export default function SeelenimpulsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
-        {/* Hero-Bild */}
-        <ImageBackground
-          source={require("@/assets/images/seelenimpuls-hero.jpg")}
-          style={s.heroImage}
-          resizeMode="cover"
-        >
-          <View style={s.heroOverlay}>
-            <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
-              <Text style={s.backBtnText}>← Zurück</Text>
-            </TouchableOpacity>
-            <View style={s.heroBadge}>
-              <Text style={s.heroBadgeText}>17 € / Monat</Text>
-            </View>
+        {/* Zurück-Button */}
+        <View style={s.topBar}>
+          <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
+            <Text style={s.backBtnText}>← Zurück</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Laras Bild direkt auf der Hauptseite */}
+        <View style={s.heroSection}>
+          <Image
+            source={require("@/assets/images/lara-profile.jpg")}
+            style={s.laraImage}
+            resizeMode="cover"
+          />
+          <View style={s.heroBadge}>
+            <Text style={s.heroBadgeText}>17 € / Monat</Text>
           </View>
-        </ImageBackground>
+        </View>
 
         {/* Lara's Botschaft */}
         <View style={s.botschaftCard}>
@@ -126,18 +129,38 @@ export default function SeelenimpulsScreen() {
 }
 
 const s = StyleSheet.create({
-  heroImage: { width: "100%", height: 380 },
-  heroOverlay: { flex: 1, padding: 20, paddingTop: 28, justifyContent: "space-between", backgroundColor: "rgba(0,0,0,0.08)" },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    backgroundColor: C.bg,
+  },
   backBtn: { alignSelf: "flex-start" },
-  backBtnText: { fontSize: 14, color: "rgba(255,255,255,0.9)", fontWeight: "700", textShadowColor: "rgba(0,0,0,0.4)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
-  heroBadge: { alignSelf: "flex-end", backgroundColor: C.gold, borderRadius: 20, paddingHorizontal: 18, paddingVertical: 8 },
+  backBtnText: { fontSize: 15, color: C.rose, fontWeight: "600" },
+  heroSection: {
+    width: "100%",
+    position: "relative",
+  },
+  laraImage: {
+    width: "100%",
+    height: 380,
+  },
+  heroBadge: {
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    backgroundColor: C.gold,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
   heroBadgeText: { color: "#FFF", fontSize: 15, fontWeight: "700" },
   botschaftCard: { margin: 16, backgroundColor: C.roseLight, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.border, alignItems: "center" },
   botschaftEmoji: { fontSize: 32, marginBottom: 12 },
   botschaftText: { fontSize: 15, color: C.brown, fontStyle: "italic", lineHeight: 24, textAlign: "center", marginBottom: 10 },
   botschaftAutor: { fontSize: 13, color: C.muted },
   sec: { fontSize: 17, fontWeight: "700", color: C.brown, marginHorizontal: 16, marginTop: 20, marginBottom: 12 },
-  featureRow: { marginHorizontal: 16, marginBottom: 10, backgroundColor: C.card, borderRadius: 14, padding: 14, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: C.border },
+  featureRow: { marginHorizontal: 16, marginBottom: 10, backgroundColor: "#FFFFFF", borderRadius: 14, padding: 14, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: C.border },
   featureEmoji: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.goldLight, alignItems: "center", justifyContent: "center", marginRight: 12 },
   featureInfo: { flex: 1 },
   featureTitel: { fontSize: 15, fontWeight: "700", color: C.brown, marginBottom: 2 },
@@ -154,7 +177,7 @@ const s = StyleSheet.create({
   cta: { backgroundColor: C.rose, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, marginBottom: 10 },
   ctaText: { color: "#FFF", fontSize: 17, fontWeight: "700" },
   ctaHint: { fontSize: 12, color: C.muted },
-  faqCard: { marginHorizontal: 16, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, overflow: "hidden" },
+  faqCard: { marginHorizontal: 16, backgroundColor: "#FFFFFF", borderRadius: 16, borderWidth: 1, borderColor: C.border, overflow: "hidden" },
   faqItem: { padding: 16 },
   faqFrage: { fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 },
   faqAntwort: { fontSize: 13, color: C.muted, lineHeight: 19 },

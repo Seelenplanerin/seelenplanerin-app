@@ -16,7 +16,7 @@ const MENU_ITEMS = [
     section: "Entdecken",
     items: [
       { id: "runen", label: "Runen & Schutzrune", emoji: "ᚱ", route: "/(tabs)/runen" },
-      { id: "mond", label: "Mondphasen-Kalender", emoji: "🌙", route: "/(tabs)/rituale" },
+      { id: "mond", label: "Mondphasen-Kalender", emoji: "🌙", route: "/(tabs)/mond" },
       { id: "journal", label: "Mein Journal", emoji: "📖", route: "/(tabs)/journal" },
     ],
   },
@@ -32,8 +32,13 @@ const MENU_ITEMS = [
     section: "Verbinden",
     items: [
       { id: "instagram", label: "Instagram", emoji: "📸", url: "https://www.instagram.com/die.seelenplanerin/" },
-      { id: "quiz-runen", label: "Welche Rune führt dich?", emoji: "🔮", route: "/runen-quiz" },
-      { id: "quiz-mond", label: "Welcher Mondtyp bist du?", emoji: "🌕", route: "/mondtyp-quiz" },
+      { id: "aura", label: "Aura Reading", emoji: "🌈", route: "/aura" },
+    ],
+  },
+  {
+    section: "Einstellungen",
+    items: [
+      { id: "musik", label: "Musik & Klänge", emoji: "🎵", route: "/admin" },
     ],
   },
 ];

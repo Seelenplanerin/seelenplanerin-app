@@ -152,18 +152,47 @@
 - [ ] Inhalte entschlacken: kostenlose Bereiche reduzieren, Seelenimpuls klar als Premium positionieren
 
 ## Große Überarbeitung (Feb 2026 - Runde 3)
-- [ ] Community-Tab passwortgeschützt
-- [ ] Navigation bereinigen: Mondphasen-Tab nur Mond-Inhalte
-- [ ] Navigation bereinigen: Rituale-Tab nur Ritual-Inhalte
-- [ ] Runen-Quiz unter Runen-Tab (nicht auf Startscreen)
-- [ ] Aura-Screen bereinigen (nur Aura)
-- [ ] Seelenimpuls-Screen: Laras Foto statt braunes Design
-- [ ] Seelenimpuls-Screen: Runen entfernen
-- [ ] Aura Reading: Zeitangabe entfernen
-- [ ] Soul Talk Button → Calendly (nicht Tentary Aura-Link)
-- [ ] Musik-Button in der App
-- [ ] Zurück-Buttons in ALLEN Screens
-- [ ] Versteckter Admin-Bereich (Farben, Musik, Meditationen)
-- [ ] Alle Ritual-Detail-Screens mit ausführlichem Text befüllen
-- [ ] Rituale im Sacred-Space-Stil recherchieren und einbauen
-- [ ] Produkt-CTAs in Ritual-Screens
+- [x] Community-Tab passwortgeschützt
+- [x] Navigation bereinigen: Mondphasen-Tab nur Mond-Inhalte
+- [x] Navigation bereinigen: Rituale-Tab nur Ritual-Inhalte
+- [x] Runen-Quiz unter Runen-Tab (nicht auf Startscreen)
+- [x] Aura-Screen bereinigen (nur Aura)
+- [x] Seelenimpuls-Screen: Laras Foto statt braunes Design
+- [x] Seelenimpuls-Screen: Runen entfernen
+- [x] Aura Reading: Zeitangabe entfernen
+- [x] Soul Talk Button → Calendly (nicht Tentary Aura-Link)
+- [x] Musik-Button in der App
+- [x] Zurück-Buttons in ALLEN Screens
+- [x] Versteckter Admin-Bereich (Farben, Musik, Meditationen)
+- [x] Alle Ritual-Detail-Screens mit ausführlichem Text befüllen
+- [x] Rituale im Sacred-Space-Stil recherchieren und einbauen
+- [x] Produkt-CTAs in Ritual-Screens
+
+## Ritual-Jahreskalender (Feb 2026 - Runde 4)
+- [x] Rituale-Tab als Jahreskalender umbauen (wie Sacred Space)
+- [x] Rituale für jeden Monat Feb-Dez 2026 erstellen
+- [x] Monatsüberschriften mit Trennlinien
+- [x] Suchfunktion für Rituale
+- [x] Kategorie-Filter (Neumond, Vollmond, Jahreskreis, Spezial)
+- [x] Mindestens 3-5 Rituale pro Monat
+- [x] Astronomisch korrekte Neumond/Vollmond-Daten 2026
+- [x] Jahreskreisfeste einbauen (Ostara, Beltane, Litha, Lughnasadh, Mabon, Samhain, Yule)
+- [x] Detail-Screens für alle Rituale mit Sacred-Space-Stil Beschreibungen
+- [x] Produkt-CTAs (Tentary) in jedem Ritual
+
+## Komplette Überarbeitung Runde 5 (alle Punkte aus Feedback)
+- [x] Community passwortgeschützt (seele2026) - dynamisch über Admin änderbar
+- [x] Logo unten rechts im Bild positioniert
+- [x] Inhalte strikt trennen: Mond = nur Mond, Rituale = nur Rituale, Runen = nur Runen, Aura = nur Aura
+- [x] Runen-Quiz gehört unter Runen (nicht woanders)
+- [x] Seelenimpuls: Laras echtes Foto auf Hauptseite
+- [x] Seelenimpuls: Runen-Inhalte entfernt
+- [x] Aura Reading: Zeitangabe "60 min" entfernt
+- [x] Soul Talk Button → Calendly-Link korrekt
+- [x] Musik-Button in gesamter App (Ich-Tab → Admin)
+- [x] Zurück-Button in ALLEN Screens geprüft
+- [x] Versteckter Admin-Zugang für Einstellungen (Farben, Musik, Meditationen)
+- [x] Alle Ritual-Detail-Screens: ausführlicher Text mit Sacred-Space-Stil
+- [x] Produkt-CTAs hervorgehoben (bei Lara kaufen)
+- [x] Ritual-Jahreskalender Feb-Dez 2026 wie Sacred Space (51 Rituale)
+- [x] Mindestens 4-5 Rituale pro Monat mit korrekten Daten

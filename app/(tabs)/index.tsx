@@ -102,12 +102,11 @@ const IMPULSE = [
 ];
 
 const KATEGORIEN = [
-  { id: "rituale", label: "Rituale", emoji: "🕯️", desc: "Heilige Handlungen für deine Seele", route: "/(tabs)/rituale" },
-  { id: "mond", label: "Mondphasen", emoji: "🌙", desc: "Lebe im Rhythmus des Mondes", route: "/(tabs)/rituale" },
-  { id: "mondtyp-quiz", label: "Mondtyp-Quiz", emoji: "🌕", desc: "Welcher Mondtyp bist du?", route: "/mondtyp-quiz" },
-  { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Entdecke deine Schutzrune", route: "/runen-screen" },
-  { id: "runen-quiz", label: "Runen-Quiz", emoji: "🔮", desc: "Welche Rune führt dich?", route: "/runen-quiz" },
-  { id: "aura", label: "Aura", emoji: "🌈", desc: "Deine heutige Aura-Farbe & Reading", route: "/aura" },
+  { id: "rituale", label: "Rituale", emoji: "🕯️", desc: "Jahreskalender mit Ritualen", route: "/(tabs)/rituale" },
+  { id: "mond", label: "Mondphasen", emoji: "🌙", desc: "Lebe im Rhythmus des Mondes", route: "/(tabs)/mond" },
+  { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Schutzrune & Runen-Quiz", route: "/(tabs)/runen" },
+  { id: "aura", label: "Aura", emoji: "🌈", desc: "Deine heutige Aura-Farbe", route: "/aura" },
+  { id: "journal", label: "Journal", emoji: "📖", desc: "Dein persönliches Seelentagebuch", route: "/(tabs)/journal" },
   { id: "shop", label: "Shop", emoji: "✨", desc: "Handgravierte Runen-Armbänder", route: "/shop" },
 ];
 
@@ -162,7 +161,7 @@ export default function AktuellesScreen() {
         {/* ── MONDPHASE ── */}
         <TouchableOpacity
           style={s.mondCard}
-          onPress={() => router.push("/(tabs)/rituale" as any)}
+          onPress={() => router.push("/(tabs)/mond" as any)}
           activeOpacity={0.85}
         >
           <View style={s.mondLeft}>

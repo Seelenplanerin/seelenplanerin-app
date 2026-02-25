@@ -34,12 +34,12 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🎁",
     badge: "Gratis",
-    bookingUrl: "https://www.instagram.com/die.seelenplanerin/",
+    bookingUrl: "https://calendly.com/hallo-seelenplanerin/30min",
   },
   {
     id: "aura-reading",
     name: "Aura Reading",
-    dauer: "60 Min",
+    dauer: "Online",
     preis: "77,00 €",
     beschreibung: "Lara liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     details: [
@@ -47,7 +47,7 @@ const SESSIONS: Session[] = [
       "Analyse deiner Energiefelder",
       "Aufdeckung von Blockaden",
       "Konkrete Handlungsempfehlungen",
-      "60 Minuten via Zoom",
+      "Online via Zoom",
     ],
     emoji: "🌈",
     badge: "Beliebt",
