@@ -40,6 +40,7 @@ const MENU_ITEMS = [
     items: [
       { id: "musik", label: "Meine Musik", emoji: "🎵", route: "/musik" },
       { id: "meditation", label: "Meditationen", emoji: "🧘‍♀️", route: "/meditation" },
+      { id: "kerzen-quiz", label: "Kerzen-Quiz: Dein Heilstein", emoji: "🕯️", route: "/kerzen-quiz" },
     ],
   },
 ];
@@ -49,6 +50,7 @@ const PRODUKTE = [
   { id: "runen", name: "Themen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
   { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
+  { id: "kerze", name: "Meditationskerze", beschreibung: "Handgefertigt mit deinem Heilstein – ein Unikat", preis: "", emoji: "🕯️", url: "" },
 ];
 
 export default function IchScreen() {
@@ -95,7 +97,7 @@ export default function IchScreen() {
             <TouchableOpacity
               key={p.id}
               style={s.produktCard}
-              onPress={() => p.url ? Linking.openURL(p.url) : null}
+              onPress={() => { if (p.id === "kerze") { router.push("/kerzen-quiz" as any); } else if (p.url) { Linking.openURL(p.url); } }}
               activeOpacity={0.85}
             >
               <Text style={{ fontSize: 28, marginBottom: 8 }}>{p.emoji}</Text>

@@ -217,3 +217,13 @@
 - [x] Runen-Armbänder: Preise komplett entfernt (überall 28,90€ weg)
 - [x] "Ich"-Bereich erklärt und angepasst
 - [x] App-Vorschau-Link für Endverbraucher bereitgestellt
+
+## Feedback Runde 8 (25.02.2026)
+- [x] Community: Jeder kann eigenes Passwort wählen (Registrierung + Login)
+- [x] Mariposa Schutzarmband: Preis 28,90 € wieder eingesetzt
+- [x] Meditationskerzen-Quiz: "Welche Meditationskerze passt zu mir?" mit 8 Heilsteinen
+- [x] Heilsteine korrekt: Mondstein, Rosenquarz, Schwarzer Turmalin, Amethyst, Citrin, Labradorit, Sunstone, Carneol
+- [x] Kerzen-Bilder in die App eingebaut (DSC_3989, DSC_3976, DSC_3937)
+- [x] Kerzen als Produkt im Shop hinzugefügt
+- [x] Aktuelle Produktliste erstellt
+- [ ] Musik-Link abwarten (kommt noch von Lara)

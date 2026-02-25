@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
-  TextInput, KeyboardAvoidingView, Platform,
+  TextInput, KeyboardAvoidingView, Platform, Alert,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,8 +11,6 @@ const C = {
   gold: "#C9A96E", goldLight: "#FAF3E7", brown: "#5C3317", brownMid: "#8B5E3C",
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
-
-const DEFAULT_COMMUNITY_PASSWORD = "seele2026";
 
 const POSTS = [
   {
@@ -43,56 +41,103 @@ const ANGEBOTE = [
   { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch mit Lara", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
 ];
 
+// Speichert registrierte Benutzer als JSON-Array in AsyncStorage
+const USERS_KEY = "community_users";
+const CURRENT_USER_KEY = "community_current_user";
+
+interface CommunityUser {
+  email: string;
+  password: string;
+  name: string;
+}
+
+async function getUsers(): Promise<CommunityUser[]> {
+  const data = await AsyncStorage.getItem(USERS_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+async function saveUsers(users: CommunityUser[]) {
+  await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
 export default function CommunityScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [name, setName] = useState("");
   const [fehler, setFehler] = useState("");
   const [checking, setChecking] = useState(true);
-  const [adminPw, setAdminPw] = useState(DEFAULT_COMMUNITY_PASSWORD);
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      AsyncStorage.getItem("community_auth"),
-      AsyncStorage.getItem("admin_community_pw"),
-      AsyncStorage.getItem("community_user_email"),
-    ]).then(([auth, pw, storedEmail]) => {
-      if (auth === "true") {
+    AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
+      if (data) {
+        const user = JSON.parse(data) as CommunityUser;
         setIsLoggedIn(true);
-        if (storedEmail) setUserName(storedEmail.split("@")[0]);
+        setUserName(user.name || user.email.split("@")[0]);
       }
-      if (pw) setAdminPw(pw);
       setChecking(false);
     });
   }, []);
 
-  const validateEmail = (e: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+  const handleLogin = async () => {
+    if (!email.trim()) { setFehler("Bitte gib deine E-Mail-Adresse ein."); return; }
+    if (!validateEmail(email.trim())) { setFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return; }
+    if (!password.trim()) { setFehler("Bitte gib dein Passwort ein."); return; }
+
+    const users = await getUsers();
+    const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (!found) {
+      setFehler("Kein Konto mit dieser E-Mail gefunden. Bitte registriere dich zuerst.");
+      return;
+    }
+    if (found.password !== password) {
+      setFehler("Falsches Passwort. Bitte versuche es erneut.");
+      return;
+    }
+    setIsLoggedIn(true);
+    setUserName(found.name || found.email.split("@")[0]);
+    setFehler("");
+    await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
   };
 
-  const handleLogin = () => {
-    if (!email.trim()) {
-      setFehler("Bitte gib deine E-Mail-Adresse ein.");
+  const handleRegister = async () => {
+    if (!name.trim()) { setFehler("Bitte gib deinen Namen ein."); return; }
+    if (!email.trim()) { setFehler("Bitte gib deine E-Mail-Adresse ein."); return; }
+    if (!validateEmail(email.trim())) { setFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return; }
+    if (!password.trim()) { setFehler("Bitte wähle ein Passwort."); return; }
+    if (password.length < 4) { setFehler("Das Passwort muss mindestens 4 Zeichen haben."); return; }
+    if (password !== passwordConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
+
+    const users = await getUsers();
+    const exists = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (exists) {
+      setFehler("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
       return;
     }
-    if (!validateEmail(email.trim())) {
-      setFehler("Bitte gib eine gültige E-Mail-Adresse ein.");
-      return;
-    }
-    if (!password.trim()) {
-      setFehler("Bitte gib dein Passwort ein.");
-      return;
-    }
-    if (password === adminPw) {
-      setIsLoggedIn(true);
-      setFehler("");
-      setUserName(email.split("@")[0]);
-      AsyncStorage.setItem("community_auth", "true");
-      AsyncStorage.setItem("community_user_email", email.trim());
-    } else {
-      setFehler("Falsches Passwort. Bitte versuche es erneut.");
-    }
+
+    const newUser: CommunityUser = { email: email.trim().toLowerCase(), password, name: name.trim() };
+    users.push(newUser);
+    await saveUsers(users);
+    await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+    setIsLoggedIn(true);
+    setUserName(newUser.name);
+    setFehler("");
+  };
+
+  const handleLogout = async () => {
+    setIsLoggedIn(false);
+    setEmail("");
+    setPassword("");
+    setPasswordConfirm("");
+    setName("");
+    setUserName("");
+    setMode("login");
+    await AsyncStorage.removeItem(CURRENT_USER_KEY);
   };
 
   if (checking) {
@@ -110,11 +155,45 @@ export default function CommunityScreen() {
             <Text style={s.loginEmoji}>🌸</Text>
             <Text style={s.loginTitel}>Community</Text>
             <Text style={s.loginSub}>
-              Dieser Bereich ist nur für Seelenimpuls-Mitglieder zugänglich.{"\n"}
-              Deine Zugangsdaten erhältst du nach deiner Buchung.
+              {mode === "login"
+                ? "Melde dich an, um in deinen Seelenraum zu gelangen."
+                : "Erstelle dein Konto und werde Teil unserer Community."}
             </Text>
 
+            {/* Tab-Umschalter Login / Registrieren */}
+            <View style={s.tabRow}>
+              <TouchableOpacity
+                style={[s.tab, mode === "login" && s.tabActive]}
+                onPress={() => { setMode("login"); setFehler(""); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[s.tabText, mode === "login" && s.tabTextActive]}>Anmelden</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.tab, mode === "register" && s.tabActive]}
+                onPress={() => { setMode("register"); setFehler(""); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[s.tabText, mode === "register" && s.tabTextActive]}>Registrieren</Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={s.loginCard}>
+              {mode === "register" && (
+                <>
+                  <Text style={s.loginLabel}>Dein Name</Text>
+                  <TextInput
+                    style={s.loginInput}
+                    placeholder="z.B. Sarah"
+                    placeholderTextColor={C.muted}
+                    value={name}
+                    onChangeText={(t) => { setName(t); setFehler(""); }}
+                    autoCapitalize="words"
+                    returnKeyType="next"
+                  />
+                </>
+              )}
+
               <Text style={s.loginLabel}>E-Mail-Adresse</Text>
               <TextInput
                 style={s.loginInput}
@@ -129,24 +208,47 @@ export default function CommunityScreen() {
                 textContentType="emailAddress"
               />
 
-              <Text style={[s.loginLabel, { marginTop: 8 }]}>Passwort</Text>
+              <Text style={[s.loginLabel, { marginTop: 4 }]}>Passwort</Text>
               <TextInput
                 style={s.loginInput}
-                placeholder="Dein Community-Passwort"
+                placeholder={mode === "register" ? "Wähle ein Passwort" : "Dein Passwort"}
                 placeholderTextColor={C.muted}
                 secureTextEntry
                 value={password}
                 onChangeText={(t) => { setPassword(t); setFehler(""); }}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
+                returnKeyType={mode === "register" ? "next" : "done"}
+                onSubmitEditing={mode === "login" ? handleLogin : undefined}
                 autoCapitalize="none"
                 textContentType="password"
               />
 
+              {mode === "register" && (
+                <>
+                  <Text style={[s.loginLabel, { marginTop: 4 }]}>Passwort bestätigen</Text>
+                  <TextInput
+                    style={s.loginInput}
+                    placeholder="Passwort wiederholen"
+                    placeholderTextColor={C.muted}
+                    secureTextEntry
+                    value={passwordConfirm}
+                    onChangeText={(t) => { setPasswordConfirm(t); setFehler(""); }}
+                    returnKeyType="done"
+                    onSubmitEditing={handleRegister}
+                    autoCapitalize="none"
+                  />
+                </>
+              )}
+
               {fehler !== "" && <Text style={s.loginFehler}>{fehler}</Text>}
 
-              <TouchableOpacity style={s.loginBtn} onPress={handleLogin} activeOpacity={0.85}>
-                <Text style={s.loginBtnText}>Einloggen →</Text>
+              <TouchableOpacity
+                style={s.loginBtn}
+                onPress={mode === "login" ? handleLogin : handleRegister}
+                activeOpacity={0.85}
+              >
+                <Text style={s.loginBtnText}>
+                  {mode === "login" ? "Anmelden →" : "Konto erstellen →"}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -155,7 +257,7 @@ export default function CommunityScreen() {
               onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
               activeOpacity={0.85}
             >
-              <Text style={s.seelenimpulsBtnText}>👑 Noch kein Mitglied? Jetzt Seelenimpuls buchen</Text>
+              <Text style={s.seelenimpulsBtnText}>👑 Seelenimpuls buchen – exklusive Community-Inhalte</Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -171,21 +273,10 @@ export default function CommunityScreen() {
             <View>
               <Text style={s.headerTitle}>Community 🌸</Text>
               <Text style={s.headerSub}>
-                Willkommen{userName ? `, ${userName}` : ""}! Dein sicherer Seelenraum.
+                Willkommen, {userName}! Schön, dass du da bist.
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => {
-                setIsLoggedIn(false);
-                setEmail("");
-                setPassword("");
-                setUserName("");
-                AsyncStorage.removeItem("community_auth");
-                AsyncStorage.removeItem("community_user_email");
-              }}
-              style={s.logoutBtn}
-              activeOpacity={0.8}
-            >
+            <TouchableOpacity onPress={handleLogout} style={s.logoutBtn} activeOpacity={0.8}>
               <Text style={s.logoutText}>Abmelden</Text>
             </TouchableOpacity>
           </View>
@@ -194,19 +285,12 @@ export default function CommunityScreen() {
         <Text style={s.sec}>📅 Buche Zeit mit Lara</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
           {ANGEBOTE.map((a, i) => (
-            <TouchableOpacity
-              key={i}
-              style={s.angebotCard}
-              onPress={() => Linking.openURL(a.url)}
-              activeOpacity={0.85}
-            >
+            <TouchableOpacity key={i} style={s.angebotCard} onPress={() => Linking.openURL(a.url)} activeOpacity={0.85}>
               <Text style={{ fontSize: 32, marginBottom: 8 }}>{a.emoji}</Text>
               <Text style={s.angebotTitel}>{a.titel}</Text>
               <Text style={s.angebotBeschreibung}>{a.beschreibung}</Text>
               <Text style={s.angebotPreis}>{a.preis}</Text>
-              <View style={s.angebotBtn}>
-                <Text style={s.angebotBtnText}>Buchen →</Text>
-              </View>
+              <View style={s.angebotBtn}><Text style={s.angebotBtnText}>Buchen →</Text></View>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -221,11 +305,7 @@ export default function CommunityScreen() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Text style={s.postVon}>{post.von}</Text>
-                  {post.istLara && (
-                    <View style={s.laraTag}>
-                      <Text style={s.laraTagText}>Lara</Text>
-                    </View>
-                  )}
+                  {post.istLara && <View style={s.laraTag}><Text style={s.laraTagText}>Lara</Text></View>}
                 </View>
                 <Text style={s.postDatum}>{post.datum}</Text>
               </View>
@@ -258,7 +338,12 @@ const s = StyleSheet.create({
   loginContainer: { flexGrow: 1, backgroundColor: C.bg, padding: 24, justifyContent: "center", alignItems: "center", minHeight: 600 },
   loginEmoji: { fontSize: 60, marginBottom: 16 },
   loginTitel: { fontSize: 28, fontWeight: "700", color: C.brown, marginBottom: 8 },
-  loginSub: { fontSize: 14, color: C.muted, textAlign: "center", lineHeight: 21, marginBottom: 32, maxWidth: 300 },
+  loginSub: { fontSize: 14, color: C.muted, textAlign: "center", lineHeight: 21, marginBottom: 20, maxWidth: 300 },
+  tabRow: { flexDirection: "row", marginBottom: 16, backgroundColor: C.surface, borderRadius: 12, padding: 3, width: "100%" },
+  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: "center" },
+  tabActive: { backgroundColor: C.card, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  tabText: { fontSize: 14, color: C.muted, fontWeight: "600" },
+  tabTextActive: { color: C.brown },
   loginCard: { width: "100%", backgroundColor: C.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.border, marginBottom: 16 },
   loginLabel: { fontSize: 13, color: C.brownMid, marginBottom: 6, fontWeight: "600" },
   loginInput: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 15, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8 },

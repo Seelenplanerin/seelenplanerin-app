@@ -11,7 +11,7 @@ import { Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-type ShopCategory = "alle" | "armbänder" | "sessions" | "digital";
+type ShopCategory = "alle" | "armb\u00e4nder" | "sessions" | "digital" | "kerzen";
 
 interface Product {
   id: string;
@@ -46,8 +46,8 @@ const PRODUCTS: Product[] = [
     name: "Schutzarmband Mariposa",
     nameEn: "Protection Bracelet Mariposa",
     kategorie: "armbänder",
-    preis: 0,
-    preisDisplay: "",
+    preis: 28.90,
+    preisDisplay: "28,90 \u20ac",
     beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
     emoji: "🖤",
     highlight: "Schwarzer Turmalin",
@@ -91,6 +91,19 @@ const PRODUCTS: Product[] = [
   },
 
   {
+    id: "meditationskerze",
+    name: "Meditationskerze",
+    nameEn: "Meditation Candle",
+    kategorie: "kerzen",
+    preis: 0,
+    preisDisplay: "",
+    beschreibung: "Handgefertigte Kerze mit deinem pers\u00f6nlichen Heilstein. Jede Kerze ist ein Unikat \u2013 w\u00e4hle deinen Stein im Quiz.",
+    emoji: "\ud83d\udd6f\ufe0f",
+    highlight: "Individuell mit Heilstein",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com",
+    badge: "Neu",
+  },
+  {
     id: "seelenimpuls",
     name: "Seelenimpuls",
     nameEn: "Soul Impulse",
@@ -118,8 +131,9 @@ const PRODUCTS: Product[] = [
 const CATEGORIES: { id: ShopCategory; label: string; emoji: string }[] = [
   { id: "alle", label: "Alle", emoji: "✨" },
   { id: "armbänder", label: "Armbänder", emoji: "ᚱ" },
-  { id: "sessions", label: "Sessions", emoji: "💫" },
-  { id: "digital", label: "Digital", emoji: "📿" },
+  { id: "sessions", label: "Sessions", emoji: "\ud83d\udcab" },
+  { id: "kerzen", label: "Kerzen", emoji: "\ud83d\udd6f\ufe0f" },
+  { id: "digital", label: "Digital", emoji: "\ud83d\udcbf" },
 ];
 
 export default function ShopScreen() {
