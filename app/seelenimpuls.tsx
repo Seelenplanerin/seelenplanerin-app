@@ -34,7 +34,7 @@ export default function SeelenimpulsScreen() {
       <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
         {/* Hero-Bild */}
         <ImageBackground
-          source={{ uri: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/tFTUtBGRaQMgFolP.png" }}
+          source={require("@/assets/images/seelenimpuls-hero.jpg")}
           style={s.heroImage}
           resizeMode="cover"
         >
