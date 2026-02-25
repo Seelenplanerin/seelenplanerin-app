@@ -338,6 +338,14 @@ export function formatMondDatum(date: Date): string {
  * Aufsteigend: Schütze → Zwillinge (ca. 2 Wochen)
  * Absteigend: Zwillinge → Schütze (ca. 2 Wochen)
  */
+/**
+ * Gibt zurück ob der Mond zunimmt (true) oder abnimmt (false).
+ */
+export function isMoonWaxing(date: Date): boolean {
+  const phase = getMoonPhaseForDate(date);
+  return ["Neumond", "Zunehmende Sichel", "Erstes Viertel", "Zunehmender Mond"].includes(phase.name);
+}
+
 export function getMoonDirection(date: Date): "aufsteigend" | "absteigend" {
   const zodiac = getMoonZodiac(date);
   // Aufsteigende Zeichen: Schütze, Steinbock, Wassermann, Fische, Widder, Stier, Zwillinge

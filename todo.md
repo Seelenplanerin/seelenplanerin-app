@@ -259,3 +259,9 @@
 - [x] Mond-Tab: Tages-Tipps dynamisch an gewählten Tag gekoppelt (getTagesTipps(selectedDate))
 - [x] Mond-Tab: Handlungen/Empfehlungen ändern sich jetzt pro Tag – Phase, Zodiac, Tipps, Körperregion, Beleuchtung
 - [x] Shop: Buttons nicht mehr abgeschnitten – mehr Padding, größere Buttons, paddingVertical in ScrollView
+
+## Feedback Runde 14 (25.02.2026 Nacht)
+- [x] Mond-Emojis in 5-Tage-Vorschau ersetzt durch SVG-basierte MoonIcon Komponente (konsistent auf allen Geräten)
+- [x] Mond-Emojis konsistent: SVG zeigt exakte Beleuchtung + korrekte Seite (zu-/abnehmend)
+- [x] Shop-Buttons: Kategorie-Buttons mit mehr Padding, größere Touch-Targets, overflow visible
+- [x] Rituale-Sets: Komplette Liste erstellt (ritual-sets-liste.md) mit 50 Ritualen + Materialien

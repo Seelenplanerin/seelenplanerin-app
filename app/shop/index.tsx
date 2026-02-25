@@ -150,11 +150,11 @@ export default function ShopScreen() {
     backText: { fontSize: 24, color: colors.primary },
     title: { fontSize: 28, fontWeight: "700", color: "#3D2B1F" },
     subtitle: { fontSize: 15, color: "#9C7B6E", marginTop: 4, fontStyle: "italic" },
-    catRow: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 },
+    catRow: { paddingHorizontal: 16, paddingBottom: 4, paddingTop: 4, marginBottom: 12 },
     catBtn: {
-      flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 10,
-      borderRadius: 20, borderWidth: 1.5, borderColor: colors.border, marginRight: 10,
-      backgroundColor: colors.surface, minHeight: 40,
+      flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 12,
+      borderRadius: 22, borderWidth: 1.5, borderColor: colors.border, marginRight: 10,
+      backgroundColor: colors.surface, minHeight: 44,
     },
     catBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
     catText: { fontSize: 14, color: colors.muted, fontWeight: "600" },
@@ -216,7 +216,8 @@ export default function ShopScreen() {
       </View>
 
       {/* Kategorie-Filter */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catRow} contentContainerStyle={{ paddingRight: 24, paddingVertical: 4 }}>
+      <View style={{ overflow: "visible" }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catRow} contentContainerStyle={{ paddingRight: 24, paddingVertical: 8 }}>
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
             key={cat.id}
@@ -229,6 +230,7 @@ export default function ShopScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      </View>
 
       <FlatList
         data={filtered}

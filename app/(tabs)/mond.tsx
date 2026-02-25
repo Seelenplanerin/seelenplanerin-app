@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { MoonIcon, MoonIconSmall } from "@/components/moon-icon";
 import {
   getCurrentMoonPhase,
   getMoonCalendar,
@@ -18,6 +19,7 @@ import {
   getMoonZodiac,
   getMoonIllumination,
   getMoonDirection,
+  isMoonWaxing,
   MOON_PHASES,
 } from "@/lib/moon-phase";
 
@@ -179,6 +181,7 @@ export default function MondScreen() {
   const selectedZodiac = useMemo(() => getMoonZodiac(selectedDate), [selectedDay]);
   const selectedIllum = useMemo(() => getMoonIllumination(selectedDate), [selectedDay]);
   const selectedDirection = useMemo(() => getMoonDirection(selectedDate), [selectedDay]);
+  const selectedWaxing = useMemo(() => isMoonWaxing(selectedDate), [selectedDay]);
   const selectedKoerper = KOERPERREGIONEN[selectedZodiac.name];
   const selectedTipps = useMemo(() => getTagesTipps(selectedDate), [selectedDay]);
 
@@ -203,6 +206,7 @@ export default function MondScreen() {
         date: d,
         phase: getMoonPhaseForDate(d),
         illumination: getMoonIllumination(d),
+        waxing: isMoonWaxing(d),
         isToday: i === 0,
       });
     }
@@ -238,7 +242,7 @@ export default function MondScreen() {
           <View style={st.fiveDayRow}>
             {fiveDayPreview.map((day, i) => (
               <View key={i} style={[st.fiveDayItem, day.isToday && st.fiveDayItemToday]}>
-                <Text style={st.fiveDayEmoji}>{day.phase.emoji}</Text>
+                <MoonIconSmall illumination={day.illumination} isWaxing={day.waxing} size={32} />
                 <Text style={[st.fiveDayLabel, day.isToday && st.fiveDayLabelToday]}>
                   {day.date.getDate()}.{day.date.getMonth() + 1}.
                 </Text>
@@ -248,7 +252,8 @@ export default function MondScreen() {
           </View>
 
           {/* Hauptphase – zeigt den GEWÄHLTEN Tag */}
-          <Text style={st.heroMoonEmoji}>{selectedPhase.emoji}</Text>
+          <MoonIcon illumination={selectedIllum} isWaxing={selectedWaxing} size={100} />
+          <View style={{ height: 12 }} />
           <Text style={st.heroTitle}>{selectedPhase.name}</Text>
           <Text style={st.heroZodiac}>
             {selectedZodiac.symbol} im {selectedZodiac.name}
@@ -268,6 +273,11 @@ export default function MondScreen() {
             <View style={st.directionBadge}>
               <Text style={st.directionText}>
                 {selectedDirection === "aufsteigend" ? "↑ Aufsteigend" : "↓ Absteigend"}
+              </Text>
+            </View>
+            <View style={st.directionBadge}>
+              <Text style={st.directionText}>
+                {selectedWaxing ? "☽ Zunehmend" : "☾ Abnehmend"}
               </Text>
             </View>
             {selectedDay !== 0 && (
@@ -347,7 +357,8 @@ export default function MondScreen() {
         <Text style={st.sectionTitle}>Nächste Hauptphasen</Text>
         <View style={st.nextPhasesRow}>
           <View style={st.nextPhaseCard}>
-            <Text style={st.nextPhaseEmoji}>🌕</Text>
+            <MoonIcon illumination={100} isWaxing={false} size={40} />
+            <View style={{ height: 6 }} />
             <Text style={st.nextPhaseLabel}>Vollmond</Text>
             <Text style={st.nextPhaseDate}>
               {nextVollmond.toLocaleDateString("de-DE", {
@@ -364,7 +375,8 @@ export default function MondScreen() {
             </Text>
           </View>
           <View style={st.nextPhaseCard}>
-            <Text style={st.nextPhaseEmoji}>🌑</Text>
+            <MoonIcon illumination={0} isWaxing={true} size={40} />
+            <View style={{ height: 6 }} />
             <Text style={st.nextPhaseLabel}>Neumond</Text>
             <Text style={st.nextPhaseDate}>
               {nextNeumond.toLocaleDateString("de-DE", {
@@ -395,6 +407,8 @@ export default function MondScreen() {
             const isSelected = index === selectedDay;
             const isVollmond = item.phase.name === "Vollmond";
             const isNeumond = item.phase.name === "Neumond";
+            const illum = getMoonIllumination(item.date);
+            const waxing = isMoonWaxing(item.date);
             return (
               <TouchableOpacity
                 onPress={() => setSelectedDay(index)}
@@ -412,7 +426,7 @@ export default function MondScreen() {
                 <Text style={[st.calendarDayNum, isSelected && st.calendarTextDark]}>
                   {item.date.getDate()}
                 </Text>
-                <Text style={st.calendarMoonEmoji}>{item.phase.emoji}</Text>
+                <MoonIconSmall illumination={illum} isWaxing={waxing} size={22} />
                 {isToday && !isSelected && <View style={st.todayDot} />}
               </TouchableOpacity>
             );
@@ -424,7 +438,7 @@ export default function MondScreen() {
           <View style={st.selectedDayCard}>
             <Text style={st.selectedDayTitle}>{selectedDateLabel}</Text>
             <View style={st.selectedDayRow}>
-              <Text style={st.selectedDayEmoji}>{selectedPhase.emoji}</Text>
+              <MoonIcon illumination={selectedIllum} isWaxing={selectedWaxing} size={56} />
               <View style={st.selectedDayInfo}>
                 <Text style={st.selectedDayPhase}>{selectedPhase.name}</Text>
                 <Text style={st.selectedDayZodiac}>
@@ -446,7 +460,7 @@ export default function MondScreen() {
         <Text style={st.sectionTitle}>Mondphasen-Guide</Text>
         {MOON_PHASES.map((phase, index) => (
           <View key={index} style={st.phaseGuideCard}>
-            <Text style={st.phaseGuideEmoji}>{phase.emoji}</Text>
+            <MoonIcon illumination={phase.illumination} isWaxing={index < 4} size={36} />
             <View style={st.phaseGuideContent}>
               <Text style={st.phaseGuideName}>{phase.name}</Text>
               <Text style={st.phaseGuideDesc} numberOfLines={2}>{phase.description}</Text>
@@ -460,8 +474,8 @@ export default function MondScreen() {
           onPress={() => router.push("/mondtyp-quiz" as any)}
           activeOpacity={0.8}
         >
-          <Text style={{ fontSize: 28, marginRight: 12 }}>🌕</Text>
-          <View style={{ flex: 1 }}>
+          <MoonIcon illumination={100} isWaxing={false} size={36} />
+          <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={st.quizBannerTitle}>Welcher Mondtyp bist du?</Text>
             <Text style={st.quizBannerDesc}>Finde es mit unserem Quiz heraus →</Text>
           </View>
@@ -495,12 +509,10 @@ const st = StyleSheet.create({
     backgroundColor: "rgba(212,168,83,0.15)",
     borderWidth: 1, borderColor: C.goldDim,
   },
-  fiveDayEmoji: { fontSize: 28, marginBottom: 4 },
-  fiveDayLabel: { fontSize: 11, color: C.muted, fontWeight: "500" },
+  fiveDayLabel: { fontSize: 11, color: C.muted, fontWeight: "500", marginTop: 4 },
   fiveDayLabelToday: { color: C.gold, fontWeight: "700" },
   fiveDayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.gold, marginTop: 4 },
 
-  heroMoonEmoji: { fontSize: 72, marginBottom: 8 },
   heroTitle: { color: C.gold, fontSize: 24, fontWeight: "800", marginBottom: 4 },
   heroZodiac: { color: C.white, fontSize: 16, fontWeight: "600", marginBottom: 2 },
   heroElement: { color: C.muted, fontSize: 13, marginBottom: 16 },
@@ -566,7 +578,6 @@ const st = StyleSheet.create({
     flex: 1, backgroundColor: C.card, borderRadius: 18, padding: 16,
     alignItems: "center", borderWidth: 1, borderColor: C.border,
   },
-  nextPhaseEmoji: { fontSize: 32, marginBottom: 6 },
   nextPhaseLabel: { fontSize: 13, fontWeight: "700", color: C.white, marginBottom: 4 },
   nextPhaseDate: { fontSize: 15, fontWeight: "800", color: C.gold, marginBottom: 2, textAlign: "center" },
   nextPhaseTime: { fontSize: 12, color: C.muted, marginBottom: 4 },
@@ -576,7 +587,7 @@ const st = StyleSheet.create({
   calendarRow: { gap: 8, paddingBottom: 4, marginBottom: 16 },
   calendarDay: {
     width: 58, borderRadius: 14, borderWidth: 1, borderColor: C.border,
-    backgroundColor: C.card, padding: 8, alignItems: "center", gap: 2,
+    backgroundColor: C.card, padding: 8, alignItems: "center", gap: 4,
   },
   calendarDaySelected: { backgroundColor: C.gold, borderColor: C.gold },
   calendarDayVollmond: { borderColor: C.goldDim },
@@ -584,7 +595,6 @@ const st = StyleSheet.create({
   calendarDayWeekday: { fontSize: 10, fontWeight: "500", color: C.muted },
   calendarDayNum: { fontSize: 18, fontWeight: "700", color: C.white },
   calendarTextDark: { color: "#0A0E1A" },
-  calendarMoonEmoji: { fontSize: 18 },
   todayDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.gold, marginTop: 2 },
 
   // Ausgewählter Tag
@@ -594,7 +604,6 @@ const st = StyleSheet.create({
   },
   selectedDayTitle: { fontSize: 14, fontWeight: "700", color: C.white, marginBottom: 12 },
   selectedDayRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 12 },
-  selectedDayEmoji: { fontSize: 44 },
   selectedDayInfo: { flex: 1 },
   selectedDayPhase: { fontSize: 18, fontWeight: "700", color: C.gold, marginBottom: 2 },
   selectedDayZodiac: { fontSize: 14, fontWeight: "600", color: C.white, marginBottom: 2 },
@@ -613,7 +622,6 @@ const st = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: C.border,
     padding: 12, marginBottom: 8, gap: 12,
   },
-  phaseGuideEmoji: { fontSize: 28 },
   phaseGuideContent: { flex: 1 },
   phaseGuideName: { fontSize: 15, fontWeight: "700", color: C.white, marginBottom: 2 },
   phaseGuideDesc: { fontSize: 13, color: C.muted, lineHeight: 18 },
