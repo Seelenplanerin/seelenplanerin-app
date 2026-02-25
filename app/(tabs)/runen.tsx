@@ -273,6 +273,20 @@ export default function RunenScreen() {
           </View>
         )}
 
+        {/* Runen-Quiz Banner */}
+        <TouchableOpacity
+          style={{marginHorizontal:16,marginTop:20,backgroundColor:C.brown,borderRadius:16,padding:18,flexDirection:"row",alignItems:"center"}}
+          onPress={()=>router.push("/runen-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <Text style={{fontSize:36,marginRight:14,color:C.gold}}>ᚱ</Text>
+          <View style={{flex:1}}>
+            <Text style={{fontSize:16,fontWeight:"700",color:"#FFF",marginBottom:3}}>Welche Rune führt dich?</Text>
+            <Text style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>8 Fragen · Entdecke deine persönliche Seelenrune</Text>
+          </View>
+          <Text style={{fontSize:20,color:C.gold}}>→</Text>
+        </TouchableOpacity>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenContainer>

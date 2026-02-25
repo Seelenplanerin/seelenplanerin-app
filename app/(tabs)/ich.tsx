@@ -32,7 +32,7 @@ const MENU_ITEMS = [
     section: "Verbinden",
     items: [
       { id: "instagram", label: "Instagram", emoji: "📸", url: "https://www.instagram.com/die.seelenplanerin/" },
-      { id: "quiz-runen", label: "Runen-Quiz", emoji: "🔮", url: "https://tally.so/r/b5WLY7" },
+      { id: "quiz-runen", label: "Welche Rune führt dich?", emoji: "🔮", route: "/runen-quiz" },
       { id: "quiz-mond", label: "Welcher Mondtyp bist du?", emoji: "🌕", route: "/mondtyp-quiz" },
     ],
   },
