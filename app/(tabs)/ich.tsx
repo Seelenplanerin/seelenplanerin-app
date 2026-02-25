@@ -42,7 +42,7 @@ const PRODUKTE = [
   { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "28,90 €", emoji: "🖤" },
   { id: "runen", name: "Runen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "ab 38 €", emoji: "✨" },
   { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕" },
-  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮" },
+  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮", route: "/aura" },
 ];
 
 export default function IchScreen() {

@@ -135,3 +135,13 @@
 - [x] Seelenimpuls Premium: 17€/Monat, Tentary-Anbindung
 - [x] Freemium-Modell: Basis kostenlos, Premium = Seelenimpuls
 - [x] Runen-Rechner: Lebensweg-Numerologie 1-9 (Option A) ✓ korrigiert
+
+## JSON-Daten & Korrekturen (Feb 2026)
+- [x] JSON-Datei analysiert (365 Einträge)
+- [x] Runen-Reihenfolge korrigiert: Tag 23=Dagaz (ᛞ), Tag 24=Othala (ᛟ) – war vertauscht
+- [x] Mondphasen korrigiert: 362 von 365 Einträgen waren falsch, jetzt astronomisch korrekt
+- [x] Mondphasen-Berechnung im Startscreen auf astronomisch korrekte Neumond-Daten 2026 umgestellt
+- [x] Aura-Screen vollständig implementiert (30 Farben, tägliche Rotation, Buchungs-CTA)
+- [x] Logo freigestellt integriert (schwarzer Hintergrund entfernt via Pillow)
+- [x] Foto-Zuschnitt korrigiert (ganzer Kopf sichtbar, Höhe 380px statt 320px)
+- [x] Aura als Kategorie auf Startscreen verlinkt

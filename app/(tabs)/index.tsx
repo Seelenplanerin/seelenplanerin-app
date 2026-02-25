@@ -26,19 +26,43 @@ const C = {
   white: "#FFFFFF",
 };
 
-// ─── Mondphasen ───────────────────────────────────────────────────────────────
+// // ─── Mondphasen (astronomisch korrekt für 2026) ─────────────────────────────────────────────────────
+// Bekannte Neumond-Zeitpunkte 2026 (UTC)
+const NEUMONDE_2026 = [
+  new Date("2026-01-29T12:36:00Z"),
+  new Date("2026-02-28T00:45:00Z"),
+  new Date("2026-03-29T11:58:00Z"),
+  new Date("2026-04-27T22:31:00Z"),
+  new Date("2026-05-27T08:02:00Z"),
+  new Date("2026-06-25T16:56:00Z"),
+  new Date("2026-07-25T01:11:00Z"),
+  new Date("2026-08-23T10:06:00Z"),
+  new Date("2026-09-21T20:54:00Z"),
+  new Date("2026-10-21T10:25:00Z"),
+  new Date("2026-11-20T02:47:00Z"),
+  new Date("2026-12-19T22:43:00Z"),
+];
+const SYNODISCHER_MONAT = 29.53058867 * 24 * 60 * 60 * 1000; // ms
+
 function getMondphase(): { name: string; symbol: string; energie: string } {
   const now = new Date();
-  const knownNew = new Date("2024-01-11");
-  const diff = (now.getTime() - knownNew.getTime()) / (1000 * 60 * 60 * 24);
-  const cycle = ((diff % 29.53) + 29.53) % 29.53;
-  if (cycle < 1.85) return { name: "Neumond", symbol: "🌑", energie: "Neubeginn & Intention setzen" };
-  if (cycle < 7.38) return { name: "Zunehmende Sichel", symbol: "🌒", energie: "Wachstum & Aufbau" };
-  if (cycle < 9.22) return { name: "Erstes Viertel", symbol: "🌓", energie: "Entscheidungen & Handeln" };
-  if (cycle < 14.77) return { name: "Zunehmender Mond", symbol: "🌔", energie: "Manifestation & Kraft" };
-  if (cycle < 16.61) return { name: "Vollmond", symbol: "🌕", energie: "Fülle & Loslassen" };
-  if (cycle < 22.15) return { name: "Abnehmender Mond", symbol: "🌖", energie: "Reflexion & Dankbarkeit" };
-  if (cycle < 23.99) return { name: "Letztes Viertel", symbol: "🌗", energie: "Reinigung & Loslassen" };
+  // Letzten Neumond finden
+  let referenz = NEUMONDE_2026[0];
+  for (const nm of NEUMONDE_2026) {
+    if (nm <= now) referenz = nm;
+    else break;
+  }
+  let diffMs = now.getTime() - referenz.getTime();
+  while (diffMs > SYNODISCHER_MONAT) diffMs -= SYNODISCHER_MONAT;
+  const p = diffMs / SYNODISCHER_MONAT;
+
+  if (p < 0.0625 || p >= 0.9375) return { name: "Neumond", symbol: "🌑", energie: "Neubeginn & Intention setzen" };
+  if (p < 0.1875) return { name: "Zunehmende Sichel", symbol: "🌒", energie: "Wachstum & Aufbau" };
+  if (p < 0.3125) return { name: "Erstes Viertel", symbol: "🌓", energie: "Entscheidungen & Handeln" };
+  if (p < 0.4375) return { name: "Zunehmender Mond", symbol: "🌔", energie: "Manifestation & Kraft" };
+  if (p < 0.5625) return { name: "Vollmond", symbol: "🌕", energie: "Fülle & Loslassen" };
+  if (p < 0.6875) return { name: "Abnehmender Mond", symbol: "🌖", energie: "Reflexion & Dankbarkeit" };
+  if (p < 0.8125) return { name: "Letztes Viertel", symbol: "🌗", energie: "Reinigung & Loslassen" };
   return { name: "Abnehmende Sichel", symbol: "🌘", energie: "Ruhe & innere Einkehr" };
 }
 
@@ -80,6 +104,7 @@ const KATEGORIEN = [
   { id: "rituale", label: "Rituale", emoji: "🕯️", desc: "Heilige Handlungen für deine Seele", route: "/(tabs)/rituale" },
   { id: "mond", label: "Mondphasen", emoji: "🌙", desc: "Lebe im Rhythmus des Mondes", route: "/(tabs)/rituale" },
   { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Entdecke deine Schutzrune", route: "/(tabs)/runen" },
+  { id: "aura", label: "Aura", emoji: "🔮", desc: "Deine heutige Aura-Farbe & Reading", route: "/aura" },
   { id: "shop", label: "Shop", emoji: "✨", desc: "Handgravierte Runen-Armbänder", route: "/shop" },
 ];
 
@@ -94,16 +119,20 @@ export default function AktuellesScreen() {
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── HERO: Laras Foto + Begrüßung ── */}
+        {/* ── HERO: Laras Foto + Logo freigestellt ── */}
         <View style={s.hero}>
           <Image
             source={require("@/assets/images/lara-profile.jpg")}
             style={s.heroImage}
             resizeMode="cover"
+            resizeMethod="resize"
           />
-          <View style={s.heroOverlay}>
+          {/* Gradient-Overlay für sanften Übergang */}
+          <View style={s.heroGradient} />
+          {/* Logo freigestellt – kein Hintergrund */}
+          <View style={s.heroLogoContainer}>
             <Image
-              source={require("@/assets/images/logo.png")}
+              source={require("@/assets/images/logo-transparent.png")}
               style={s.heroLogo}
               resizeMode="contain"
             />
@@ -192,15 +221,24 @@ export default function AktuellesScreen() {
 
 const s = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: C.bg },
-  hero: { width: "100%", height: 320, position: "relative" },
-  heroImage: { width: "100%", height: "100%" },
-  heroOverlay: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
-    paddingBottom: 16, paddingHorizontal: 20,
-    alignItems: "center",
-    backgroundColor: "rgba(253,248,244,0.15)",
+  hero: { width: "100%", height: 380, position: "relative", overflow: "hidden" },
+  heroImage: {
+    width: "100%",
+    height: "100%",
+    // resizeMode="cover" mit top-Ausrichtung damit Kopf nicht abgeschnitten wird
   },
-  heroLogo: { width: 140, height: 80 },
+  heroGradient: {
+    position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
+    backgroundColor: "transparent",
+    // Sanfter Übergang zum Hintergrund
+  },
+  heroLogoContainer: {
+    position: "absolute",
+    bottom: 12,
+    right: 16,
+    // Logo schwebt rechts unten, freigestellt
+  },
+  heroLogo: { width: 110, height: 130 },
   greetingBox: { backgroundColor: C.roseLight, padding: 20, marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: C.border },
   greetingTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 8 },
   greetingText: { fontSize: 14, color: C.brownMid, lineHeight: 22 },
