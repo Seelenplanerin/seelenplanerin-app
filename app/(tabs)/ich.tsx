@@ -24,7 +24,7 @@ const MENU_ITEMS = [
     section: "Shop & Buchung",
     items: [
       { id: "shop", label: "Zum Shop", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
-      { id: "buchen", label: "Termin buchen", emoji: "📅", url: "https://calendly.com/dieseelenplanerin" },
+      { id: "buchen", label: "Termin buchen", emoji: "📅", url: "https://calendly.com/hallo-seelenplanerin/30min" },
       { id: "seelenimpuls", label: "Seelenimpuls Premium", emoji: "👑", url: "https://dieseelenplanerin.tentary.com/p/E6FP1U" },
     ],
   },
@@ -41,7 +41,7 @@ const MENU_ITEMS = [
 const PRODUKTE = [
   { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "28,90 €", emoji: "🖤", url: "https://dieseelenplanerin.tentary.com/p/gGmtFy" },
   { id: "runen", name: "Runen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "ab 38 €", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
-  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://www.instagram.com/die.seelenplanerin/" },
+  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
 ];
 

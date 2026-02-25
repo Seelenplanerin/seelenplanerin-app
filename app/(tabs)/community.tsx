@@ -47,9 +47,9 @@ const INSPIRATIONEN = [
 ];
 
 const ANGEBOTE = [
-  { id: "soul-talk", titel: "Soul Talk", emoji: "☕", preis: "Kostenlos", beschreibung: "Ein offenes Gespräch mit Lara. Kein Druck, kein Programm – einfach Seele zu Seele.", farbe: C.roseLight, borderFarbe: C.border, url: "https://calendly.com/dieseelenplanerin" },
-  { id: "aura", titel: "Aura Reading", emoji: "🔮", preis: "77 €", beschreibung: "Lara liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder und Blockaden.", farbe: "#EEF0F8", borderFarbe: "#D0D4E8", url: "https://calendly.com/dieseelenplanerin" },
-  { id: "deep-talk", titel: "Deep Talk", emoji: "💫", preis: "111 €", beschreibung: "Ein tiefes, transformatives Gespräch für Frauen die bereit sind, sich wirklich zu zeigen.", farbe: C.goldLight, borderFarbe: "#E8D5B0", url: "https://calendly.com/dieseelenplanerin" },
+  { id: "soul-talk", titel: "Soul Talk", emoji: "☕", preis: "Kostenlos", beschreibung: "Ein offenes Gespräch mit Lara. Kein Druck, kein Programm – einfach Seele zu Seele.", farbe: C.roseLight, borderFarbe: C.border, url: "https://calendly.com/hallo-seelenplanerin/30min" },
+  { id: "aura", titel: "Aura Reading", emoji: "🔮", preis: "77 €", beschreibung: "Lara liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder und Blockaden.", farbe: "#EEF0F8", borderFarbe: "#D0D4E8", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
+  { id: "deep-talk", titel: "Deep Talk", emoji: "💫", preis: "111 €", beschreibung: "Ein tiefes, transformatives Gespräch für Frauen die bereit sind, sich wirklich zu zeigen.", farbe: C.goldLight, borderFarbe: "#E8D5B0", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
 ];
 
 export default function CommunityScreen() {

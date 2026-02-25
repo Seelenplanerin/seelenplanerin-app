@@ -161,7 +161,7 @@ export default function AuraScreen() {
           </View>
           <TouchableOpacity
             style={[s.bookingBtn, { backgroundColor: aura.hex }]}
-            onPress={() => Linking.openURL("https://calendly.com/dieseelenplanerin")}
+            onPress={() => Linking.openURL("https://calendly.com/hallo-seelenplanerin/30min")}
             activeOpacity={0.85}
           >
             <Text style={s.bookingBtnText}>Jetzt buchen →</Text>
