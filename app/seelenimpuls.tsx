@@ -16,7 +16,6 @@ const FEATURES = [
   { emoji: "🕯️", titel: "Tiefe Rituale", beschreibung: "Ausführliche Mondphasen- und Seelenrituale" },
   { emoji: "✨", titel: "Persönliche Impulse", beschreibung: "Wöchentliche Botschaften direkt von Lara an dich" },
   { emoji: "🌙", titel: "Mondkalender Premium", beschreibung: "Detaillierte Mondenergie-Vorhersagen für jeden Tag" },
-  { emoji: "ᚱ", titel: "Runen-Tiefenanalyse", beschreibung: "Ausführliche Runen-Readings und persönliche Deutungen" },
   { emoji: "📞", titel: "Monatlicher Community-Call", beschreibung: "Live-Call mit Lara und allen Mitgliedern – gemeinsam wachsen" },
   { emoji: "💌", titel: "Community-Zugang", beschreibung: "Exklusiver Zugang zur Seelenplanerin-Community" },
   { emoji: "🎁", titel: "Frühzugang zu Produkten", beschreibung: "Neue Armbänder und Angebote zuerst für Mitglieder" },
@@ -86,7 +85,7 @@ export default function SeelenimpulsScreen() {
         <View style={s.preisCard}>
           <Text style={s.preisTitle}>Seelenimpuls Mitgliedschaft</Text>
           <Text style={s.preis}>17 €</Text>
-          <Text style={s.preisUnit}>pro Monat · jederzeit kündbar</Text>
+          <Text style={s.preisUnit}>pro Monat - jederzeit kündbar</Text>
           <View style={s.preisFeatures}>
             {["Alle exklusiven Inhalte", "Persönliche Impulse von Lara", "Monatlicher Community-Call mit Lara", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
               <View key={i} style={s.preisFeatureRow}>
@@ -146,15 +145,15 @@ const s = StyleSheet.create({
   testimonialCard: { marginHorizontal: 16, marginBottom: 10, backgroundColor: C.goldLight, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#E8D5B0" },
   testimonialText: { fontSize: 14, color: C.brown, fontStyle: "italic", lineHeight: 21, marginBottom: 8 },
   testimonialName: { fontSize: 12, color: C.muted },
-  preisCard: { margin: 16, backgroundColor: C.brown, borderRadius: 24, padding: 24, alignItems: "center" },
-  preisTitle: { fontSize: 16, color: "rgba(255,255,255,0.8)", marginBottom: 8 },
-  preis: { fontSize: 52, fontWeight: "700", color: C.gold, lineHeight: 60 },
-  preisUnit: { fontSize: 14, color: "rgba(255,255,255,0.7)", marginBottom: 20 },
+  preisCard: { margin: 16, backgroundColor: C.roseLight, borderRadius: 24, padding: 24, alignItems: "center", borderWidth: 1, borderColor: C.border },
+  preisTitle: { fontSize: 16, color: C.brown, marginBottom: 8, fontWeight: "700" },
+  preis: { fontSize: 52, fontWeight: "700", color: C.rose, lineHeight: 60 },
+  preisUnit: { fontSize: 14, color: C.muted, marginBottom: 20 },
   preisFeatures: { width: "100%", marginBottom: 20 },
   preisFeatureRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  cta: { backgroundColor: C.gold, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, marginBottom: 10 },
+  cta: { backgroundColor: C.rose, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 32, marginBottom: 10 },
   ctaText: { color: "#FFF", fontSize: 17, fontWeight: "700" },
-  ctaHint: { fontSize: 12, color: "rgba(255,255,255,0.6)" },
+  ctaHint: { fontSize: 12, color: C.muted },
   faqCard: { marginHorizontal: 16, backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border, overflow: "hidden" },
   faqItem: { padding: 16 },
   faqFrage: { fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 },

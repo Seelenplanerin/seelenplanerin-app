@@ -105,7 +105,7 @@ const KATEGORIEN = [
   { id: "rituale", label: "Rituale", emoji: "🕯️", desc: "Heilige Handlungen für deine Seele", route: "/(tabs)/rituale" },
   { id: "mond", label: "Mondphasen", emoji: "🌙", desc: "Lebe im Rhythmus des Mondes", route: "/(tabs)/rituale" },
   { id: "mondtyp-quiz", label: "Mondtyp-Quiz", emoji: "🌕", desc: "Welcher Mondtyp bist du?", route: "/mondtyp-quiz" },
-  { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Entdecke deine Schutzrune", route: "/(tabs)/runen" },
+  { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Entdecke deine Schutzrune", route: "/runen-screen" },
   { id: "runen-quiz", label: "Runen-Quiz", emoji: "🔮", desc: "Welche Rune führt dich?", route: "/runen-quiz" },
   { id: "aura", label: "Aura", emoji: "🌈", desc: "Deine heutige Aura-Farbe & Reading", route: "/aura" },
   { id: "shop", label: "Shop", emoji: "✨", desc: "Handgravierte Runen-Armbänder", route: "/shop" },

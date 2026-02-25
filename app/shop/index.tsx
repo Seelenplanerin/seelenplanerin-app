@@ -234,7 +234,7 @@ export default function ShopScreen() {
         contentContainerStyle={s.list}
         ListHeaderComponent={
           (activeCategory === "alle" || activeCategory === "armbänder") ? (
-            <TouchableOpacity style={s.runenBanner} onPress={() => router.push("/runen/quiz" as any)} activeOpacity={0.8}>
+            <TouchableOpacity style={s.runenBanner} onPress={() => router.push("/runen-quiz" as any)} activeOpacity={0.8}>
               <Text style={{ fontSize: 32, marginBottom: 8 }}>ᚱ</Text>
               <Text style={s.runenBannerTitle}>Finde dein Runen-Set</Text>
               <Text style={s.runenBannerText}>Gib dein Geburtsdatum ein und beantworte 5 Fragen – wir empfehlen dir das perfekte Runen-Armband.</Text>

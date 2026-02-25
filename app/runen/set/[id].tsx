@@ -129,7 +129,7 @@ export default function RunenSetDetailScreen() {
           <Text style={s.shopBtnText}>Jetzt bestellen ✨</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={s.secondaryBtn} onPress={() => router.push("/runen/quiz" as any)}>
+        <TouchableOpacity style={s.secondaryBtn} onPress={() => router.push("/runen-quiz" as any)}>
           <Text style={s.secondaryBtnText}>Quiz wiederholen</Text>
         </TouchableOpacity>
       </ScrollView>

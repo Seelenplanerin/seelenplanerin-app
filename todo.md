@@ -150,3 +150,20 @@
 - [ ] Mondphase korrigieren: heute 25. Feb ist zunehmender Mond (nicht abnehmende Sichel)
 - [ ] Tentary-Links: alle Buttons direkt auf richtige Tentary-Seite (Seelenimpuls-Abo)
 - [ ] Inhalte entschlacken: kostenlose Bereiche reduzieren, Seelenimpuls klar als Premium positionieren
+
+## Große Überarbeitung (Feb 2026 - Runde 3)
+- [ ] Community-Tab passwortgeschützt
+- [ ] Navigation bereinigen: Mondphasen-Tab nur Mond-Inhalte
+- [ ] Navigation bereinigen: Rituale-Tab nur Ritual-Inhalte
+- [ ] Runen-Quiz unter Runen-Tab (nicht auf Startscreen)
+- [ ] Aura-Screen bereinigen (nur Aura)
+- [ ] Seelenimpuls-Screen: Laras Foto statt braunes Design
+- [ ] Seelenimpuls-Screen: Runen entfernen
+- [ ] Aura Reading: Zeitangabe entfernen
+- [ ] Soul Talk Button → Calendly (nicht Tentary Aura-Link)
+- [ ] Musik-Button in der App
+- [ ] Zurück-Buttons in ALLEN Screens
+- [ ] Versteckter Admin-Bereich (Farben, Musik, Meditationen)
+- [ ] Alle Ritual-Detail-Screens mit ausführlichem Text befüllen
+- [ ] Rituale im Sacred-Space-Stil recherchieren und einbauen
+- [ ] Produkt-CTAs in Ritual-Screens
