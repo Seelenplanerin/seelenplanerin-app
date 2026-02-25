@@ -113,3 +113,25 @@
 - [x] Home Screen mit persönlicher Begrüßung von Lara
 - [x] Karten mit organischen Schatten und warmen Tönen
 - [x] Tab-Bar feminin und warm gestalten
+
+## KOMPLETTE ÜBERARBEITUNG – Klare Navigation wie Sacred Space
+- [ ] 5 Tabs: Seele (Home), Runen, Mond, Journal, Shop
+- [ ] Home: Sacred Space-Stil, alle Features als große Kacheln direkt sichtbar
+- [ ] Runen-Tab: Schutzrune-Rechner (Geburtsdatum), Themen-Quiz, Armband-Konfigurator, Shop-Link – ALLES auf einem Screen
+- [ ] Mond-Tab: Mondphasen-Quiz, aktueller Mond, Mondkalender, Rituale pro Phase
+- [ ] Journal-Tab: Direkt zugänglich als eigener Tab (nicht versteckt)
+- [ ] Shop-Tab: Tentary-Link prominent, alle Produkte, Runen-Armbänder, Sessions buchen
+- [ ] Lara-Profil: In Home integriert oder als kleines Icon oben rechts
+- [ ] Alle Features SOFORT sichtbar ohne suchen müssen
+
+## Neue Navigation & Struktur (Komplett-Neuaufbau)
+- [x] 5 Tabs: Aktuelles, Rituale, Journal, Community, Ich
+- [x] Startscreen mit Laras Foto + persönlicher Begrüßung
+- [x] Aktuelles-Tab: Tagesimpuls, Mondphase, neue Inhalte
+- [x] Rituale-Tab: Alle Rituale + Mondphasen + Runen
+- [x] Journal-Tab: Direkt als eigener Tab zugänglich
+- [x] Community-Tab: Austausch, Inspiration, Laras Posts
+- [x] Ich-Tab: Profil, Einstellungen, Seelenimpuls-Abo, Admin
+- [x] Seelenimpuls Premium: 17€/Monat, Tentary-Anbindung
+- [x] Freemium-Modell: Basis kostenlos, Premium = Seelenimpuls
+- [x] Runen-Rechner: Lebensweg-Numerologie 1-9 (Option A) ✓ korrigiert
