@@ -58,13 +58,13 @@ function getMondphase(): { name: string; symbol: string; energie: string } {
   const p = diffMs / SYNODISCHER_MONAT;
 
   if (p < 0.0625 || p >= 0.9375) return { name: "Neumond", symbol: "🌑", energie: "Neubeginn & Intention setzen" };
-  if (p < 0.1875) return { name: "Zunehmende Sichel", symbol: "🌒", energie: "Wachstum & Aufbau" };
-  if (p < 0.3125) return { name: "Erstes Viertel", symbol: "🌓", energie: "Entscheidungen & Handeln" };
+  if (p < 0.1875) return { name: "Zunehmender Mond", symbol: "🌒", energie: "Wachstum & Aufbau" };
+  if (p < 0.3125) return { name: "Zunehmender Mond", symbol: "🌓", energie: "Entscheidungen & Handeln" };
   if (p < 0.4375) return { name: "Zunehmender Mond", symbol: "🌔", energie: "Manifestation & Kraft" };
   if (p < 0.5625) return { name: "Vollmond", symbol: "🌕", energie: "Fülle & Loslassen" };
   if (p < 0.6875) return { name: "Abnehmender Mond", symbol: "🌖", energie: "Reflexion & Dankbarkeit" };
-  if (p < 0.8125) return { name: "Letztes Viertel", symbol: "🌗", energie: "Reinigung & Loslassen" };
-  return { name: "Abnehmende Sichel", symbol: "🌘", energie: "Ruhe & innere Einkehr" };
+  if (p < 0.8125) return { name: "Abnehmender Mond", symbol: "🌗", energie: "Reinigung & Loslassen" };
+  return { name: "Abnehmender Mond", symbol: "🌘", energie: "Ruhe & innere Einkehr" };
 }
 
 // ─── Tagesimpulse ─────────────────────────────────────────────────────────────
@@ -104,8 +104,10 @@ const IMPULSE = [
 const KATEGORIEN = [
   { id: "rituale", label: "Rituale", emoji: "🕯️", desc: "Heilige Handlungen für deine Seele", route: "/(tabs)/rituale" },
   { id: "mond", label: "Mondphasen", emoji: "🌙", desc: "Lebe im Rhythmus des Mondes", route: "/(tabs)/rituale" },
+  { id: "mondtyp-quiz", label: "Mondtyp-Quiz", emoji: "🌕", desc: "Welcher Mondtyp bist du?", route: "/mondtyp-quiz" },
   { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Entdecke deine Schutzrune", route: "/(tabs)/runen" },
-  { id: "aura", label: "Aura", emoji: "🔮", desc: "Deine heutige Aura-Farbe & Reading", route: "/aura" },
+  { id: "runen-quiz", label: "Runen-Quiz", emoji: "🔮", desc: "Welche Rune führt dich?", route: "/runen-quiz" },
+  { id: "aura", label: "Aura", emoji: "🌈", desc: "Deine heutige Aura-Farbe & Reading", route: "/aura" },
   { id: "shop", label: "Shop", emoji: "✨", desc: "Handgravierte Runen-Armbänder", route: "/shop" },
 ];
 
