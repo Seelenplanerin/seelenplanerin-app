@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, ImageBackground,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
@@ -32,18 +32,21 @@ export default function SeelenimpulsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
-            <Text style={s.backBtnText}>← Zurück</Text>
-          </TouchableOpacity>
-          <Text style={s.headerCrown}>👑</Text>
-          <Text style={s.headerTitle}>Seelenimpuls</Text>
-          <Text style={s.headerSub}>Dein persönlicher spiritueller Begleitdienst</Text>
-          <View style={s.headerBadge}>
-            <Text style={s.headerBadgeText}>17 € / Monat</Text>
+        {/* Hero-Bild */}
+        <ImageBackground
+          source={{ uri: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/tFTUtBGRaQMgFolP.png" }}
+          style={s.heroImage}
+          resizeMode="cover"
+        >
+          <View style={s.heroOverlay}>
+            <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
+              <Text style={s.backBtnText}>← Zurück</Text>
+            </TouchableOpacity>
+            <View style={s.heroBadge}>
+              <Text style={s.heroBadgeText}>17 € / Monat</Text>
+            </View>
           </View>
-        </View>
+        </ImageBackground>
 
         {/* Lara's Botschaft */}
         <View style={s.botschaftCard}>
@@ -124,14 +127,12 @@ export default function SeelenimpulsScreen() {
 }
 
 const s = StyleSheet.create({
-  header: { backgroundColor: C.brown, padding: 24, paddingTop: 32, alignItems: "center" },
-  backBtn: { alignSelf: "flex-start", marginBottom: 16 },
-  backBtnText: { fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: "600" },
-  headerCrown: { fontSize: 48, marginBottom: 8 },
-  headerTitle: { fontSize: 28, fontWeight: "700", color: "#FFF", marginBottom: 6 },
-  headerSub: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center", marginBottom: 16 },
-  headerBadge: { backgroundColor: C.gold, borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 },
-  headerBadgeText: { color: "#FFF", fontSize: 16, fontWeight: "700" },
+  heroImage: { width: "100%", height: 380 },
+  heroOverlay: { flex: 1, padding: 20, paddingTop: 28, justifyContent: "space-between", backgroundColor: "rgba(0,0,0,0.08)" },
+  backBtn: { alignSelf: "flex-start" },
+  backBtnText: { fontSize: 14, color: "rgba(255,255,255,0.9)", fontWeight: "700", textShadowColor: "rgba(0,0,0,0.4)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
+  heroBadge: { alignSelf: "flex-end", backgroundColor: C.gold, borderRadius: 20, paddingHorizontal: 18, paddingVertical: 8 },
+  heroBadgeText: { color: "#FFF", fontSize: 15, fontWeight: "700" },
   botschaftCard: { margin: 16, backgroundColor: C.roseLight, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.border, alignItems: "center" },
   botschaftEmoji: { fontSize: 32, marginBottom: 12 },
   botschaftText: { fontSize: 15, color: C.brown, fontStyle: "italic", lineHeight: 24, textAlign: "center", marginBottom: 10 },
