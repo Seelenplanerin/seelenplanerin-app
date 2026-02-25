@@ -1,10 +1,21 @@
-# Status Notes - AKTUELL (25.02.2026 21:37)
+# Diagnose Runde 10
 
-## Erledigte Änderungen Runde 9:
-- [x] moon-phase.ts: Exakte Vollmond-Daten (3.3.2026 = Vollmond bestätigt)
-- [x] moon-phase.ts: Exakte Neumond-Daten
-- [x] Home-Screen: Verwendet jetzt getCurrentMoonPhase() aus moon-phase.ts
-- [x] Kategorie-Buttons: Größer (minHeight 40, padding 10/16, fontSize 13/14)
-- [x] Kategorie-ScrollView: overflow visible
-- [x] Kerzen als eigene Sektion im Ich-Tab
-- [x] TypeScript: 0 Fehler, Dev-Server läuft
+## Mondphasen-Logik
+Die moon-phase.ts Logik ist korrekt verifiziert:
+- 25.2.2026 -> Erstes Viertel (korrekt, Zunehmender Mond)
+- 3.3.2026 -> Vollmond (KORREKT!)
+- 17.2.2026 -> Neumond (korrekt)
+- 1.2.2026 -> Vollmond (korrekt)
+
+Home-Screen verwendet getCurrentMoonPhase() aus moon-phase.ts - sollte korrekt sein.
+Mond-Tab verwendet ebenfalls getCurrentMoonPhase() aus moon-phase.ts.
+
+Problem könnte sein: useMemo cacht den Wert und aktualisiert nicht.
+Oder: Die Nutzerin sieht noch die alte gecachte Version im Browser.
+
+## Kerzen-Quiz
+kerzen-quiz.tsx existiert und exportiert KerzenQuizScreen.
+Route: /kerzen-quiz
+Erreichbar über: Ich-Tab -> Meditationskerzen -> "Welche Kerze passt zu mir?"
+
+Problem: Nutzerin findet es nicht. Muss prominenter platziert werden.

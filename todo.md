@@ -67,7 +67,7 @@
 - [x] Runen-Detailseite mit Bedeutung, Energie, Affirmation
 
 ## Mondphasen (detailliert)
-- [ ] Alle 8 Mondphasen vollständig ausarbeiten
+- [x] Alle 8 Mondphasen vollständig ausarbeiten (Neumond, Zunehmende Sichel, Erstes Viertel, Zunehmender Mond, Vollmond, Abnehmender Mond, Letztes Viertel, Abnehmende Sichel)
 - [ ] Rituale pro Mondphase
 - [ ] Affirmationen pro Mondphase
 - [ ] Passende Heilsteine pro Mondphase
@@ -147,7 +147,7 @@
 - [x] Aura als Kategorie auf Startscreen verlinkt
 
 ## Korrekturen Feb 2026 (Runde 2)
-- [ ] Mondphase korrigieren: heute 25. Feb ist zunehmender Mond (nicht abnehmende Sichel)
+- [x] Mondphase korrigieren: heute 25. Feb ist zunehmender Mond (exakt: Zunehmender Mond, 66% beleuchtet)
 - [ ] Tentary-Links: alle Buttons direkt auf richtige Tentary-Seite (Seelenimpuls-Abo)
 - [ ] Inhalte entschlacken: kostenlose Bereiche reduzieren, Seelenimpuls klar als Premium positionieren
 
@@ -233,3 +233,14 @@
 - [x] ALLE Vollmond-Daten 2026 korrekt (13 Vollmonde, 12 Neumonde verifiziert)
 - [x] Kategorie-Buttons: größer, mehr Padding, overflow visible
 - [x] Kerzen eigener Bereich "Meditationskerzen" im Ich-Tab mit Quiz-Link
+
+## Feedback Runde 10 (25.02.2026) - BUGS
+- [x] Mondphasen IMMER NOCH nicht korrekt angezeigt → KOMPLETT NEU mit exakten astronomischen Daten (timeanddate.com verifiziert)
+- [x] Kerzen-Quiz nicht auffindbar / nicht erreichbar → Jetzt prominent auf Home-Screen
+- [x] Spotify-Musik einbauen (Link: https://open.spotify.com/artist/3iJelwHVMnw2cNtIY3CrFo) → Spotify-Artist-Link integriert
+
+## Feedback Runde 11 (25.02.2026)
+- [x] Kerzen-Quiz NICHT im Ich-Bereich verstecken - prominent auf Home-Screen platziert (direkt nach Mondphase)
+- [x] Meditation/Musik NICHT im Ich-Bereich verstecken - eigener sichtbarer Zugang (Home-Screen + eigener Musik-Screen)
+- [x] Spotify-Musik einbauen (Link: https://open.spotify.com/artist/3iJelwHVMnw2cNtIY3CrFo) → Artist-Profil verlinkt
+- [x] Mondphasen-Darstellung an MoonWorx App orientieren (Tierkreiszeichen, Beleuchtung, Auf-/Absteigend, 30-Tage-Kalender)

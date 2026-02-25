@@ -24,14 +24,26 @@ const C = {
   text: "#3D2314",
   cream: "#FDF8F4",
   white: "#FFFFFF",
+  darkCard: "#2C1810",
 };
 
 // ─── Mondphasen (aus zentraler moon-phase.ts mit exakten astronomischen Daten) ───
-import { getCurrentMoonPhase } from "@/lib/moon-phase";
+import { getCurrentMoonPhase, getMoonZodiac, getMoonIllumination, getNextVollmond } from "@/lib/moon-phase";
 
-function getMondphase(): { name: string; symbol: string; energie: string } {
+function getMondphase() {
   const phase = getCurrentMoonPhase();
-  return { name: phase.name, symbol: phase.emoji, energie: phase.energy };
+  const zodiac = getMoonZodiac(new Date());
+  const illum = getMoonIllumination(new Date());
+  const nextVM = getNextVollmond();
+  const daysToVM = Math.ceil((nextVM.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  return {
+    name: phase.name,
+    symbol: phase.emoji,
+    energie: phase.energy,
+    zodiac: `${zodiac.symbol} ${zodiac.name}`,
+    illumination: illum,
+    nextVollmond: daysToVM,
+  };
 }
 
 // ─── Tagesimpulse ─────────────────────────────────────────────────────────────
@@ -97,10 +109,8 @@ export default function AktuellesScreen() {
               resizeMode="cover"
               resizeMethod="resize"
             />
-            {/* Gradient-Overlay für sanften Übergang */}
             <View style={s.heroGradient} />
           </View>
-          {/* Logo freigestellt – rechts unten, überlappt Begrüßungskarte */}
           <View style={s.heroLogoContainer} pointerEvents="none">
             <Image
               source={require("@/assets/images/logo-transparent.png")}
@@ -125,7 +135,7 @@ export default function AktuellesScreen() {
           <Text style={s.impulsCredit}>— Lara, Die Seelenplanerin</Text>
         </View>
 
-        {/* ── MONDPHASE ── */}
+        {/* ── MONDPHASE (erweitert mit Tierkreiszeichen) ── */}
         <TouchableOpacity
           style={s.mondCard}
           onPress={() => router.push("/(tabs)/mond" as any)}
@@ -133,11 +143,64 @@ export default function AktuellesScreen() {
         >
           <View style={s.mondLeft}>
             <Text style={s.mondSymbol}>{mond.symbol}</Text>
+            <Text style={s.mondIllum}>{mond.illumination}%</Text>
           </View>
           <View style={s.mondRight}>
             <Text style={s.mondLabel}>Aktuelle Mondphase</Text>
             <Text style={s.mondName}>{mond.name}</Text>
+            <Text style={s.mondZodiac}>{mond.zodiac}</Text>
             <Text style={s.mondEnergie}>{mond.energie}</Text>
+            {mond.nextVollmond > 0 && (
+              <Text style={s.mondCountdown}>
+                🌕 Vollmond in {mond.nextVollmond} {mond.nextVollmond === 1 ? "Tag" : "Tagen"}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+
+        {/* ══════════════════════════════════════════════════════════
+            KERZEN-QUIZ – PROMINENT AUF DEM STARTSCREEN
+            ══════════════════════════════════════════════════════════ */}
+        <TouchableOpacity
+          style={s.kerzenCard}
+          onPress={() => router.push("/kerzen-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <Image
+            source={require("@/assets/images/kerze-1.jpg")}
+            style={s.kerzenImage}
+            resizeMode="cover"
+          />
+          <View style={s.kerzenOverlay}>
+            <Text style={s.kerzenLabel}>🕯️ Meditationskerzen</Text>
+            <Text style={s.kerzenTitle}>Welche Kerze passt zu dir?</Text>
+            <Text style={s.kerzenDesc}>
+              Handgefertigt mit echtem Heilstein – finde deine persönliche Kerze.
+            </Text>
+            <View style={s.kerzenBadge}>
+              <Text style={s.kerzenBadgeText}>Quiz starten →</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* ══════════════════════════════════════════════════════════
+            MUSIK & MEDITATION – PROMINENT AUF DEM STARTSCREEN
+            ══════════════════════════════════════════════════════════ */}
+        <TouchableOpacity
+          style={s.musikBanner}
+          onPress={() => router.push("/musik" as any)}
+          activeOpacity={0.85}
+        >
+          <View style={s.musikIconCircle}>
+            <Text style={{ fontSize: 28 }}>🎧</Text>
+          </View>
+          <View style={s.musikContent}>
+            <Text style={s.musikTitle}>Musik & Meditation</Text>
+            <Text style={s.musikSubtitle}>Laras Songs auf Spotify</Text>
+            <Text style={s.musikDesc}>Meditationen, Mantras & Ritual-Musik</Text>
+          </View>
+          <View style={s.musikPlayBtn}>
+            <Text style={s.musikPlayText}>▶</Text>
           </View>
         </TouchableOpacity>
 
@@ -202,7 +265,6 @@ const s = StyleSheet.create({
   heroGradient: {
     position: "absolute", bottom: 0, left: 0, right: 0, height: 120,
     backgroundColor: "transparent",
-    // Sanfter Übergang zum Hintergrund
   },
   heroLogoContainer: {
     position: "absolute",
@@ -212,7 +274,10 @@ const s = StyleSheet.create({
     alignItems: "center",
   },
   heroLogo: { width: 90, height: 110 },
-  greetingBox: { backgroundColor: C.roseLight, padding: 20, marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: C.border },
+  greetingBox: {
+    backgroundColor: C.roseLight, padding: 20, marginHorizontal: 16,
+    marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: C.border,
+  },
   greetingTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 8 },
   greetingText: { fontSize: 14, color: C.brownMid, lineHeight: 22 },
   impulsCard: {
@@ -220,50 +285,115 @@ const s = StyleSheet.create({
     borderRadius: 20, padding: 20,
     borderWidth: 1, borderColor: "#E8D5B0",
   },
-  impulsLabel: { fontSize: 12, fontWeight: "700", color: C.gold, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 },
+  impulsLabel: {
+    fontSize: 12, fontWeight: "700", color: C.gold,
+    textTransform: "uppercase", letterSpacing: 1, marginBottom: 10,
+  },
   impulsText: { fontSize: 17, color: C.brown, fontStyle: "italic", lineHeight: 26, marginBottom: 10 },
   impulsCredit: { fontSize: 12, color: C.muted, textAlign: "right" },
+
+  // Mondphase (erweitert)
   mondCard: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: C.card, borderRadius: 20, padding: 16,
+    backgroundColor: C.darkCard, borderRadius: 20, padding: 18,
     flexDirection: "row", alignItems: "center",
-    borderWidth: 1, borderColor: C.border,
-    shadowColor: C.rose, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8,
-    elevation: 2,
   },
-  mondLeft: { width: 60, alignItems: "center" },
-  mondSymbol: { fontSize: 40 },
-  mondRight: { flex: 1, marginLeft: 12 },
-  mondLabel: { fontSize: 11, color: C.muted, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3 },
-  mondName: { fontSize: 17, fontWeight: "700", color: C.brown, marginBottom: 3 },
-  mondEnergie: { fontSize: 13, color: C.muted, lineHeight: 18 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: C.brown, marginHorizontal: 16, marginBottom: 12 },
-  kategorienGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 16 },
+  mondLeft: { width: 70, alignItems: "center" },
+  mondSymbol: { fontSize: 44 },
+  mondIllum: { fontSize: 11, color: C.gold, fontWeight: "700", marginTop: 4 },
+  mondRight: { flex: 1, marginLeft: 14 },
+  mondLabel: {
+    fontSize: 11, color: "rgba(232,213,196,0.6)", fontWeight: "600",
+    textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3,
+  },
+  mondName: { fontSize: 18, fontWeight: "700", color: C.gold, marginBottom: 2 },
+  mondZodiac: { fontSize: 13, fontWeight: "600", color: "#E8D5C4", marginBottom: 2 },
+  mondEnergie: { fontSize: 12, color: "rgba(232,213,196,0.7)", lineHeight: 17 },
+  mondCountdown: {
+    fontSize: 11, color: "rgba(201,169,110,0.8)", fontWeight: "600", marginTop: 4,
+  },
+
+  // Kerzen-Quiz (prominent)
+  kerzenCard: {
+    marginHorizontal: 16, marginBottom: 16,
+    borderRadius: 20, overflow: "hidden",
+    height: 240,
+    position: "relative" as const,
+  },
+  kerzenImage: {
+    width: "100%" as any, height: "100%" as any,
+    position: "absolute" as const, top: 0, left: 0,
+  },
+  kerzenOverlay: {
+    flex: 1, justifyContent: "flex-end" as const,
+    padding: 20,
+    backgroundColor: "rgba(92,51,23,0.55)",
+  },
+  kerzenLabel: {
+    fontSize: 12, fontWeight: "700" as any, color: C.goldLight,
+    textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4,
+  },
+  kerzenTitle: { fontSize: 22, fontWeight: "800" as any, color: "#FFF", marginBottom: 6 },
+  kerzenDesc: { fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 18, marginBottom: 14 },
+  kerzenBadge: {
+    alignSelf: "flex-start" as const,
+    backgroundColor: C.gold, borderRadius: 14,
+    paddingVertical: 10, paddingHorizontal: 20,
+  },
+  kerzenBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
+
+  // Musik-Banner (prominent)
+  musikBanner: {
+    marginHorizontal: 16, marginBottom: 16,
+    backgroundColor: "#191414", borderRadius: 20, padding: 18,
+    flexDirection: "row" as const, alignItems: "center" as const,
+  },
+  musikIconCircle: {
+    width: 52, height: 52, borderRadius: 26, backgroundColor: "#1DB954",
+    alignItems: "center" as const, justifyContent: "center" as const, marginRight: 14,
+  },
+  musikContent: { flex: 1 },
+  musikTitle: { fontSize: 16, fontWeight: "700" as any, color: "#FFF", marginBottom: 2 },
+  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "#1DB954", marginBottom: 2 },
+  musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
+  musikPlayBtn: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "#1DB954",
+    alignItems: "center" as const, justifyContent: "center" as const,
+  },
+  musikPlayText: { color: "#FFF", fontSize: 18, fontWeight: "700" as any },
+
+  // Kategorien
+  sectionTitle: { fontSize: 18, fontWeight: "700" as any, color: C.brown, marginHorizontal: 16, marginBottom: 12 },
+  kategorienGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, paddingHorizontal: 12, gap: 10, marginBottom: 16 },
   katCard: {
     width: (width - 44) / 2,
     backgroundColor: C.card, borderRadius: 18, padding: 16,
-    alignItems: "center", borderWidth: 1, borderColor: C.border,
+    alignItems: "center" as const, borderWidth: 1, borderColor: C.border,
     shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4,
     elevation: 1,
   },
   katEmoji: { fontSize: 32, marginBottom: 8 },
-  katLabel: { fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 },
-  katDesc: { fontSize: 11, color: C.muted, textAlign: "center", lineHeight: 15 },
+  katLabel: { fontSize: 14, fontWeight: "700" as any, color: C.brown, marginBottom: 4 },
+  katDesc: { fontSize: 11, color: C.muted, textAlign: "center" as const, lineHeight: 15 },
+
+  // Premium
   premiumCard: {
     marginHorizontal: 16, marginBottom: 16,
     backgroundColor: C.brown, borderRadius: 20, padding: 20,
-    alignItems: "center",
+    alignItems: "center" as const,
   },
   premiumCrown: { fontSize: 32, marginBottom: 8 },
-  premiumTitle: { fontSize: 22, fontWeight: "700", color: C.goldLight, marginBottom: 8 },
-  premiumDesc: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 20, marginBottom: 14 },
+  premiumTitle: { fontSize: 22, fontWeight: "700" as any, color: C.goldLight, marginBottom: 8 },
+  premiumDesc: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
   premiumBadge: { backgroundColor: C.gold, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
-  premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" },
+  premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
+
+  // Instagram
   instaCard: {
     marginHorizontal: 16, marginBottom: 8,
     backgroundColor: C.roseLight, borderRadius: 16, padding: 16,
-    alignItems: "center", borderWidth: 1, borderColor: C.border,
+    alignItems: "center" as const, borderWidth: 1, borderColor: C.border,
   },
-  instaText: { fontSize: 14, color: C.brown, fontWeight: "600", marginBottom: 4 },
+  instaText: { fontSize: 14, color: C.brown, fontWeight: "600" as any, marginBottom: 4 },
   instaHandle: { fontSize: 13, color: C.rose },
 });

@@ -95,12 +95,11 @@ export default function RitualeScreen() {
         >
           <Text style={s.katLabel}>KATEGORIE</Text>
         </TouchableOpacity>
-        <View style={{ overflow: "visible", marginBottom: 4 }}>
+        <View style={{ marginBottom: 4 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={s.katRow}
-          style={{ overflow: "visible" }}
         >
           {RITUAL_KATEGORIEN.map(k => (
             <TouchableOpacity
@@ -339,22 +338,22 @@ const s = StyleSheet.create({
     color: C.muted,
     letterSpacing: 1.5,
   },
-  katRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 16, paddingTop: 6 },
+  katRow: { paddingHorizontal: 20, gap: 10, paddingBottom: 20, paddingTop: 8 },
   katBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 22,
     backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
-    gap: 6,
-    minHeight: 40,
+    gap: 8,
+    minHeight: 44,
   },
   katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
-  katEmoji: { fontSize: 14 },
-  katText: { fontSize: 13, color: C.muted, fontWeight: "600" },
+  katEmoji: { fontSize: 16 },
+  katText: { fontSize: 14, color: C.muted, fontWeight: "600" },
   katTextActive: { color: "#FFF" },
 
   // Monatsüberschrift
