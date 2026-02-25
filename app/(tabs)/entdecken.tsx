@@ -145,10 +145,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "800",
     marginBottom: 2,
+    color: "#3D2B1F",
   },
   subtitle: {
     fontSize: 13,
     marginBottom: 16,
+    fontStyle: "italic",
+    color: "#9C7B6E",
   },
   searchContainer: {
     flexDirection: "row",

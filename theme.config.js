@@ -1,20 +1,31 @@
 /** @type {const} */
 const themeColors = {
-  primary: { light: '#7B4FA6', dark: '#9B6FC6' },
-  secondary: { light: '#C9A84C', dark: '#D4B86A' },
-  background: { light: '#FAF7F2', dark: '#0F0A1E' },
-  surface: { light: '#F0EBE3', dark: '#1A1230' },
-  foreground: { light: '#1A0F2E', dark: '#F5EFE6' },
-  muted: { light: '#8B7A9B', dark: '#9B8AAB' },
-  border: { light: '#D4C5E2', dark: '#2D1F4A' },
-  success: { light: '#7AAF7B', dark: '#8FBF90' },
-  warning: { light: '#C9A84C', dark: '#D4B86A' },
-  error: { light: '#C87C82', dark: '#D4909A' },
-  accent: { light: '#E8B4B8', dark: '#C87C82' },
-  gold: { light: '#C9A84C', dark: '#D4B86A' },
-  lavender: { light: '#B8A4D4', dark: '#9B8AAB' },
-  rose: { light: '#E8B4B8', dark: '#C87C82' },
-  tint: { light: '#7B4FA6', dark: '#9B6FC6' },
+  // Hauptfarbe: warmes Rosa (Blush)
+  primary:    { light: '#C4826A', dark: '#C4826A' },
+  // Hintergrund: cremeweiß, warm
+  background: { light: '#FDF8F4', dark: '#FDF8F4' },
+  // Karten / erhöhte Flächen: zartes Rosa-Creme
+  surface:    { light: '#FFF0EB', dark: '#FFF0EB' },
+  // Haupttext: warmes Dunkelbraun
+  foreground: { light: '#3D2B1F', dark: '#3D2B1F' },
+  // Sekundärtext: mittleres Warmbraun
+  muted:      { light: '#9C7B6E', dark: '#9C7B6E' },
+  // Rahmen: sehr zartes Rosa
+  border:     { light: '#EDD9D0', dark: '#EDD9D0' },
+  // Gold-Akzent
+  gold:       { light: '#C9A96E', dark: '#C9A96E' },
+  // Helles Rosa für Highlights
+  blush:      { light: '#F2C4B8', dark: '#F2C4B8' },
+  // Tiefes Rosa für Buttons
+  rose:       { light: '#B5675A', dark: '#B5675A' },
+  // Erfolg: warmes Grün
+  success:    { light: '#7A9E7E', dark: '#7A9E7E' },
+  // Warnung
+  warning:    { light: '#D4A853', dark: '#D4A853' },
+  // Fehler: zartes Rot
+  error:      { light: '#C87C82', dark: '#C87C82' },
+  // Tint (für Tab-Bar aktiv)
+  tint:       { light: '#C4826A', dark: '#C4826A' },
 };
 
 module.exports = { themeColors };

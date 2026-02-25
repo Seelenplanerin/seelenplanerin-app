@@ -176,7 +176,7 @@ export default function ContentDetailScreen() {
                 {categoryConfig?.label}
               </Text>
             </View>
-            <Text style={[styles.title, { color: colors.foreground }]}>{item.title}</Text>
+            <Text style={[styles.title, { color: "#3D2B1F" }]}>{item.title}</Text>
             {item.subtitle && (
               <Text style={[styles.subtitle, { color: colors.muted }]}>{item.subtitle}</Text>
             )}

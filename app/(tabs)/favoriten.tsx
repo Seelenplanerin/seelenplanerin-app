@@ -21,7 +21,7 @@ export default function FavoritenScreen() {
     <ScreenContainer containerClassName="bg-background">
       {/* Header */}
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.title, { color: colors.foreground }]}>Favoriten</Text>
+        <Text style={[styles.title, { color: "#3D2B1F" }]}>Favoriten 🌸</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
           {favoriteItems.length > 0
             ? `${favoriteItems.length} gespeicherte Inhalte`
@@ -38,7 +38,7 @@ export default function FavoritenScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>💜</Text>
+            <Text style={styles.emptyEmoji}>🌸</Text>
             <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
               Noch keine Favoriten
             </Text>

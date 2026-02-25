@@ -110,13 +110,13 @@ export function ContentCard({ item, compact = false }: ContentCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: 24,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: "#C4826A",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },

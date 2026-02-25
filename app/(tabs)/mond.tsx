@@ -37,7 +37,7 @@ export default function MondScreen() {
         </Text>
 
         {/* Current Moon Phase Hero */}
-        <View style={[styles.heroCard, { backgroundColor: "#1A0F2E" }]}>
+        <View style={[styles.heroCard, { backgroundColor: "#3D2B1F" }]}>
           <Text style={styles.heroMoonEmoji}>{currentPhase.emoji}</Text>
           <Text style={styles.heroTitle}>{currentPhase.name}</Text>
           <Text style={styles.heroDesc}>{currentPhase.description}</Text>
