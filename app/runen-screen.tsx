@@ -253,7 +253,7 @@ export default function RunenScreen() {
                   </Text>
                 </View>
                 <TouchableOpacity style={s.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
-                  <Text style={s.shopBtnText}>🛍️ Armband bestellen – ab 28,90 €</Text>
+                  <Text style={s.shopBtnText}>🛍️ Armband bestellen →</Text>
                 </TouchableOpacity>
               </View>
             )}

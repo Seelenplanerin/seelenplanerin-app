@@ -45,27 +45,51 @@ const ANGEBOTE = [
 
 export default function CommunityScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fehler, setFehler] = useState("");
   const [checking, setChecking] = useState(true);
   const [adminPw, setAdminPw] = useState(DEFAULT_COMMUNITY_PASSWORD);
+  const [userName, setUserName] = useState("");
 
   useEffect(() => {
     Promise.all([
       AsyncStorage.getItem("community_auth"),
       AsyncStorage.getItem("admin_community_pw"),
-    ]).then(([auth, pw]) => {
-      if (auth === "true") setIsLoggedIn(true);
+      AsyncStorage.getItem("community_user_email"),
+    ]).then(([auth, pw, storedEmail]) => {
+      if (auth === "true") {
+        setIsLoggedIn(true);
+        if (storedEmail) setUserName(storedEmail.split("@")[0]);
+      }
       if (pw) setAdminPw(pw);
       setChecking(false);
     });
   }, []);
 
+  const validateEmail = (e: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  };
+
   const handleLogin = () => {
+    if (!email.trim()) {
+      setFehler("Bitte gib deine E-Mail-Adresse ein.");
+      return;
+    }
+    if (!validateEmail(email.trim())) {
+      setFehler("Bitte gib eine gültige E-Mail-Adresse ein.");
+      return;
+    }
+    if (!password.trim()) {
+      setFehler("Bitte gib dein Passwort ein.");
+      return;
+    }
     if (password === adminPw) {
       setIsLoggedIn(true);
       setFehler("");
+      setUserName(email.split("@")[0]);
       AsyncStorage.setItem("community_auth", "true");
+      AsyncStorage.setItem("community_user_email", email.trim());
     } else {
       setFehler("Falsches Passwort. Bitte versuche es erneut.");
     }
@@ -87,25 +111,42 @@ export default function CommunityScreen() {
             <Text style={s.loginTitel}>Community</Text>
             <Text style={s.loginSub}>
               Dieser Bereich ist nur für Seelenimpuls-Mitglieder zugänglich.{"\n"}
-              Das Passwort erhältst du nach deiner Buchung.
+              Deine Zugangsdaten erhältst du nach deiner Buchung.
             </Text>
 
             <View style={s.loginCard}>
-              <Text style={s.loginLabel}>Passwort eingeben</Text>
+              <Text style={s.loginLabel}>E-Mail-Adresse</Text>
+              <TextInput
+                style={s.loginInput}
+                placeholder="deine@email.de"
+                placeholderTextColor={C.muted}
+                value={email}
+                onChangeText={(t) => { setEmail(t); setFehler(""); }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                returnKeyType="next"
+                textContentType="emailAddress"
+              />
+
+              <Text style={[s.loginLabel, { marginTop: 8 }]}>Passwort</Text>
               <TextInput
                 style={s.loginInput}
                 placeholder="Dein Community-Passwort"
                 placeholderTextColor={C.muted}
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(t) => { setPassword(t); setFehler(""); }}
                 returnKeyType="done"
                 onSubmitEditing={handleLogin}
                 autoCapitalize="none"
+                textContentType="password"
               />
+
               {fehler !== "" && <Text style={s.loginFehler}>{fehler}</Text>}
+
               <TouchableOpacity style={s.loginBtn} onPress={handleLogin} activeOpacity={0.85}>
-                <Text style={s.loginBtnText}>Eintreten →</Text>
+                <Text style={s.loginBtnText}>Einloggen →</Text>
               </TouchableOpacity>
             </View>
 
@@ -114,7 +155,7 @@ export default function CommunityScreen() {
               onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
               activeOpacity={0.85}
             >
-              <Text style={s.seelenimpulsBtnText}>👑 Jetzt Seelenimpuls buchen – 17 € / Monat</Text>
+              <Text style={s.seelenimpulsBtnText}>👑 Noch kein Mitglied? Jetzt Seelenimpuls buchen</Text>
             </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -125,15 +166,23 @@ export default function CommunityScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
-        {/* Header */}
         <View style={s.header}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
             <View>
               <Text style={s.headerTitle}>Community 🌸</Text>
-              <Text style={s.headerSub}>Dein sicherer Seelenraum</Text>
+              <Text style={s.headerSub}>
+                Willkommen{userName ? `, ${userName}` : ""}! Dein sicherer Seelenraum.
+              </Text>
             </View>
             <TouchableOpacity
-              onPress={() => { setIsLoggedIn(false); AsyncStorage.removeItem("community_auth"); }}
+              onPress={() => {
+                setIsLoggedIn(false);
+                setEmail("");
+                setPassword("");
+                setUserName("");
+                AsyncStorage.removeItem("community_auth");
+                AsyncStorage.removeItem("community_user_email");
+              }}
               style={s.logoutBtn}
               activeOpacity={0.8}
             >
@@ -142,7 +191,6 @@ export default function CommunityScreen() {
           </View>
         </View>
 
-        {/* Buchungsangebote */}
         <Text style={s.sec}>📅 Buche Zeit mit Lara</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
           {ANGEBOTE.map((a, i) => (
@@ -163,7 +211,6 @@ export default function CommunityScreen() {
           ))}
         </ScrollView>
 
-        {/* Posts */}
         <Text style={s.sec}>💬 Community-Beiträge</Text>
         {POSTS.map(post => (
           <View key={post.id} style={[s.postCard, post.istLara && s.postCardLara]}>
@@ -188,7 +235,6 @@ export default function CommunityScreen() {
           </View>
         ))}
 
-        {/* Instagram */}
         <TouchableOpacity
           style={s.instagramCard}
           onPress={() => Linking.openURL("https://www.instagram.com/die.seelenplanerin")}
@@ -212,12 +258,12 @@ const s = StyleSheet.create({
   loginContainer: { flexGrow: 1, backgroundColor: C.bg, padding: 24, justifyContent: "center", alignItems: "center", minHeight: 600 },
   loginEmoji: { fontSize: 60, marginBottom: 16 },
   loginTitel: { fontSize: 28, fontWeight: "700", color: C.brown, marginBottom: 8 },
-  loginSub: { fontSize: 14, color: C.muted, textAlign: "center", lineHeight: 21, marginBottom: 32, maxWidth: 280 },
+  loginSub: { fontSize: 14, color: C.muted, textAlign: "center", lineHeight: 21, marginBottom: 32, maxWidth: 300 },
   loginCard: { width: "100%", backgroundColor: C.card, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.border, marginBottom: 16 },
-  loginLabel: { fontSize: 13, color: C.muted, marginBottom: 8, fontWeight: "600" },
-  loginInput: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 15, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 12 },
+  loginLabel: { fontSize: 13, color: C.brownMid, marginBottom: 6, fontWeight: "600" },
+  loginInput: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 15, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
   loginFehler: { fontSize: 13, color: "#C87C82", marginBottom: 10, textAlign: "center" },
-  loginBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  loginBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 4 },
   loginBtnText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
   seelenimpulsBtn: { backgroundColor: C.goldLight, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20, borderWidth: 1, borderColor: "#E8D5B0", width: "100%" },
   seelenimpulsBtnText: { fontSize: 14, color: C.brown, fontWeight: "700", textAlign: "center" },

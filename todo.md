@@ -211,3 +211,9 @@
 - [x] Musik-Bereich: Spotify/Apple Music/YouTube Integration
 - [x] Musik über Admin-Bereich verwaltbar (AsyncStorage)
 - [x] Community-Zugang und Admin-Zugang erklärt
+
+## Feedback Runde 7 (25.02.2026)
+- [x] Community-Login mit E-Mail + Passwort (E-Mail + Passwort-Felder)
+- [x] Runen-Armbänder: Preise komplett entfernt (überall 28,90€ weg)
+- [x] "Ich"-Bereich erklärt und angepasst
+- [x] App-Vorschau-Link für Endverbraucher bereitgestellt
