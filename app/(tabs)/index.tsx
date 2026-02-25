@@ -120,17 +120,19 @@ export default function AktuellesScreen() {
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── HERO: Laras Foto + Logo freigestellt ── */}
-        <View style={s.hero}>
-          <Image
-            source={require("@/assets/images/lara-profile.jpg")}
-            style={s.heroImage}
-            resizeMode="cover"
-            resizeMethod="resize"
-          />
-          {/* Gradient-Overlay für sanften Übergang */}
-          <View style={s.heroGradient} />
-          {/* Logo freigestellt – kein Hintergrund */}
-          <View style={s.heroLogoContainer}>
+        <View style={s.heroWrapper}>
+          <View style={s.hero}>
+            <Image
+              source={require("@/assets/images/lara-profile.jpg")}
+              style={s.heroImage}
+              resizeMode="cover"
+              resizeMethod="resize"
+            />
+            {/* Gradient-Overlay für sanften Übergang */}
+            <View style={s.heroGradient} />
+          </View>
+          {/* Logo freigestellt – rechts unten, überlappt Begrüßungskarte */}
+          <View style={s.heroLogoContainer} pointerEvents="none">
             <Image
               source={require("@/assets/images/logo-transparent.png")}
               style={s.heroLogo}
@@ -221,7 +223,8 @@ export default function AktuellesScreen() {
 
 const s = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: C.bg },
-  hero: { width: "100%", height: 380, position: "relative", overflow: "hidden" },
+  heroWrapper: { width: "100%", position: "relative" },
+  hero: { width: "100%", height: 380, overflow: "hidden" },
   heroImage: {
     width: "100%",
     height: "100%",
@@ -234,9 +237,9 @@ const s = StyleSheet.create({
   },
   heroLogoContainer: {
     position: "absolute",
-    bottom: 12,
-    right: 16,
-    // Logo schwebt rechts unten, freigestellt
+    bottom: -55,
+    right: 10,
+    zIndex: 10,
   },
   heroLogo: { width: 110, height: 130 },
   greetingBox: { backgroundColor: C.roseLight, padding: 20, marginHorizontal: 16, marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: C.border },
