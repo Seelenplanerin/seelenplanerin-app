@@ -91,6 +91,16 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="oauth/callback" />
             <Stack.Screen name="content/[id]" options={{ presentation: "card" }} />
+            <Stack.Screen name="aura" options={{ presentation: "card" }} />
+            <Stack.Screen name="seelenimpuls" options={{ presentation: "card" }} />
+            <Stack.Screen name="mondtyp-quiz" options={{ presentation: "card" }} />
+            <Stack.Screen name="runen-quiz" options={{ presentation: "card" }} />
+            <Stack.Screen name="shop/index" options={{ presentation: "card" }} />
+            <Stack.Screen name="buchen/index" options={{ presentation: "card" }} />
+            <Stack.Screen name="runen/quiz" options={{ presentation: "card" }} />
+            <Stack.Screen name="runen/set/[id]" options={{ presentation: "card" }} />
+            <Stack.Screen name="admin/index" options={{ presentation: "card" }} />
+            <Stack.Screen name="journal/write" options={{ presentation: "card" }} />
           </Stack>
           <StatusBar style="auto" />
           </FavoritesProvider>
