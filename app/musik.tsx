@@ -24,51 +24,71 @@ interface Song {
   appleMusicUrl?: string;
   youtubeUrl?: string;
   emoji: string;
-  kategorie: "meditation" | "ritual" | "entspannung" | "mantra";
+  kategorie: "musik" | "meditation" | "ritual" | "mantra";
+  verfuegbar: boolean;
 }
 
-// Standard-Songs – Lara kann über Admin weitere hinzufügen
+// Musik von der Seelenplanerin – Meditationen kommen noch
 const DEFAULT_SONGS: Song[] = [
   {
     id: "s1",
-    titel: "Mondmeditation",
-    beschreibung: "Geführte Meditation für Neumond-Rituale",
+    titel: "Seelenklänge",
+    beschreibung: "Musik von der Seelenplanerin",
     spotifyUrl: SPOTIFY_ARTIST,
-    emoji: "🌙",
-    kategorie: "meditation",
+    emoji: "🎶",
+    kategorie: "musik",
+    verfuegbar: true,
   },
   {
     id: "s2",
-    titel: "Chakra Balance",
-    beschreibung: "Klangschalen für die Chakra-Harmonisierung",
+    titel: "Ritual-Musik",
+    beschreibung: "Atmosphärische Klänge für deine Rituale",
     spotifyUrl: SPOTIFY_ARTIST,
-    emoji: "🎵",
-    kategorie: "entspannung",
+    emoji: "🔥",
+    kategorie: "ritual",
+    verfuegbar: true,
   },
   {
     id: "s3",
     titel: "Runen-Mantra",
     beschreibung: "Kraftvolle Mantras für die Runenarbeit",
     spotifyUrl: SPOTIFY_ARTIST,
-    emoji: "ᚱ",
+    emoji: "ᛋ",
     kategorie: "mantra",
+    verfuegbar: true,
   },
   {
     id: "s4",
-    titel: "Ritual-Musik",
-    beschreibung: "Atmosphärische Klänge für deine Rituale",
-    spotifyUrl: SPOTIFY_ARTIST,
-    emoji: "🔥",
-    kategorie: "ritual",
+    titel: "Mondmeditation",
+    beschreibung: "Geführte Meditation für Neumond-Rituale",
+    emoji: "🌙",
+    kategorie: "meditation",
+    verfuegbar: false,
+  },
+  {
+    id: "s5",
+    titel: "Chakra Balance",
+    beschreibung: "Klangschalen für die Chakra-Harmonisierung",
+    emoji: "🧘‍♀️",
+    kategorie: "meditation",
+    verfuegbar: false,
+  },
+  {
+    id: "s6",
+    titel: "Schutzrune Meditation",
+    beschreibung: "Geführte Meditation mit deiner Schutzrune",
+    emoji: "🛡️",
+    kategorie: "meditation",
+    verfuegbar: false,
   },
 ];
 
 const KAT_LABELS: Record<string, string> = {
   alle: "Alle",
-  meditation: "Meditation",
+  musik: "Musik",
   ritual: "Ritual",
-  entspannung: "Entspannung",
   mantra: "Mantra",
+  meditation: "Meditation",
 };
 
 export default function MusikScreen() {
@@ -103,6 +123,7 @@ export default function MusikScreen() {
   const filtered = filter === "alle" ? songs : songs.filter(s => s.kategorie === filter);
 
   const openSong = (song: Song) => {
+    if (!song.verfuegbar) return;
     if (song.spotifyUrl) Linking.openURL(song.spotifyUrl);
     else if (song.appleMusicUrl) Linking.openURL(song.appleMusicUrl);
     else if (song.youtubeUrl) Linking.openURL(song.youtubeUrl);
@@ -138,12 +159,23 @@ export default function MusikScreen() {
             <View style={{ flex: 1 }}>
               <Text style={s.spotifyTitle}>Die Seelenplanerin</Text>
               <Text style={s.spotifySubtitle}>Auf Spotify anhören</Text>
-              <Text style={s.spotifyDesc}>Meditationen, Mantras & Ritual-Musik</Text>
+              <Text style={s.spotifyDesc}>Musik von Lara – Die Seelenplanerin</Text>
             </View>
             <View style={s.spotifyBadge}>
               <Text style={s.spotifyBadgeText}>Öffnen</Text>
             </View>
           </TouchableOpacity>
+
+          {/* ── Info-Hinweis ── */}
+          <View style={s.infoCard}>
+            <Text style={s.infoEmoji}>🎵</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.infoTitle}>Musik von der Seelenplanerin</Text>
+              <Text style={s.infoText}>
+                Die Musik ist von Lara und auf Spotify verfügbar. Geführte Meditationen und weitere Inhalte werden nach und nach ergänzt.
+              </Text>
+            </View>
+          </View>
 
           {/* ── Streaming-Plattformen ── */}
           <Text style={s.sectionTitle}>Überall hören</Text>
@@ -196,18 +228,29 @@ export default function MusikScreen() {
           {filtered.map(song => (
             <TouchableOpacity
               key={song.id}
-              style={s.songCard}
+              style={[s.songCard, !song.verfuegbar && s.songCardDisabled]}
               onPress={() => openSong(song)}
-              activeOpacity={0.85}
+              activeOpacity={song.verfuegbar ? 0.85 : 1}
             >
-              <View style={s.songEmoji}>
+              <View style={[s.songEmoji, !song.verfuegbar && s.songEmojiDisabled]}>
                 <Text style={{ fontSize: 24 }}>{song.emoji}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={s.songTitel}>{song.titel}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text style={[s.songTitel, !song.verfuegbar && s.songTitelDisabled]}>{song.titel}</Text>
+                  {!song.verfuegbar && (
+                    <View style={s.comingSoonBadge}>
+                      <Text style={s.comingSoonText}>Bald verfügbar</Text>
+                    </View>
+                  )}
+                </View>
                 <Text style={s.songBeschreibung}>{song.beschreibung}</Text>
               </View>
-              <Text style={{ fontSize: 16, color: C.rose, fontWeight: "600" }}>▶</Text>
+              {song.verfuegbar ? (
+                <Text style={{ fontSize: 16, color: C.rose, fontWeight: "600" }}>▶</Text>
+              ) : (
+                <Text style={{ fontSize: 14, color: C.muted }}>🔒</Text>
+              )}
             </TouchableOpacity>
           ))}
 
@@ -215,7 +258,7 @@ export default function MusikScreen() {
           <View style={s.adminHint}>
             <Text style={{ fontSize: 14, marginBottom: 6 }}>💡</Text>
             <Text style={{ fontSize: 12, color: C.muted, lineHeight: 18 }}>
-              Neue Songs können über den Admin-Bereich hinzugefügt werden.{"\n"}
+              Neue Songs und Meditationen können über den Admin-Bereich hinzugefügt werden.{"\n"}
               Gehe zu: Ich → Admin-Bereich → Musik verwalten
             </Text>
           </View>
@@ -238,6 +281,17 @@ const s = StyleSheet.create({
   },
   backIcon: { fontSize: 20, color: C.rose },
   headerTitle: { fontSize: 18, fontWeight: "700", color: C.brown, letterSpacing: 1 },
+
+  // Info-Card
+  infoCard: {
+    marginHorizontal: 16, marginBottom: 16,
+    backgroundColor: C.goldLight, borderRadius: 16, padding: 16,
+    flexDirection: "row", alignItems: "flex-start", gap: 12,
+    borderWidth: 1, borderColor: "#E8D5B0",
+  },
+  infoEmoji: { fontSize: 24, marginTop: 2 },
+  infoTitle: { fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 },
+  infoText: { fontSize: 13, color: C.brownMid, lineHeight: 19 },
 
   // Spotify Banner
   spotifyBanner: {
@@ -296,12 +350,32 @@ const s = StyleSheet.create({
     marginBottom: 10, backgroundColor: C.card, borderRadius: 16, padding: 14,
     borderWidth: 1, borderColor: C.border,
   },
+  songCardDisabled: {
+    opacity: 0.6,
+  },
   songEmoji: {
     width: 48, height: 48, borderRadius: 24, backgroundColor: C.roseLight,
     alignItems: "center", justifyContent: "center", marginRight: 14,
   },
+  songEmojiDisabled: {
+    backgroundColor: C.surface,
+  },
   songTitel: { fontSize: 15, fontWeight: "700", color: C.brown },
+  songTitelDisabled: { color: C.muted },
   songBeschreibung: { fontSize: 12, color: C.muted, marginTop: 2 },
+
+  // Coming Soon
+  comingSoonBadge: {
+    backgroundColor: C.goldLight,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  comingSoonText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: C.gold,
+  },
 
   // Admin
   adminHint: {

@@ -244,3 +244,12 @@
 - [x] Meditation/Musik NICHT im Ich-Bereich verstecken - eigener sichtbarer Zugang (Home-Screen + eigener Musik-Screen)
 - [x] Spotify-Musik einbauen (Link: https://open.spotify.com/artist/3iJelwHVMnw2cNtIY3CrFo) → Artist-Profil verlinkt
 - [x] Mondphasen-Darstellung an MoonWorx App orientieren (Tierkreiszeichen, Beleuchtung, Auf-/Absteigend, 30-Tage-Kalender)
+
+## Feedback Runde 12 (25.02.2026 Nacht)
+- [x] Mond-Tab: 1:1 an MoonWorx orientieren (dunkles Design, mehr Tipps, Tagesqualitäten)
+- [x] Vollmond-Datum im 30-Tage-Kalender korrigiert: zeigt jetzt korrekt "3. März" (Zeitzone-Bug behoben)
+- [x] Musik-Screen: Klarstellen dass Musik von der Seelenplanerin ist, Meditationen kommen noch
+- [x] Runen-Zeichen korrigieren: Sowilo ᛊ→ᛋ in allen Dateien (runen-sets.ts, quiz-data.ts, runen.tsx, runen-screen.tsx)
+- [ ] Themen-Armbänder: Runen-Zuordnung anpassen
+- [x] Optik generell verbessern: Mond-Tab komplett im MoonWorx-Stil (dunkles Design, 5-Tage-Vorschau, Farbcodierung)
+- [x] Mehr Tipps im Mond-Tab: Haare, Garten, Körper, Ernährung, Ritual, Meditation, Haushalt mit Farbcodierung

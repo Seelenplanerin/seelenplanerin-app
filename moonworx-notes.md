@@ -1,43 +1,34 @@
-# MoonWorx App Features
+# MoonWorx Design-Analyse (mit Screenshots)
 
-## Tagesansicht
-- Aktuelle Mondphase, Zeitpunkt des Eintritts in die nächste Mondphase
-- Fotografische Ansicht des Mondes (vorgestern, gestern, heute, morgen, übermorgen)
-- Aktuelles Tierkreiszeichen (auf-/absteigend), Zeitpunkt des Eintritts in nächstes Zeichen
-- Berechnung der Mondpause
-- Berechnung von Auf-/Untergang von Sonne und Mond
-- Text über die Tagesqualität für alle 48 Kombinationen von Mondphase und Tierkreiszeichen
-- Blätterfunktion (gestern, heute, morgen, Zeichenwechsel)
-- Datum-Auswahl für jeden beliebigen Tag
+## Visuelles Design
+- **Dunkler Hintergrund**: Tiefes Dunkelblau/Schwarz mit Sternenhimmel-Effekt
+- **Goldene/Weiße Akzente**: Texte in Gold und Weiß
+- **Fotografische Mondansicht**: Realistische Mondbilder (vorgestern, gestern, heute, morgen, übermorgen)
+- **Sternzeichen-Grafiken**: Tierkreiszeichen mit Verbindungslinien
 
-## Key Features für unsere App:
-1. Aktuelle Mondphase mit visueller Darstellung (Mond-Bild)
-2. Tierkreiszeichen in dem der Mond steht
-3. Nächster Vollmond/Neumond mit exaktem Zeitpunkt
-4. Tagesqualität-Text basierend auf Mondphase
-5. Auf-/Absteigender Mond
+## Tagesansicht (Daily View)
+- Oben: "Today" Button + Datum + Navigation (< >)
+- Mitte: Große Mond-Darstellung mit Phase-Name + Tierkreiszeichen ("Waning moon in Scorpio")
+- 5 Mond-Bilder in einer Reihe (vorgestern bis übermorgen) mit Datum darunter
+- "UPCOMING" Sektion: Nächster Neumond/Vollmond mit exaktem Datum+Uhrzeit
+- "VOID OF COURSE" Sektion: Mondpause-Zeiten
+- Tagesqualität-Text mit ausführlicher Beschreibung
 
-## Qualität
-- Körperregionen (entsprechend des Tierkreises) mit Pflegetipps und Yogaübungen
-- Infos zu Elementen (Feuer, Erde, Wasser, Luft)
-- Infos zu Qualitäten (Wärme, Kälte, Wasser, Licht)
-- Infos zu Pflanzenteilen (Wurzeln, Blüten, Früchte, Blätter)
-- Infos zur Ernährung
+## Tipps-Kategorien (7 Hauptkategorien)
+- Haushalt, Garten, Ernährung, Körperpflege, Haarpflege, Gesundheit, Heimwerken
+- Farbcodierung: GRÜN = sehr gut, ORANGE = gut, ROT = ungeeignet
+- 30-Tage-Vorschau mit farbcodierten Eignungen
 
-## Tipps
-- 7 Hauptkategorien (Haushalt, Garten, Ernährung, Körperpflege, Haarpflege, Gesundheit, Heimwerken)
-- Über 90 Tätigkeiten
-- 350+ hilfreiche Texte, kategorisiert in sehr gut, gut und ungeeignet
-
-## Monatsansicht / Suche
-- Monatsansicht der Mondphasen und Tierkreiszeichen
-- Exakte Zeitpunkte des Zeichenwechsels und der Voll-/Neumondphase
-- Anzeige rückläufiger Planeten (Merkur, Venus, Mars)
-- Suche von sehr gut, gut und schlecht geeigneten Tagen
-
-## Was wir für den Mond-Tab übernehmen:
-1. Tierkreiszeichen in dem der Mond steht (mit Element)
-2. Tagesqualität-Text (was ist heute gut/schlecht)
-3. Körperregion des Tages
-4. Auf-/Absteigender Mond Info
-5. Monatsansicht mit Mondphasen-Symbolen
+## Für die Seelenplanerin-App adaptieren:
+- Dunkles Design im Mond-Tab (Nacht-Atmosphäre, Sternenhimmel)
+- 5-Tage Mond-Vorschau (vorgestern bis übermorgen)
+- Tagesqualität-Text für jede Kombination Mondphase + Tierkreiszeichen
+- Spirituelle Tipps-Kategorien:
+  - Rituale & Zeremonien
+  - Körper & Seele
+  - Haare & Schönheit
+  - Garten & Natur
+  - Ernährung & Fasten
+  - Meditation & Yoga
+  - Manifestation & Loslassen
+- Farbcodierung: Grün/Gold/Rot für Eignung

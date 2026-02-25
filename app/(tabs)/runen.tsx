@@ -37,7 +37,7 @@ const RUNEN = [
   { name: "Eihwaz", symbol: "ᛇ", thema: "Ausdauer & Schutz", energie: "Lebensbaum, Kontinuität, Stärke", affirmation: "Ich bin verwurzelt und unerschütterlich." },
   { name: "Perthro", symbol: "ᛈ", thema: "Schicksal & Magie", energie: "Mysterium, Schicksal, verborgenes Wissen", affirmation: "Ich vertraue dem Fluss des Lebens." },
   { name: "Algiz", symbol: "ᛉ", thema: "Schutz & Intuition", energie: "Schutzschild, Verbindung zum Göttlichen", affirmation: "Ich bin von göttlichem Licht umgeben." },
-  { name: "Sowilo", symbol: "ᛊ", thema: "Erfolg & Sonne", energie: "Siegeskraft, Lebensenergie, Klarheit", affirmation: "Ich strahle Licht und Erfolg aus." },
+  { name: "Sowilo", symbol: "ᛋ", thema: "Erfolg & Sonne", energie: "Siegeskraft, Lebensenergie, Klarheit", affirmation: "Ich strahle Licht und Erfolg aus." },
   { name: "Tiwaz", symbol: "ᛏ", thema: "Gerechtigkeit & Mut", energie: "Kriegsgott, Ehre, Opferbereitschaft", affirmation: "Ich handle mit Integrität und Mut." },
   { name: "Berkano", symbol: "ᛒ", thema: "Geburt & Wachstum", energie: "Birke, Fruchtbarkeit, Fürsorge", affirmation: "Ich pflege mein Wachstum liebevoll." },
   { name: "Ehwaz", symbol: "ᛖ", thema: "Vertrauen & Partnerschaft", energie: "Pferd, Bewegung, Zusammenarbeit", affirmation: "Ich vertraue meinen Beziehungen." },

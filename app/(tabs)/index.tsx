@@ -196,8 +196,8 @@ export default function AktuellesScreen() {
           </View>
           <View style={s.musikContent}>
             <Text style={s.musikTitle}>Musik & Meditation</Text>
-            <Text style={s.musikSubtitle}>Laras Songs auf Spotify</Text>
-            <Text style={s.musikDesc}>Meditationen, Mantras & Ritual-Musik</Text>
+            <Text style={s.musikSubtitle}>Musik von der Seelenplanerin</Text>
+            <Text style={s.musikDesc}>Laras Musik auf Spotify hören</Text>
           </View>
           <View style={s.musikPlayBtn}>
             <Text style={s.musikPlayText}>▶</Text>

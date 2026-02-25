@@ -17,7 +17,7 @@ const RUNEN_SYMBOLE: Record<string, string> = {
   Fehu: "ᚠ", Uruz: "ᚢ", Thurisaz: "ᚦ", Ansuz: "ᚨ", Raidho: "ᚱ",
   Kenaz: "ᚲ", Gebo: "ᚷ", Wunjo: "ᚹ", Hagalaz: "ᚺ", Nauthiz: "ᚾ",
   Isa: "ᛁ", Jera: "ᛃ", Eihwaz: "ᛇ", Perthro: "ᛈ", Algiz: "ᛉ",
-  Sowilo: "ᛊ", Tiwaz: "ᛏ", Berkana: "ᛒ", Ehwaz: "ᛖ", Mannaz: "ᛗ",
+  Sowilo: "ᛋ", Tiwaz: "ᛏ", Berkana: "ᛒ", Ehwaz: "ᛖ", Mannaz: "ᛗ",
   Laguz: "ᛚ", Ingwaz: "ᛜ", Dagaz: "ᛞ", Othala: "ᛟ",
 };
 
