@@ -1,18 +1,10 @@
-# Status Notes - AKTUELL (25.02.2026 21:25)
+# Status Notes - AKTUELL (25.02.2026 21:37)
 
-## Screenshot Analyse
-- Home-Screen: Laras Bild sichtbar, Logo unten rechts, Kopf nicht abgeschnitten
-- Tab-Bar: Aktuelles, Rituale, Journal, Community, Ich (5 Tabs)
-- TypeScript: 0 Fehler
-- Dev-Server: läuft korrekt
-
-## Erledigte Aufgaben Runde 8:
-- Community: Registrierung mit eigenem Passwort + Login
-- Mariposa Schutzarmband: Preis 28,90 € wieder drin
-- Meditationskerzen-Quiz: 8 Heilsteine mit korrekten Eigenschaften
-- Kerzen als Produkt im Shop + Ich-Tab
-- Kerzen-Bilder kopiert in assets/images/
-
-## Noch zu tun:
-- Produktliste für Lara erstellen
-- Musik-Link abwarten
+## Erledigte Änderungen Runde 9:
+- [x] moon-phase.ts: Exakte Vollmond-Daten (3.3.2026 = Vollmond bestätigt)
+- [x] moon-phase.ts: Exakte Neumond-Daten
+- [x] Home-Screen: Verwendet jetzt getCurrentMoonPhase() aus moon-phase.ts
+- [x] Kategorie-Buttons: Größer (minHeight 40, padding 10/16, fontSize 13/14)
+- [x] Kategorie-ScrollView: overflow visible
+- [x] Kerzen als eigene Sektion im Ich-Tab
+- [x] TypeScript: 0 Fehler, Dev-Server läuft

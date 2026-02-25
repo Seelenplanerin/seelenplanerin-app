@@ -95,10 +95,12 @@ export default function RitualeScreen() {
         >
           <Text style={s.katLabel}>KATEGORIE</Text>
         </TouchableOpacity>
+        <View style={{ overflow: "visible", marginBottom: 4 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={s.katRow}
+          style={{ overflow: "visible" }}
         >
           {RITUAL_KATEGORIEN.map(k => (
             <TouchableOpacity
@@ -112,6 +114,7 @@ export default function RitualeScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        </View>
 
         {/* Ritual-Liste nach Monat */}
         <FlatList
@@ -336,22 +339,22 @@ const s = StyleSheet.create({
     color: C.muted,
     letterSpacing: 1.5,
   },
-  katRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12, paddingTop: 4 },
+  katRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 16, paddingTop: 6 },
   katBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
     backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
-    gap: 4,
-    minHeight: 36,
+    gap: 6,
+    minHeight: 40,
   },
   katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
-  katEmoji: { fontSize: 12 },
-  katText: { fontSize: 12, color: C.muted, fontWeight: "600" },
+  katEmoji: { fontSize: 14 },
+  katText: { fontSize: 13, color: C.muted, fontWeight: "600" },
   katTextActive: { color: "#FFF" },
 
   // Monatsüberschrift

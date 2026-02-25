@@ -227,3 +227,9 @@
 - [x] Kerzen als Produkt im Shop hinzugefügt
 - [x] Aktuelle Produktliste erstellt
 - [ ] Musik-Link abwarten (kommt noch von Lara)
+
+## Feedback Runde 9 (25.02.2026) - DRINGEND
+- [x] Vollmond 3.3.2026 korrekt einpflegen (12:38 Uhr MEZ) - exakte Daten in moon-phase.ts
+- [x] ALLE Vollmond-Daten 2026 korrekt (13 Vollmonde, 12 Neumonde verifiziert)
+- [x] Kategorie-Buttons: größer, mehr Padding, overflow visible
+- [x] Kerzen eigener Bereich "Meditationskerzen" im Ich-Tab mit Quiz-Link

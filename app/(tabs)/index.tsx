@@ -26,45 +26,12 @@ const C = {
   white: "#FFFFFF",
 };
 
-// // ─── Mondphasen (astronomisch korrekt für 2026) ─────────────────────────────────────────────────────
-// Neumond-Zeitpunkte 2026 (UTC) – Referenz: 17. Feb 2026 (Sonnenfinsternis, von Lara bestätigt)
-// Vollmond 3. März 2026 ebenfalls bestätigt. Berechnet mit synodischem Monat 29.53058867 Tage.
-const NEUMONDE_2026 = [
-  new Date("2026-01-18T19:53:00Z"),  // 18. Jan 2026 20:53 MEZ
-  new Date("2026-02-17T12:03:00Z"),  // 17. Feb 2026 13:03 MEZ
-  new Date("2026-03-19T01:26:00Z"),  // 19. Mär 2026 02:26 MEZ
-  new Date("2026-04-17T11:54:00Z"),  // 17. Apr 2026 13:54 MESZ
-  new Date("2026-05-16T20:03:00Z"),  // 16. Mai 2026 22:03 MESZ
-  new Date("2026-06-15T02:56:00Z"),  // 15. Jun 2026 04:56 MESZ
-  new Date("2026-07-14T09:45:00Z"),  // 14. Jul 2026 11:45 MESZ
-  new Date("2026-08-12T17:37:00Z"),  // 12. Aug 2026 19:37 MESZ
-  new Date("2026-09-11T03:27:00Z"),  // 11. Sep 2026 05:27 MESZ
-  new Date("2026-10-10T15:50:00Z"),  // 10. Okt 2026 17:50 MESZ
-  new Date("2026-11-09T07:02:00Z"),  // 9. Nov 2026 08:02 MEZ
-  new Date("2026-12-09T00:52:00Z"),  // 9. Dez 2026 01:52 MEZ
-];
-const SYNODISCHER_MONAT = 29.53058867 * 24 * 60 * 60 * 1000; // ms
+// ─── Mondphasen (aus zentraler moon-phase.ts mit exakten astronomischen Daten) ───
+import { getCurrentMoonPhase } from "@/lib/moon-phase";
 
 function getMondphase(): { name: string; symbol: string; energie: string } {
-  const now = new Date();
-  // Letzten Neumond finden
-  let referenz = NEUMONDE_2026[0];
-  for (const nm of NEUMONDE_2026) {
-    if (nm <= now) referenz = nm;
-    else break;
-  }
-  let diffMs = now.getTime() - referenz.getTime();
-  while (diffMs > SYNODISCHER_MONAT) diffMs -= SYNODISCHER_MONAT;
-  const p = diffMs / SYNODISCHER_MONAT;
-
-  if (p < 0.0625 || p >= 0.9375) return { name: "Neumond", symbol: "🌑", energie: "Neubeginn & Intention setzen" };
-  if (p < 0.1875) return { name: "Zunehmender Mond", symbol: "🌒", energie: "Wachstum & Aufbau" };
-  if (p < 0.3125) return { name: "Zunehmender Mond", symbol: "🌓", energie: "Entscheidungen & Handeln" };
-  if (p < 0.4375) return { name: "Zunehmender Mond", symbol: "🌔", energie: "Manifestation & Kraft" };
-  if (p < 0.5625) return { name: "Vollmond", symbol: "🌕", energie: "Fülle & Loslassen" };
-  if (p < 0.6875) return { name: "Abnehmender Mond", symbol: "🌖", energie: "Reflexion & Dankbarkeit" };
-  if (p < 0.8125) return { name: "Abnehmender Mond", symbol: "🌗", energie: "Reinigung & Loslassen" };
-  return { name: "Abnehmender Mond", symbol: "🌘", energie: "Ruhe & innere Einkehr" };
+  const phase = getCurrentMoonPhase();
+  return { name: phase.name, symbol: phase.emoji, energie: phase.energy };
 }
 
 // ─── Tagesimpulse ─────────────────────────────────────────────────────────────

@@ -36,11 +36,16 @@ const MENU_ITEMS = [
     ],
   },
   {
+    section: "Meditationskerzen",
+    items: [
+      { id: "kerzen-quiz", label: "Welche Kerze passt zu mir?", emoji: "🕯️", route: "/kerzen-quiz" },
+    ],
+  },
+  {
     section: "Meditation & Musik",
     items: [
       { id: "musik", label: "Meine Musik", emoji: "🎵", route: "/musik" },
       { id: "meditation", label: "Meditationen", emoji: "🧘‍♀️", route: "/meditation" },
-      { id: "kerzen-quiz", label: "Kerzen-Quiz: Dein Heilstein", emoji: "🕯️", route: "/kerzen-quiz" },
     ],
   },
 ];
