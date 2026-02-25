@@ -150,11 +150,11 @@ export default function ShopScreen() {
     backText: { fontSize: 24, color: colors.primary },
     title: { fontSize: 28, fontWeight: "700", color: "#3D2B1F" },
     subtitle: { fontSize: 15, color: "#9C7B6E", marginTop: 4, fontStyle: "italic" },
-    catRow: { paddingHorizontal: 16, paddingBottom: 12 },
+    catRow: { paddingHorizontal: 16, paddingBottom: 16, paddingTop: 4 },
     catBtn: {
-      flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 8,
-      borderRadius: 20, borderWidth: 1.5, borderColor: colors.border, marginRight: 8,
-      backgroundColor: colors.surface,
+      flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 10,
+      borderRadius: 20, borderWidth: 1.5, borderColor: colors.border, marginRight: 10,
+      backgroundColor: colors.surface, minHeight: 40,
     },
     catBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
     catText: { fontSize: 14, color: colors.muted, fontWeight: "600" },
@@ -181,11 +181,11 @@ export default function ShopScreen() {
     cardBottom: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
     price: { fontSize: 22, fontWeight: "700", color: colors.primary },
     buyBtn: {
-      backgroundColor: colors.primary, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10,
+      backgroundColor: colors.primary, borderRadius: 14, paddingHorizontal: 22, paddingVertical: 12,
     },
     buyBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
     freeBtn: {
-      backgroundColor: "#22C55E", borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10,
+      backgroundColor: "#22C55E", borderRadius: 14, paddingHorizontal: 22, paddingVertical: 12,
     },
     runenBanner: {
       backgroundColor: colors.primary + "15", borderRadius: 20, padding: 20,
@@ -216,7 +216,7 @@ export default function ShopScreen() {
       </View>
 
       {/* Kategorie-Filter */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catRow} contentContainerStyle={{ paddingRight: 16 }}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.catRow} contentContainerStyle={{ paddingRight: 24, paddingVertical: 4 }}>
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
             key={cat.id}

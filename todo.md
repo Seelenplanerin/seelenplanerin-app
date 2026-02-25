@@ -253,3 +253,9 @@
 - [ ] Themen-Armbänder: Runen-Zuordnung anpassen
 - [x] Optik generell verbessern: Mond-Tab komplett im MoonWorx-Stil (dunkles Design, 5-Tage-Vorschau, Farbcodierung)
 - [x] Mehr Tipps im Mond-Tab: Haare, Garten, Körper, Ernährung, Ritual, Meditation, Haushalt mit Farbcodierung
+
+## Feedback Runde 13 (25.02.2026 Nacht) - KRITISCHE BUGS
+- [x] Mond-Tab: Tagesqualität dynamisch an gewählten Tag gekoppelt (selectedDate statt new Date())
+- [x] Mond-Tab: Tages-Tipps dynamisch an gewählten Tag gekoppelt (getTagesTipps(selectedDate))
+- [x] Mond-Tab: Handlungen/Empfehlungen ändern sich jetzt pro Tag – Phase, Zodiac, Tipps, Körperregion, Beleuchtung
+- [x] Shop: Buttons nicht mehr abgeschnitten – mehr Padding, größere Buttons, paddingVertical in ScrollView
