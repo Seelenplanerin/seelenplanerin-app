@@ -38,7 +38,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Silberkette mit 3 handgravierten Runen-Plättchen + Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum.",
     emoji: "ᚱ",
     highlight: "Handgraviert von Lara",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
     badge: "Bestseller",
   },
   {
@@ -51,7 +51,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
     emoji: "🖤",
     highlight: "Schwarzer Turmalin",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
   },
   {
     id: "charm-einzeln",
@@ -62,7 +62,7 @@ const PRODUCTS: Product[] = [
     preisDisplay: "14,90 €",
     beschreibung: "Einzelner Runen-Charm mit Heilstein-Pulver. Handgraviert. Passend für das Silberkettenarmband.",
     emoji: "✦",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
   },
   {
     id: "aura-reading",
@@ -74,7 +74,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Lara liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     emoji: "🌈",
     highlight: "Mit Lara persönlich",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
     badge: "Beliebt",
   },
   {
@@ -87,7 +87,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Ein tiefes 1:1 Gespräch mit Lara. Energiearbeit, Seelenplanung, persönliche Transformation.",
     emoji: "💫",
     highlight: "1:1 mit Lara",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
   },
   {
     id: "seelenreset",
@@ -111,7 +111,7 @@ const PRODUCTS: Product[] = [
     preisDisplay: "17,00 €",
     beschreibung: "Digitaler Impuls für deine Seele. Tiefe Botschaften, Rituale und Übungen für deinen persönlichen Wachstumsprozess.",
     emoji: "✨",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/E6FP1U",
   },
   {
     id: "soul-talk",

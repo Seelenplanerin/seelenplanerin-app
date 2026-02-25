@@ -27,20 +27,21 @@ const C = {
 };
 
 // // ─── Mondphasen (astronomisch korrekt für 2026) ─────────────────────────────────────────────────────
-// Bekannte Neumond-Zeitpunkte 2026 (UTC)
+// Neumond-Zeitpunkte 2026 (UTC) – Referenz: 17. Feb 2026 (Sonnenfinsternis, von Lara bestätigt)
+// Vollmond 3. März 2026 ebenfalls bestätigt. Berechnet mit synodischem Monat 29.53058867 Tage.
 const NEUMONDE_2026 = [
-  new Date("2026-01-29T12:36:00Z"),
-  new Date("2026-02-28T00:45:00Z"),
-  new Date("2026-03-29T11:58:00Z"),
-  new Date("2026-04-27T22:31:00Z"),
-  new Date("2026-05-27T08:02:00Z"),
-  new Date("2026-06-25T16:56:00Z"),
-  new Date("2026-07-25T01:11:00Z"),
-  new Date("2026-08-23T10:06:00Z"),
-  new Date("2026-09-21T20:54:00Z"),
-  new Date("2026-10-21T10:25:00Z"),
-  new Date("2026-11-20T02:47:00Z"),
-  new Date("2026-12-19T22:43:00Z"),
+  new Date("2026-01-18T23:16:00Z"),  // 18. Jan 2026
+  new Date("2026-02-17T12:01:00Z"),  // 17. Feb 2026 (Sonnenfinsternis)
+  new Date("2026-03-19T00:45:00Z"),  // 19. Mär 2026
+  new Date("2026-04-17T13:29:00Z"),  // 17. Apr 2026
+  new Date("2026-05-17T02:13:00Z"),  // 17. Mai 2026
+  new Date("2026-06-15T14:57:00Z"),  // 15. Jun 2026
+  new Date("2026-07-15T03:41:00Z"),  // 15. Jul 2026
+  new Date("2026-08-13T16:25:00Z"),  // 13. Aug 2026
+  new Date("2026-09-12T05:09:00Z"),  // 12. Sep 2026
+  new Date("2026-10-11T17:53:00Z"),  // 11. Okt 2026
+  new Date("2026-11-10T06:37:00Z"),  // 10. Nov 2026
+  new Date("2026-12-09T19:21:00Z"),  // 9. Dez 2026
 ];
 const SYNODISCHER_MONAT = 29.53058867 * 24 * 60 * 60 * 1000; // ms
 

@@ -25,7 +25,7 @@ const MENU_ITEMS = [
     items: [
       { id: "shop", label: "Zum Shop", emoji: "✨", url: "https://dieseelenplanerin.tentary.com" },
       { id: "buchen", label: "Termin buchen", emoji: "📅", url: "https://calendly.com/dieseelenplanerin" },
-      { id: "seelenimpuls", label: "Seelenimpuls Premium", emoji: "👑", url: "https://dieseelenplanerin.tentary.com" },
+      { id: "seelenimpuls", label: "Seelenimpuls Premium", emoji: "👑", url: "https://dieseelenplanerin.tentary.com/p/E6FP1U" },
     ],
   },
   {
@@ -39,10 +39,10 @@ const MENU_ITEMS = [
 ];
 
 const PRODUKTE = [
-  { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "28,90 €", emoji: "🖤" },
-  { id: "runen", name: "Runen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "ab 38 €", emoji: "✨" },
-  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕" },
-  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮", route: "/aura" },
+  { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "28,90 €", emoji: "🖤", url: "https://dieseelenplanerin.tentary.com/p/gGmtFy" },
+  { id: "runen", name: "Runen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "ab 38 €", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
+  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://dieseelenplanerin.tentary.com" },
+  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
 ];
 
 export default function IchScreen() {
@@ -71,7 +71,7 @@ export default function IchScreen() {
         {/* Seelenimpuls Banner */}
         <TouchableOpacity
           style={s.premiumBanner}
-          onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
+          onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
           activeOpacity={0.85}
         >
           <Text style={{ fontSize: 22, marginRight: 12 }}>👑</Text>
@@ -89,7 +89,7 @@ export default function IchScreen() {
             <TouchableOpacity
               key={p.id}
               style={s.produktCard}
-              onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
+              onPress={() => p.url ? Linking.openURL(p.url) : null}
               activeOpacity={0.85}
             >
               <Text style={{ fontSize: 28, marginBottom: 8 }}>{p.emoji}</Text>

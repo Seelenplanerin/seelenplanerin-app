@@ -94,7 +94,7 @@ export default function SeelenimpulsScreen() {
           </View>
           <TouchableOpacity
             style={s.cta}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
             activeOpacity={0.85}
           >
             <Text style={s.ctaText}>Jetzt Mitglied werden →</Text>

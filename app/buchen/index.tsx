@@ -51,7 +51,7 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🌈",
     badge: "Beliebt",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/",
+    bookingUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
   },
   {
     id: "deep-talk",
@@ -68,7 +68,7 @@ const SESSIONS: Session[] = [
       "Nachbereitung per E-Mail",
     ],
     emoji: "💫",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/",
+    bookingUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
   },
   {
     id: "seelenreset",

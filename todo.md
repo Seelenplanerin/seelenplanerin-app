@@ -145,3 +145,8 @@
 - [x] Logo freigestellt integriert (schwarzer Hintergrund entfernt via Pillow)
 - [x] Foto-Zuschnitt korrigiert (ganzer Kopf sichtbar, Höhe 380px statt 320px)
 - [x] Aura als Kategorie auf Startscreen verlinkt
+
+## Korrekturen Feb 2026 (Runde 2)
+- [ ] Mondphase korrigieren: heute 25. Feb ist zunehmender Mond (nicht abnehmende Sichel)
+- [ ] Tentary-Links: alle Buttons direkt auf richtige Tentary-Seite (Seelenimpuls-Abo)
+- [ ] Inhalte entschlacken: kostenlose Bereiche reduzieren, Seelenimpuls klar als Premium positionieren
