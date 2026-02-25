@@ -9,21 +9,37 @@ type IconMapping = Record<SymbolViewProps["name"], ComponentProps<typeof Materia
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * SF Symbols to Material Icons mappings for Die Seelenplanerin app.
  */
-const MAPPING = {
+const MAPPING: Partial<IconMapping> = {
   "house.fill": "home",
+  "moon.fill": "nightlight-round",
+  "heart.fill": "favorite",
+  "heart": "favorite-border",
+  "magnifyingglass": "search",
+  "chevron.right": "chevron-right",
+  "chevron.left": "chevron-left",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
-  "chevron.right": "chevron-right",
-} as IconMapping;
+  "star.fill": "star",
+  "star": "star-border",
+  "leaf.fill": "spa",
+  "flame.fill": "local-fire-department",
+  "drop.fill": "water-drop",
+  "sun.max.fill": "wb-sunny",
+  "book.fill": "menu-book",
+  "quote.bubble.fill": "format-quote",
+  "bolt.fill": "bolt",
+  "wand.and.stars": "auto-fix-high",
+  "xmark": "close",
+  "arrow.left": "arrow-back",
+  "clock.fill": "schedule",
+  "person.fill": "person",
+  "sparkles": "auto-awesome",
+};
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
 export function IconSymbol({
   name,
@@ -37,5 +53,5 @@ export function IconSymbol({
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return <MaterialIcons color={color} size={size} name={(MAPPING as IconMapping)[name]} style={style} />;
 }
