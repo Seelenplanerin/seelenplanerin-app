@@ -145,7 +145,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "mar-2",
     titel: "Fresh Start Neumond-Ritual",
-    datum: "18.3.2026",
+    datum: "19.3.2026",
     monat: 3,
     kategorie: "Neumond",
     kurz: "Nutze den Frühlings-Neumond für einen kraftvollen Neuanfang.",
@@ -224,7 +224,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "apr-1",
     titel: "Open Heart Vollmond-Ritual",
-    datum: "1.4.2026",
+    datum: "2.4.2026",
     monat: 4,
     kategorie: "Vollmond",
     kurz: "Öffne dein Herz und lass die Vollmond-Energie Liebe in dein Leben fließen.",
@@ -383,9 +383,9 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "jun-1",
     titel: "Inner Voice Zwillinge-Ritual",
-    datum: "4.6.2026",
+    datum: "15.6.2026",
     monat: 6,
-    kategorie: "Spezial",
+    kategorie: "Neumond",
     kurz: "Verbinde dich mit deiner inneren Stimme und finde Klarheit in der Kommunikation.",
     abschnitte: [
       { typ: "intro", text: "Die Zwillinge-Energie im Juni fördert Kommunikation, Neugier und geistige Klarheit. Dieses Ritual hilft dir, deine innere Stimme zu hören und authentisch zu kommunizieren." },
@@ -458,7 +458,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "jun-4",
     titel: "Summer of Love Vollmond-Ritual",
-    datum: "29.6.2026",
+    datum: "30.6.2026",
     monat: 6,
     kategorie: "Vollmond",
     kurz: "Mini-Vollmond: Feiere die Liebe in all ihren Formen.",
@@ -691,7 +691,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "sep-2",
     titel: "Neumond-Erneuerungsritual",
-    datum: "10.9.2026",
+    datum: "11.9.2026",
     monat: 9,
     kategorie: "Neumond",
     kurz: "Erneuere dich mit der Herbst-Neumond-Energie und setze Herbst-Intentionen.",
@@ -928,7 +928,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "dez-2",
     titel: "Super-Vollmond Jahresabschluss",
-    datum: "23.12.2026",
+    datum: "24.12.2026",
     monat: 12,
     kategorie: "Vollmond",
     kurz: "Super-Vollmond: Schließe das Jahr mit einem kraftvollen Loslassritual ab.",
@@ -953,7 +953,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "dez-3",
     titel: "Neumond-Neujahrsvorbereitung",
-    datum: "8.12.2026",
+    datum: "9.12.2026",
     monat: 12,
     kategorie: "Neumond",
     kurz: "Bereite dich mit dem letzten Neumond des Jahres auf 2027 vor.",
@@ -1009,7 +1009,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "feb-4",
     titel: "Vollmond-Ritual der Reinigung",
-    datum: "3.2.2026",
+    datum: "1.2.2026",
     monat: 2,
     kategorie: "Vollmond",
     kurz: "Nutze den Vollmond im Löwen für kraftvolle Reinigung und Selbstausdruck.",
@@ -1063,7 +1063,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "apr-4",
     titel: "Vollmond-Ritual der Befreiung",
-    datum: "12.4.2026",
+    datum: "2.4.2026",
     monat: 4,
     kategorie: "Vollmond",
     kurz: "Befreie dich unter dem Waage-Vollmond von alten Bindungen und Mustern.",
@@ -1114,7 +1114,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "mai-4",
     titel: "Neumond-Manifestationsritual",
-    datum: "17.5.2026",
+    datum: "16.5.2026",
     monat: 5,
     kategorie: "Neumond",
     kurz: "Setze kraftvolle Intentionen unter dem Stier-Neumond für materielle Fülle.",
@@ -1216,7 +1216,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "sep-4",
     titel: "Vollmond-Ernteritual",
-    datum: "5.9.2026",
+    datum: "26.9.2026",
     monat: 9,
     kategorie: "Vollmond",
     kurz: "Feiere deine Ernte – alles was du in diesem Jahr manifestiert hast.",
@@ -1319,7 +1319,7 @@ export const RITUALE_2026: Ritual[] = [
   {
     id: "nov-4",
     titel: "Neumond-Ritual der Stille",
-    datum: "10.11.2026",
+    datum: "9.11.2026",
     monat: 11,
     kategorie: "Neumond",
     kurz: "Gehe in die tiefe Stille des November-Neumonds und höre die Stimme deiner Seele.",

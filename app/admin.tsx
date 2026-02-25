@@ -180,6 +180,30 @@ export default function AdminScreen() {
           ))}
         </View>
 
+        {/* Musik verwalten */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>🎵 Musik verwalten</Text>
+          <Text style={s.sectionHint}>Füge deine Spotify- und Apple Music-Songs hinzu. Nutzer finden sie unter "Meine Musik".</Text>
+          <TouchableOpacity
+            style={[s.themaBtn, { borderColor: C.rose }]}
+            onPress={() => router.push("/musik" as any)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 18, marginRight: 10 }}>🎵</Text>
+            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>Musik-Bereich öffnen</Text>
+            <Text style={{ color: C.rose, fontSize: 16 }}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[s.themaBtn, { borderColor: C.gold }]}
+            onPress={() => router.push("/meditation" as any)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 18, marginRight: 10 }}>🧘‍♀️</Text>
+            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>Meditationen verwalten</Text>
+            <Text style={{ color: C.gold, fontSize: 16 }}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Admin-PIN ändern */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>🔒 Admin-PIN</Text>

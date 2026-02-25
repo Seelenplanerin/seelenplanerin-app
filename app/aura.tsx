@@ -172,7 +172,7 @@ export default function AuraScreen() {
         <Text style={s.sec}>Was ist eine Aura?</Text>
         {[
           { emoji: "🌈", titel: "Das Energiefeld", text: "Die Aura ist das Energiefeld, das jeden Menschen umgibt. Sie spiegelt deinen emotionalen, mentalen und spirituellen Zustand wider – und verändert sich täglich." },
-          { emoji: "🔮", titel: "Wie liest Lara Auren?", text: "Lara hat die Fähigkeit entwickelt, Auren visuell wahrzunehmen. In einem Aura Reading beschreibt sie Farben, Muster und Blockaden in deinem Energiefeld." },
+
           { emoji: "✨", titel: "Deine tägliche Aura", text: "Jede Aura-Farbe hat eine eigene Bedeutung. Sie zeigt, welche Energie gerade in dir aktiv ist, wo Heilung stattfindet und welche Gaben du in dir trägst." },
         ].map((item, i) => (
           <View key={i} style={s.erklaerungCard}>

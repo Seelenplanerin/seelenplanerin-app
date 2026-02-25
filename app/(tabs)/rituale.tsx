@@ -50,8 +50,14 @@ export default function RitualeScreen() {
       list.push(r);
       map.set(r.monat, list);
     }
-    // Sortiert nach Monat
-    return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
+    // Sortiert nach Monat, innerhalb jedes Monats chronologisch nach Datum
+    const parseDatum = (d: string) => {
+      const [tag, monat, jahr] = d.split(".").map(Number);
+      return new Date(jahr, monat - 1, tag).getTime();
+    };
+    return Array.from(map.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([monat, rituale]) => [monat, rituale.sort((a, b) => parseDatum(a.datum) - parseDatum(b.datum))] as [number, Ritual[]]);
   }, [gefiltert]);
 
   return (
@@ -330,17 +336,18 @@ const s = StyleSheet.create({
     color: C.muted,
     letterSpacing: 1.5,
   },
-  katRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 8 },
+  katRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 12, paddingTop: 4 },
   katBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
     backgroundColor: C.card,
     borderWidth: 1,
     borderColor: C.border,
     gap: 4,
+    minHeight: 36,
   },
   katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
   katEmoji: { fontSize: 12 },

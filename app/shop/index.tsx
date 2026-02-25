@@ -30,11 +30,11 @@ interface Product {
 const PRODUCTS: Product[] = [
   {
     id: "runen-armband",
-    name: "Runen-Armband",
-    nameEn: "Rune Bracelet",
+    name: "Themen-Armband",
+    nameEn: "Theme Bracelet",
     kategorie: "armbänder",
-    preis: 49.90,
-    preisDisplay: "ab 49,90 €",
+    preis: 0,
+    preisDisplay: "",
     beschreibung: "Silberkette mit 3 handgravierten Runen-Plättchen + Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum.",
     emoji: "ᚱ",
     highlight: "Handgraviert von Lara",
@@ -58,8 +58,8 @@ const PRODUCTS: Product[] = [
     name: "Runen-Charm einzeln",
     nameEn: "Single Rune Charm",
     kategorie: "armbänder",
-    preis: 14.90,
-    preisDisplay: "14,90 €",
+    preis: 0,
+    preisDisplay: "",
     beschreibung: "Einzelner Runen-Charm mit Heilstein-Pulver. Handgraviert. Passend für das Silberkettenarmband.",
     emoji: "✦",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
@@ -89,19 +89,7 @@ const PRODUCTS: Product[] = [
     highlight: "1:1 mit Lara",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
   },
-  {
-    id: "seelenreset",
-    name: "Seelenreset",
-    nameEn: "Soul Reset",
-    kategorie: "sessions",
-    preis: 0,
-    preisDisplay: "Auf Anfrage",
-    beschreibung: "Das intensive Transformationsprogramm. Für Frauen, die bereit sind, ihr Leben von Grund auf neu auszurichten.",
-    emoji: "🔮",
-    highlight: "Intensiv-Programm",
-    tentaryUrl: "https://www.instagram.com/die.seelenplanerin/",
-    badge: "Neu",
-  },
+
   {
     id: "seelenimpuls",
     name: "Seelenimpuls",
@@ -264,14 +252,14 @@ export default function ShopScreen() {
             </View>
             <Text style={s.cardDesc}>{item.beschreibung}</Text>
             <View style={s.cardBottom}>
-              <Text style={s.price}>{item.preisDisplay}</Text>
+              {item.preisDisplay ? <Text style={s.price}>{item.preisDisplay}</Text> : null}
               <TouchableOpacity
-                style={item.preis === 0 && item.id !== "seelenreset" ? s.freeBtn : s.buyBtn}
+                style={item.preis === 0 ? s.freeBtn : s.buyBtn}
                 onPress={() => handleBuy(item)}
                 activeOpacity={0.8}
               >
                 <Text style={s.buyBtnText}>
-                  {item.preis === 0 && item.id !== "seelenreset" ? "Kostenlos →" : "Kaufen →"}
+                  {item.preisDisplay ? "Kaufen →" : "Ansehen →"}
                 </Text>
               </TouchableOpacity>
             </View>

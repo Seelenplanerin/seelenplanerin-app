@@ -78,13 +78,38 @@ export const MOON_PHASES: MoonPhase[] = [
  * Berechnet die aktuelle Mondphase basierend auf dem Datum.
  * Vereinfachte Berechnung (synodischer Monat ≈ 29.53 Tage)
  */
+// Korrekte Neumond-Daten 2026 (UTC)
+const NEUMONDE_2026 = [
+  new Date("2026-01-18T19:53:00Z"),
+  new Date("2026-02-17T12:03:00Z"),
+  new Date("2026-03-19T01:26:00Z"),
+  new Date("2026-04-17T11:54:00Z"),
+  new Date("2026-05-16T20:03:00Z"),
+  new Date("2026-06-15T02:56:00Z"),
+  new Date("2026-07-14T09:45:00Z"),
+  new Date("2026-08-12T17:37:00Z"),
+  new Date("2026-09-11T03:27:00Z"),
+  new Date("2026-10-10T15:50:00Z"),
+  new Date("2026-11-09T07:02:00Z"),
+  new Date("2026-12-09T00:52:00Z"),
+];
+const SYNODISCHER_MONAT = 29.53058867 * 24 * 60 * 60 * 1000;
+
+function findLastNeumond(date: Date): Date {
+  let ref = NEUMONDE_2026[0];
+  for (const nm of NEUMONDE_2026) {
+    if (nm.getTime() <= date.getTime()) ref = nm;
+    else break;
+  }
+  return ref;
+}
+
 export function getCurrentMoonPhase(): MoonPhase {
-  const knownNewMoon = new Date("2024-01-11T11:57:00Z").getTime();
-  const synodicMonth = 29.53058867 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  const elapsed = now - knownNewMoon;
-  const cyclePosition = ((elapsed % synodicMonth) + synodicMonth) % synodicMonth;
-  const phaseIndex = Math.floor((cyclePosition / synodicMonth) * 8) % 8;
+  const now = new Date();
+  const ref = findLastNeumond(now);
+  const elapsed = now.getTime() - ref.getTime();
+  const cyclePosition = ((elapsed % SYNODISCHER_MONAT) + SYNODISCHER_MONAT) % SYNODISCHER_MONAT;
+  const phaseIndex = Math.floor((cyclePosition / SYNODISCHER_MONAT) * 8) % 8;
   return MOON_PHASES[phaseIndex];
 }
 
@@ -92,11 +117,10 @@ export function getCurrentMoonPhase(): MoonPhase {
  * Berechnet die Mondphase für ein bestimmtes Datum.
  */
 export function getMoonPhaseForDate(date: Date): MoonPhase {
-  const knownNewMoon = new Date("2024-01-11T11:57:00Z").getTime();
-  const synodicMonth = 29.53058867 * 24 * 60 * 60 * 1000;
-  const elapsed = date.getTime() - knownNewMoon;
-  const cyclePosition = ((elapsed % synodicMonth) + synodicMonth) % synodicMonth;
-  const phaseIndex = Math.floor((cyclePosition / synodicMonth) * 8) % 8;
+  const ref = findLastNeumond(date);
+  const elapsed = date.getTime() - ref.getTime();
+  const cyclePosition = ((elapsed % SYNODISCHER_MONAT) + SYNODISCHER_MONAT) % SYNODISCHER_MONAT;
+  const phaseIndex = Math.floor((cyclePosition / SYNODISCHER_MONAT) * 8) % 8;
   return MOON_PHASES[phaseIndex];
 }
 

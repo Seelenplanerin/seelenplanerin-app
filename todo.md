@@ -196,3 +196,18 @@
 - [x] Produkt-CTAs hervorgehoben (bei Lara kaufen)
 - [x] Ritual-Jahreskalender Feb-Dez 2026 wie Sacred Space (51 Rituale)
 - [x] Mindestens 4-5 Rituale pro Monat mit korrekten Daten
+
+## Feedback Runde 6 (25.02.2026 Abend)
+- [x] Logo mittig unten rechts vom Bild positionieren
+- [x] Hero-Bild: Kopf nicht abschneiden, ganzes Gesicht sichtbar
+- [x] ALLE Mondphasen 2026 korrekt einpflegen (Neumond-Daten + moon-phase.ts)
+- [x] Ritual-Daten chronologisch sortieren (parseDatum Sortierung)
+- [x] Kategorie-Buttons oben nicht abgeschnitten (mehr Padding)
+- [x] Shop: "Themen-Armband" statt Runen-Armband
+- [x] Shop: Preise bei Themen-Armband entfernt
+- [x] Shop: Preise bei Runen-Charms entfernt
+- [x] Aura-Screen: "Wie liest Lara Auren" Text entfernt
+- [x] Seelenreset entfernt, Meditation/Musik als eigene Screens
+- [x] Musik-Bereich: Spotify/Apple Music/YouTube Integration
+- [x] Musik über Admin-Bereich verwaltbar (AsyncStorage)
+- [x] Community-Zugang und Admin-Zugang erklärt

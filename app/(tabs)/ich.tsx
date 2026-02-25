@@ -36,18 +36,19 @@ const MENU_ITEMS = [
     ],
   },
   {
-    section: "Einstellungen",
+    section: "Meditation & Musik",
     items: [
-      { id: "musik", label: "Musik & Klänge", emoji: "🎵", route: "/admin" },
+      { id: "musik", label: "Meine Musik", emoji: "🎵", route: "/musik" },
+      { id: "meditation", label: "Meditationen", emoji: "🧘‍♀️", route: "/meditation" },
     ],
   },
 ];
 
 const PRODUKTE = [
-  { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "28,90 €", emoji: "🖤", url: "https://dieseelenplanerin.tentary.com/p/gGmtFy" },
-  { id: "runen", name: "Runen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "ab 38 €", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
+  { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "", emoji: "🖤", url: "https://dieseelenplanerin.tentary.com/p/gGmtFy" },
+  { id: "runen", name: "Themen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
   { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://calendly.com/hallo-seelenplanerin/30min" },
-  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "77 €", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
+  { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
 ];
 
 export default function IchScreen() {
@@ -100,7 +101,7 @@ export default function IchScreen() {
               <Text style={{ fontSize: 28, marginBottom: 8 }}>{p.emoji}</Text>
               <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 }}>{p.name}</Text>
               <Text style={{ fontSize: 11, color: C.muted, lineHeight: 16, marginBottom: 8 }}>{p.beschreibung}</Text>
-              <Text style={{ fontSize: 14, fontWeight: "700", color: C.rose }}>{p.preis}</Text>
+              {p.preis ? <Text style={{ fontSize: 14, fontWeight: "700", color: C.rose }}>{p.preis}</Text> : null}
             </TouchableOpacity>
           ))}
         </ScrollView>
