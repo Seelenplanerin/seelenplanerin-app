@@ -74,6 +74,20 @@ export default function RitualeScreen() {
             </TouchableOpacity>
           </View>
         )}
+        {/* Mondtyp-Quiz Banner */}
+        <TouchableOpacity
+          style={{marginHorizontal:16,marginTop:16,backgroundColor:"#2C1A4E",borderRadius:16,padding:18,flexDirection:"row",alignItems:"center"}}
+          onPress={()=>router.push("/mondtyp-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <Text style={{fontSize:36,marginRight:14}}>🌙</Text>
+          <View style={{flex:1}}>
+            <Text style={{fontSize:16,fontWeight:"700",color:"#FFF",marginBottom:3}}>Welcher Mondtyp bist du?</Text>
+            <Text style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>8 Fragen · Entdecke deine Mondenergie</Text>
+          </View>
+          <Text style={{fontSize:20,color:C.gold}}>→</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={{marginHorizontal:16,marginTop:16,backgroundColor:C.brown,borderRadius:16,padding:16,flexDirection:"row",alignItems:"center"}} onPress={()=>router.push("/(tabs)/runen" as any)} activeOpacity={0.85}>
           <Text style={{fontSize:32,color:C.gold,marginRight:14}}>ᚱ</Text>
           <View style={{flex:1}}>
