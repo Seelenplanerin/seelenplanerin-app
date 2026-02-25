@@ -133,7 +133,7 @@ export default function CommunityScreen() {
           </Text>
           <TouchableOpacity
             style={{ backgroundColor: C.gold, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 24 }}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
             activeOpacity={0.85}
           >
             <Text style={{ color: "#FFF", fontSize: 15, fontWeight: "700" }}>17 € / Monat · Jetzt starten</Text>

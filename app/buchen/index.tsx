@@ -34,7 +34,7 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🎁",
     badge: "Gratis",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/",
+    bookingUrl: "https://www.instagram.com/die.seelenplanerin/",
   },
   {
     id: "aura-reading",
@@ -86,7 +86,7 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🔮",
     badge: "Premium",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/",
+    bookingUrl: "https://www.instagram.com/die.seelenplanerin/",
   },
 ];
 

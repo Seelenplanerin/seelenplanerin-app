@@ -118,7 +118,7 @@ export default function RunenScreen() {
   }
 
   function handleShopOeffnen() {
-    Linking.openURL("https://dieseelenplanerin.tentary.com");
+    Linking.openURL("https://dieseelenplanerin.tentary.com/p/qnl3vN");
   }
 
   return (

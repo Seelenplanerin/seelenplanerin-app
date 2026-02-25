@@ -99,7 +99,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Das intensive Transformationsprogramm. Für Frauen, die bereit sind, ihr Leben von Grund auf neu auszurichten.",
     emoji: "🔮",
     highlight: "Intensiv-Programm",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://www.instagram.com/die.seelenplanerin/",
     badge: "Neu",
   },
   {
@@ -123,7 +123,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Kostenloser Einstieg in die Welt der Seelenplanerin. Erste Impulse und Einblicke.",
     emoji: "🎁",
     badge: "Gratis",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/",
+    tentaryUrl: "https://www.instagram.com/die.seelenplanerin/",
   },
 ];
 

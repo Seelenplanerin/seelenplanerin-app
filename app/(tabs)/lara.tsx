@@ -7,7 +7,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import * as Haptics from "expo-haptics";
 
 const INSTAGRAM_URL = "https://www.instagram.com/die.seelenplanerin/";
-const TENTARY_URL = "https://dieseelenplanerin.tentary.com/";
+const TENTARY_URL = "https://dieseelenplanerin.tentary.com/p/E6FP1U";
 
 export default function LaraScreen() {
   const tap = () => {

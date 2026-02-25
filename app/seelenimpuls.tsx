@@ -17,7 +17,7 @@ const FEATURES = [
   { emoji: "✨", titel: "Persönliche Impulse", beschreibung: "Wöchentliche Botschaften direkt von Lara an dich" },
   { emoji: "🌙", titel: "Mondkalender Premium", beschreibung: "Detaillierte Mondenergie-Vorhersagen für jeden Tag" },
   { emoji: "ᚱ", titel: "Runen-Tiefenanalyse", beschreibung: "Ausführliche Runen-Readings und persönliche Deutungen" },
-  { emoji: "📖", titel: "Journal-Prompts", beschreibung: "Täglich neue Schreibimpulse für deine Seelenreise" },
+  { emoji: "📞", titel: "Monatlicher Community-Call", beschreibung: "Live-Call mit Lara und allen Mitgliedern – gemeinsam wachsen" },
   { emoji: "💌", titel: "Community-Zugang", beschreibung: "Exklusiver Zugang zur Seelenplanerin-Community" },
   { emoji: "🎁", titel: "Frühzugang zu Produkten", beschreibung: "Neue Armbänder und Angebote zuerst für Mitglieder" },
 ];
@@ -85,7 +85,7 @@ export default function SeelenimpulsScreen() {
           <Text style={s.preis}>17 €</Text>
           <Text style={s.preisUnit}>pro Monat · jederzeit kündbar</Text>
           <View style={s.preisFeatures}>
-            {["Alle exklusiven Inhalte", "Persönliche Impulse von Lara", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
+            {["Alle exklusiven Inhalte", "Persönliche Impulse von Lara", "Monatlicher Community-Call mit Lara", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
               <View key={i} style={s.preisFeatureRow}>
                 <Text style={{ color: C.gold, fontSize: 16, marginRight: 8 }}>✓</Text>
                 <Text style={{ fontSize: 14, color: C.brownMid }}>{f}</Text>
