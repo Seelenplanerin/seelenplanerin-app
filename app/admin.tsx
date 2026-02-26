@@ -317,15 +317,29 @@ export default function AdminScreen() {
     try {
       const apiBase = getApiBaseUrl();
       const uploadUrl = `${apiBase}/api/upload-audio`;
+      console.log("[Upload] URL:", uploadUrl, "File:", fileName, "Type:", mimeType);
 
       if (Platform.OS === "web") {
         // Web: fetch blob and send as FormData
         const resp = await fetch(uri);
         const blob = await resp.blob();
+        console.log("[Upload] Blob size:", blob.size, "bytes");
         const formData = new FormData();
         formData.append("file", blob, fileName);
         const uploadResp = await fetch(uploadUrl, { method: "POST", body: formData });
-        const result = await uploadResp.json();
+        const responseText = await uploadResp.text();
+        console.log("[Upload] Response status:", uploadResp.status, "Body:", responseText.substring(0, 200));
+        if (!uploadResp.ok) {
+          Alert.alert("Upload fehlgeschlagen", `Server-Fehler (${uploadResp.status}): ${responseText.substring(0, 100)}`);
+          return;
+        }
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${responseText.substring(0, 100)}`);
+          return;
+        }
         if (result.success) {
           setUrl(result.url);
           Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
@@ -341,7 +355,18 @@ export default function AdminScreen() {
           mimeType: mimeType,
           parameters: { fileName },
         });
-        const result = JSON.parse(uploadResult.body);
+        console.log("[Upload] Native response status:", uploadResult.status, "Body:", uploadResult.body?.substring(0, 200));
+        if (uploadResult.status !== 200) {
+          Alert.alert("Upload fehlgeschlagen", `Server-Fehler (${uploadResult.status})`);
+          return;
+        }
+        let result;
+        try {
+          result = JSON.parse(uploadResult.body);
+        } catch {
+          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
+          return;
+        }
         if (result.success) {
           setUrl(result.url);
           Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
@@ -350,6 +375,7 @@ export default function AdminScreen() {
         }
       }
     } catch (err: any) {
+      console.error("[Upload] Error:", err);
       Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen");
     } finally {
       setIsUploading(false);

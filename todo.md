@@ -408,3 +408,11 @@
 - [x] Upload großer Dateien schlägt fehl: "JSON Parse error: Unexpected character: <" – BEHOBEN
 - [x] Ursache: Base64-Encoding verdoppelt die Dateigröße, Server body-parser Limit wird überschritten
 - [x] Lösung: Multipart-Upload (FormData) via /api/upload-audio Route mit multer (bis 100 MB)
+
+## Bug: Meditationen nirgendwo auffindbar (26.02.2026)
+- [x] Hochgeladene Meditationen werden im Community-Bereich nicht angezeigt – BEHOBEN
+- [x] Prüfen: Storage-Key Admin vs. Community-Screen stimmen überein? – JA, beide nutzen "lara_meditationen"
+- [x] Prüfen: Meditationen-Sektion im Community wird korrekt gerendert? – JA, mit useFocusEffect
+- [x] Premium-Screen: Zeigt jetzt echte hochgeladene Meditationen mit Audio-Player (statt nur Platzhalter)
+- [x] Community-Screen: MeditationenSektion lädt bei jedem Tab-Focus neu (useFocusEffect statt useEffect)
+- [x] Premium-Screen: Meditationen laden bei jedem Screen-Focus neu (useFocusEffect)

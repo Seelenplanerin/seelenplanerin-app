@@ -177,15 +177,22 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
   const [songs, setSongs] = useState<Song[]>([]);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
-  useEffect(() => {
-    AsyncStorage.getItem("lara_meditationen").then((data) => {
-      if (data) {
-        const allMeditationen: Song[] = JSON.parse(data);
-        const verfuegbare = allMeditationen.filter(s => s.verfuegbar);
-        setSongs(verfuegbare);
-      }
-    });
-  }, []);
+  // Bei jedem Tab-Focus Meditationen neu laden (damit neue Uploads sofort sichtbar sind)
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem("lara_meditationen").then((data) => {
+        if (data) {
+          try {
+            const allMeditationen: Song[] = JSON.parse(data);
+            const verfuegbare = allMeditationen.filter(s => s.verfuegbar);
+            setSongs(verfuegbare);
+          } catch (e) {
+            console.error("[MeditationenSektion] JSON parse error:", e);
+          }
+        }
+      });
+    }, [])
+  );
 
   const handlePlay = (song: Song) => {
     if (song.mp3Url) {

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput,
-  Alert, Platform,
+  Alert, Platform, ActivityIndicator, Linking,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   getMoonPhaseForDate,
   getMoonZodiac,
@@ -90,6 +92,70 @@ function getSyncLabel(typ: string): string {
   return "Neutral";
 }
 
+// ── Song-Interface ──
+interface Song {
+  id: string;
+  titel: string;
+  beschreibung: string;
+  mp3Url?: string;
+  mp3FileName?: string;
+  spotifyUrl?: string;
+  appleMusicUrl?: string;
+  youtubeUrl?: string;
+  emoji: string;
+  kategorie: string;
+  verfuegbar: boolean;
+}
+
+// ── Audio-Manager für Web ──
+function usePremiumAudio() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const intervalRef = React.useRef<any>(null);
+
+  const stop = useCallback(() => {
+    if (Platform.OS === "web" && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setIsPlaying(false);
+    setCurrentUrl("");
+    setCurrentTime(0);
+    setDuration(0);
+  }, []);
+
+  const play = useCallback((url: string) => {
+    if (currentUrl === url && isPlaying) { stop(); return; }
+    stop();
+    setLoading(true);
+    setCurrentUrl(url);
+    if (Platform.OS === "web") {
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onloadedmetadata = () => { setDuration(audio.duration || 0); };
+      audio.onplay = () => { setIsPlaying(true); setLoading(false); };
+      audio.onended = () => { stop(); };
+      audio.onerror = () => { setLoading(false); Alert.alert("Fehler", "Audio konnte nicht geladen werden."); stop(); };
+      intervalRef.current = setInterval(() => {
+        if (audio && !audio.paused) setCurrentTime(audio.currentTime || 0);
+      }, 500);
+      audio.play().catch(() => { setLoading(false); });
+    }
+  }, [currentUrl, isPlaying, stop]);
+
+  const progress = duration > 0 ? currentTime / duration : 0;
+
+  useEffect(() => { return () => { stop(); }; }, [stop]);
+
+  return { play, stop, isPlaying, currentUrl, loading, currentTime, duration, progress };
+}
+
 export default function CommunityPremiumScreen() {
   const [tab, setTab] = useState<"kalender" | "zyklus" | "meditation">("kalender");
   const [zyklusEinstellungen, setZyklusEinstellungen] = useState<ZyklusEinstellungen | null>(null);
@@ -98,6 +164,8 @@ export default function CommunityPremiumScreen() {
   const [setupLaenge, setSetupLaenge] = useState("28");
   const [setupDauer, setSetupDauer] = useState("5");
   const mondkalender = getPremiumMondkalender();
+  const audio = usePremiumAudio();
+  const [uploadedMeditationen, setUploadedMeditationen] = useState<Song[]>([]);
 
   // Zyklusdaten laden
   useEffect(() => {
@@ -107,6 +175,22 @@ export default function CommunityPremiumScreen() {
       }
     });
   }, []);
+
+  // Hochgeladene Meditationen aus AsyncStorage laden (bei jedem Screen-Focus)
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem("lara_meditationen").then((data) => {
+        if (data) {
+          try {
+            const all: Song[] = JSON.parse(data);
+            setUploadedMeditationen(all.filter(s => s.verfuegbar));
+          } catch (e) {
+            console.error("[Premium] Meditationen JSON parse error:", e);
+          }
+        }
+      });
+    }, [])
+  );
 
   const speichern = useCallback(async () => {
     if (!setupDatum || !setupDatum.match(/^\d{4}-\d{2}-\d{2}$/)) {
@@ -478,38 +562,91 @@ export default function CommunityPremiumScreen() {
                 Geführte Meditationen von der Seelenplanerin – speziell für deinen spirituellen Weg.
               </Text>
 
+              {/* Hochgeladene Meditationen mit Player */}
+              {uploadedMeditationen.length > 0 && uploadedMeditationen.map((med) => {
+                const isActive = audio.currentUrl === med.mp3Url;
+                return (
+                  <TouchableOpacity
+                    key={med.id}
+                    style={[s.meditationCard, isActive && { backgroundColor: C.roseLight, borderColor: C.rose }]}
+                    onPress={() => {
+                      if (med.mp3Url) {
+                        audio.play(med.mp3Url);
+                      } else if (med.spotifyUrl) {
+                        Linking.openURL(med.spotifyUrl);
+                      }
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={s.meditationEmoji}>
+                      <Text style={{ fontSize: 28 }}>{med.emoji}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.meditationTitel}>{med.titel}</Text>
+                      <Text style={s.meditationBeschreibung}>{med.beschreibung}</Text>
+                      {med.mp3Url && (
+                        <View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
+                          <View style={{ backgroundColor: C.roseLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
+                            <Text style={{ fontSize: 10, color: C.rose, fontWeight: "700" }}>🎧 In-App abspielen</Text>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                    <View style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.rose, alignItems: "center", justifyContent: "center" }, isActive && audio.isPlaying && { backgroundColor: C.brown }]}>
+                      {audio.loading && isActive ? (
+                        <ActivityIndicator size="small" color="#FFF" />
+                      ) : (
+                        <Text style={{ color: "#FFF", fontSize: 16 }}>{isActive && audio.isPlaying ? "⏸" : "▶"}</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* Now Playing Bar */}
+              {audio.isPlaying && (
+                <View style={{ backgroundColor: C.brown, borderRadius: 12, padding: 12, marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "600" }}>🎧 Meditation läuft...</Text>
+                    <View style={{ height: 3, backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 2, marginTop: 6, overflow: "hidden" }}>
+                      <View style={{ height: "100%", backgroundColor: C.gold, borderRadius: 2, width: `${audio.progress * 100}%` }} />
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={audio.stop} style={{ marginLeft: 12 }} activeOpacity={0.7}>
+                    <Text style={{ color: C.gold, fontSize: 14, fontWeight: "700" }}>■ Stop</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Platzhalter-Meditationen (Bald verfügbar) */}
               {PREMIUM_MEDITATIONEN.map((med) => (
-                <View key={med.id} style={[s.meditationCard, !med.verfuegbar && { opacity: 0.6 }]}>
+                <View key={med.id} style={[s.meditationCard, { opacity: 0.6 }]}>
                   <View style={s.meditationEmoji}>
                     <Text style={{ fontSize: 28 }}>{med.emoji}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       <Text style={s.meditationTitel}>{med.titel}</Text>
-                      {!med.verfuegbar && (
-                        <View style={s.comingSoonBadge}>
-                          <Text style={s.comingSoonText}>Bald verfügbar</Text>
-                        </View>
-                      )}
+                      <View style={s.comingSoonBadge}>
+                        <Text style={s.comingSoonText}>Bald verfügbar</Text>
+                      </View>
                     </View>
                     <Text style={s.meditationBeschreibung}>{med.beschreibung}</Text>
                     <Text style={s.meditationDauer}>{med.dauer}</Text>
                   </View>
-                  {med.verfuegbar ? (
-                    <Text style={{ fontSize: 20, color: C.rose }}>▶</Text>
-                  ) : (
-                    <Text style={{ fontSize: 16, color: C.muted }}>🔒</Text>
-                  )}
+                  <Text style={{ fontSize: 16, color: C.muted }}>🔒</Text>
                 </View>
               ))}
 
-              <View style={s.infoBox}>
-                <Text style={{ fontSize: 18, marginBottom: 8 }}>🎧</Text>
-                <Text style={s.infoBoxTitle}>Meditationen werden ergänzt</Text>
-                <Text style={s.infoBoxText}>
-                  Die Seelenplanerin arbeitet gerade an exklusiven geführten Meditationen für dich. Sie werden nach und nach freigeschaltet.
-                </Text>
-              </View>
+              {uploadedMeditationen.length === 0 && (
+                <View style={s.infoBox}>
+                  <Text style={{ fontSize: 18, marginBottom: 8 }}>🎧</Text>
+                  <Text style={s.infoBoxTitle}>Meditationen werden ergänzt</Text>
+                  <Text style={s.infoBoxText}>
+                    Die Seelenplanerin arbeitet gerade an exklusiven geführten Meditationen für dich. Sie werden nach und nach freigeschaltet.
+                  </Text>
+                </View>
+              )}
             </View>
           )}
 
