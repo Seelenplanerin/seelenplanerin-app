@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Svg, { Circle, Path, Defs, RadialGradient, Stop } from "react-native-svg";
 
 interface MoonIconProps {
@@ -9,73 +9,83 @@ interface MoonIconProps {
   isWaxing: boolean;
   /** Größe des Icons in Pixel */
   size?: number;
-  /** Hintergrundfarbe (für den dunklen Teil) */
-  darkColor?: string;
-  /** Farbe des beleuchteten Teils */
-  lightColor?: string;
 }
 
 /**
  * SVG-basierte Mondphasen-Darstellung.
- * Zeigt die korrekte Beleuchtung unabhängig vom Gerät/OS.
- * Inspiriert von MoonWorx.
+ * 
+ * WICHTIG – Beleuchtungsregeln (Nordhalbkugel):
+ * - Zunehmend (isWaxing=true): RECHTE Seite beleuchtet
+ * - Abnehmend (isWaxing=false): LINKE Seite beleuchtet
+ * - Neumond (illumination=0): komplett dunkel
+ * - Vollmond (illumination=100): komplett hell
  */
 export function MoonIcon({
   illumination,
   isWaxing,
   size = 80,
-  darkColor = "#2A2F45",
-  lightColor = "#F5E6C8",
 }: MoonIconProps) {
   const r = size / 2;
   const cx = r;
   const cy = r;
+  const moonR = r - 1; // Etwas kleiner als Container für Rand
 
-  // Berechne den Terminator (Grenze zwischen Licht und Schatten)
-  // illumination 0 = Neumond (ganz dunkel)
-  // illumination 50 = Halbmond
-  // illumination 100 = Vollmond (ganz hell)
-  const illumFraction = Math.max(0, Math.min(100, illumination)) / 100;
+  // Normalisiere Beleuchtung
+  const illum = Math.max(0, Math.min(100, Math.round(illumination)));
 
-  // Berechne den Kontrollpunkt für die Bézier-Kurve des Terminators
-  // Bei 0% ist der Terminator am rechten Rand (zunehmend) oder linken Rand (abnehmend)
-  // Bei 50% ist er in der Mitte
-  // Bei 100% ist er am anderen Rand
-  const terminatorX = illumFraction * 2 * r;
+  // Berechne den beleuchteten Pfad
+  let lightPath = "";
 
-  // Erstelle den beleuchteten Pfad
-  let lightPath: string;
-
-  if (illumination <= 1) {
-    // Neumond - komplett dunkel
+  if (illum <= 1) {
+    // Neumond – komplett dunkel, kein Lichtpfad
     lightPath = "";
-  } else if (illumination >= 99) {
-    // Vollmond - komplett hell
-    lightPath = `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r}`;
+  } else if (illum >= 99) {
+    // Vollmond – komplett hell (voller Kreis)
+    lightPath = [
+      `M ${cx} ${cy - moonR}`,
+      `A ${moonR} ${moonR} 0 1 0 ${cx} ${cy + moonR}`,
+      `A ${moonR} ${moonR} 0 1 0 ${cx} ${cy - moonR}`,
+      "Z",
+    ].join(" ");
   } else {
-    // Berechne den Terminator als Ellipse
-    // Die Breite der Ellipse bestimmt wie viel beleuchtet ist
-    const ellipseRx = Math.abs(r * (2 * illumFraction - 1));
-    const sweepOuter = 1; // Äußerer Bogen immer von oben nach unten
+    // Teilweise beleuchtet
+    // f geht von 0.0 (Neumond) bis 1.0 (Vollmond)
+    const f = illum / 100;
+
+    // Der Terminator ist eine Ellipse. Ihre X-Radius bestimmt die Form:
+    // - Bei f=0.5 (Halbmond): Terminator ist eine gerade Linie (ellipseRx=0)
+    // - Bei f<0.5: Terminator wölbt sich IN den beleuchteten Bereich
+    // - Bei f>0.5: Terminator wölbt sich IN den dunklen Bereich
+    const ellipseRx = Math.abs(moonR * (2 * f - 1));
+
+    // Sweep-Flags für den inneren Bogen (Terminator-Ellipse)
+    // bestimmen, ob die Ellipse nach innen oder außen gewölbt ist
+    const innerSweep = f > 0.5 ? 0 : 1;
 
     if (isWaxing) {
-      // Zunehmend: Beleuchtung von rechts
-      if (illumFraction < 0.5) {
-        // Weniger als Halbmond: schmaler beleuchteter Streifen rechts
-        lightPath = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${ellipseRx} ${r} 0 0 1 ${cx} ${cy - r}`;
-      } else {
-        // Mehr als Halbmond: großer beleuchteter Bereich
-        lightPath = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${ellipseRx} ${r} 0 0 0 ${cx} ${cy - r}`;
-      }
+      // ZUNEHMEND: Rechte Seite beleuchtet
+      // Äußerer Bogen: von oben nach unten über RECHTS (sweep=1, large-arc=0 für Halbkreis rechts)
+      // Innerer Bogen (Terminator): von unten zurück nach oben
+      lightPath = [
+        `M ${cx} ${cy - moonR}`,
+        // Äußerer Bogen: rechte Hälfte des Kreises (von oben nach unten)
+        `A ${moonR} ${moonR} 0 0 1 ${cx} ${cy + moonR}`,
+        // Terminator-Ellipse: von unten nach oben
+        `A ${ellipseRx} ${moonR} 0 0 ${innerSweep} ${cx} ${cy - moonR}`,
+        "Z",
+      ].join(" ");
     } else {
-      // Abnehmend: Beleuchtung von links
-      if (illumFraction < 0.5) {
-        // Weniger als Halbmond: schmaler beleuchteter Streifen links
-        lightPath = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${ellipseRx} ${r} 0 0 0 ${cx} ${cy - r}`;
-      } else {
-        // Mehr als Halbmond: großer beleuchteter Bereich
-        lightPath = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${ellipseRx} ${r} 0 0 1 ${cx} ${cy - r}`;
-      }
+      // ABNEHMEND: Linke Seite beleuchtet
+      // Äußerer Bogen: von oben nach unten über LINKS (sweep=0)
+      // Innerer Bogen (Terminator): von unten zurück nach oben
+      lightPath = [
+        `M ${cx} ${cy - moonR}`,
+        // Äußerer Bogen: linke Hälfte des Kreises (von oben nach unten)
+        `A ${moonR} ${moonR} 0 0 0 ${cx} ${cy + moonR}`,
+        // Terminator-Ellipse: von unten nach oben
+        `A ${ellipseRx} ${moonR} 0 0 ${1 - innerSweep} ${cx} ${cy - moonR}`,
+        "Z",
+      ].join(" ");
     }
   }
 
@@ -83,25 +93,30 @@ export function MoonIcon({
     <View style={{ width: size, height: size }}>
       <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         <Defs>
-          <RadialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-            <Stop offset="0%" stopColor={lightColor} stopOpacity="1" />
-            <Stop offset="85%" stopColor={lightColor} stopOpacity="0.9" />
-            <Stop offset="100%" stopColor="#D4C4A0" stopOpacity="0.7" />
+          <RadialGradient id="moonGlow" cx="50%" cy="45%" r="55%">
+            <Stop offset="0%" stopColor="#FFF8E7" stopOpacity="1" />
+            <Stop offset="60%" stopColor="#F5E6C8" stopOpacity="1" />
+            <Stop offset="100%" stopColor="#D4C4A0" stopOpacity="0.85" />
           </RadialGradient>
           <RadialGradient id="moonDark" cx="50%" cy="50%" r="50%">
-            <Stop offset="0%" stopColor={darkColor} stopOpacity="1" />
-            <Stop offset="90%" stopColor="#1A1F30" stopOpacity="1" />
+            <Stop offset="0%" stopColor="#2A2F45" stopOpacity="1" />
+            <Stop offset="85%" stopColor="#1E2235" stopOpacity="1" />
             <Stop offset="100%" stopColor="#151828" stopOpacity="1" />
           </RadialGradient>
         </Defs>
         {/* Dunkler Hintergrund (Mond-Scheibe) */}
-        <Circle cx={cx} cy={cy} r={r - 1} fill="url(#moonDark)" />
+        <Circle cx={cx} cy={cy} r={moonR} fill="url(#moonDark)" />
         {/* Beleuchteter Teil */}
         {lightPath ? (
           <Path d={lightPath} fill="url(#moonGlow)" />
         ) : null}
         {/* Subtiler Rand */}
-        <Circle cx={cx} cy={cy} r={r - 1} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+        <Circle
+          cx={cx} cy={cy} r={moonR}
+          fill="none"
+          stroke="rgba(255,255,255,0.12)"
+          strokeWidth="0.5"
+        />
       </Svg>
     </View>
   );
@@ -124,8 +139,6 @@ export function MoonIconSmall({
       illumination={illumination}
       isWaxing={isWaxing}
       size={size}
-      darkColor="#2A2F45"
-      lightColor="#F5E6C8"
     />
   );
 }

@@ -261,13 +261,30 @@ export default function CommunityScreen() {
                       return;
                     }
                     Alert.alert(
-                      "Passwort zurücksetzen",
-                      `Eine E-Mail zum Zurücksetzen deines Passworts wird an ${email.trim()} gesendet.`,
+                      "Passwort zur\u00fccksetzen",
+                      `Dein Passwort f\u00fcr ${email.trim()} wird zur\u00fcckgesetzt. Du kannst dich danach mit dem neuen Passwort anmelden.`,
                       [
                         { text: "Abbrechen", style: "cancel" },
-                        { text: "Senden", onPress: () => {
-                          setFehler("");
-                          Alert.alert("Gesendet", "Bitte prüfe dein E-Mail-Postfach.");
+                        { text: "Zur\u00fccksetzen", style: "destructive", onPress: async () => {
+                          try {
+                            const users = await getUsers();
+                            const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
+                            if (userIdx === -1) {
+                              Alert.alert("Nicht gefunden", "Es gibt kein Konto mit dieser E-Mail-Adresse. Bitte registriere dich zuerst.");
+                              return;
+                            }
+                            // Neues tempor\u00e4res Passwort generieren
+                            const tempPw = Math.random().toString(36).slice(2, 8);
+                            users[userIdx].password = tempPw;
+                            await saveUsers(users);
+                            setFehler("");
+                            Alert.alert(
+                              "Passwort zur\u00fcckgesetzt",
+                              `Dein neues tempor\u00e4res Passwort lautet:\n\n${tempPw}\n\nBitte merke es dir und \u00e4ndere es nach dem Anmelden in deinem Profil.\n\nAbsender: Die Seelenplanerin App`,
+                            );
+                          } catch {
+                            Alert.alert("Fehler", "Beim Zur\u00fccksetzen ist ein Fehler aufgetreten. Bitte versuche es erneut.");
+                          }
                         }},
                       ]
                     );

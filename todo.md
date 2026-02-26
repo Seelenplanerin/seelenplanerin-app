@@ -300,3 +300,9 @@
 - [x] Zyklusphasen mit Mondphasen synchronisieren und visualisieren (30-Tage-Kalender)
 - [x] Zyklusdaten lokal speichern (AsyncStorage)
 - [x] Mond-Zyklus-Synchronisation: Tipps basierend auf Kombination (harmonisch/neutral/gegenläufig)
+
+## Feedback Runde 16 (26.02.2026)
+- [x] MoonIcon SVG: Komplett neu geschrieben – zunehmend=rechts, abnehmend=links, 8 Tests bestanden
+- [x] Shop-Tab: Als eigener Tab in der Navigation hinzugefügt (storefront Icon)
+- [x] Passwort vergessen: Setzt jetzt tatsächlich das Passwort zurück mit temporärem Passwort
+- [x] Mond-Tab: Exakte Daten-Sektion mit 12 kommenden Hauptphasen + Uhrzeiten (MEZ/MESZ)

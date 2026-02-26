@@ -20,6 +20,8 @@ import {
   getMoonIllumination,
   getMoonDirection,
   isMoonWaxing,
+  getNextExaktePhasen,
+  type ExaktePhase,
 } from "@/lib/moon-phase";
 
 const WOCHENTAGE_KURZ = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
@@ -222,6 +224,7 @@ export default function MondScreen() {
 
   const nextVollmond = useMemo(() => getNextVollmond(), []);
   const nextNeumond = useMemo(() => getNextNeumond(), []);
+  const exaktePhasen = useMemo(() => getNextExaktePhasen(new Date(), 12), []);
 
   const isToday = selectedIndex === todayIndex;
 
@@ -463,6 +466,29 @@ export default function MondScreen() {
           })}
         </View>
 
+        {/* ── Exakte Mondphasen-Daten (wie MoonWorx) ── */}
+        <View style={st.exaktSection}>
+          <Text style={st.sectionLabel}>MONDKALENDER · EXAKTE DATEN 2026</Text>
+          <Text style={st.exaktSubtitle}>Astronomisch exakte Zeiten (MEZ/MESZ)</Text>
+          {exaktePhasen.map((phase, i) => {
+            const illumMap: Record<string, number> = { "Neumond": 0, "Erstes Viertel": 50, "Vollmond": 100, "Letztes Viertel": 50 };
+            const waxMap: Record<string, boolean> = { "Neumond": true, "Erstes Viertel": true, "Vollmond": false, "Letztes Viertel": false };
+            const tagName = WOCHENTAGE_LANG[phase.datum.getDay()];
+            const datumStr = `${tagName}, ${phase.datum.toLocaleDateString("de-DE", { day: "numeric", month: "long", timeZone: "Europe/Berlin" })}`;
+            const zeitStr = phase.datum.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
+            return (
+              <View key={i} style={[st.exaktCard, i === exaktePhasen.length - 1 && { borderBottomWidth: 0 }]}>
+                <MoonIcon illumination={illumMap[phase.name] ?? 50} isWaxing={waxMap[phase.name] ?? true} size={32} />
+                <View style={st.exaktContent}>
+                  <Text style={st.exaktName}>{phase.name}</Text>
+                  <Text style={st.exaktDatum}>{datumStr}</Text>
+                </View>
+                <Text style={st.exaktZeit}>{zeitStr} Uhr</Text>
+              </View>
+            );
+          })}
+        </View>
+
         {/* ── Mondphasen-Guide ── */}
         <Text style={st.sectionTitle}>Mondphasen-Guide</Text>
         {MOON_PHASES.map((phase, index) => (
@@ -601,4 +627,19 @@ const st = StyleSheet.create({
   phaseGuideContent: { flex: 1 },
   phaseGuideName: { fontSize: 15, fontWeight: "700", color: C.white, marginBottom: 2 },
   phaseGuideDesc: { fontSize: 13, color: C.muted, lineHeight: 18 },
+
+  // Exakte Mondphasen-Daten
+  exaktSection: {
+    backgroundColor: C.card, borderRadius: 20, padding: 20, marginBottom: 16,
+    borderWidth: 1, borderColor: C.border,
+  },
+  exaktSubtitle: { fontSize: 13, color: C.muted, marginBottom: 14 },
+  exaktCard: {
+    flexDirection: "row", alignItems: "center", paddingVertical: 10,
+    borderBottomWidth: 1, borderBottomColor: C.border, gap: 12,
+  },
+  exaktContent: { flex: 1 },
+  exaktName: { fontSize: 14, fontWeight: "700", color: C.white, marginBottom: 2 },
+  exaktDatum: { fontSize: 13, color: C.silver },
+  exaktZeit: { fontSize: 14, fontWeight: "700", color: C.gold },
 });

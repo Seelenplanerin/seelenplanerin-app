@@ -348,7 +348,36 @@ export function isMoonWaxing(date: Date): boolean {
 
 export function getMoonDirection(date: Date): "aufsteigend" | "absteigend" {
   const zodiac = getMoonZodiac(date);
-  // Aufsteigende Zeichen: Schütze, Steinbock, Wassermann, Fische, Widder, Stier, Zwillinge
   const aufsteigend = ["Schütze", "Steinbock", "Wassermann", "Fische", "Widder", "Stier"];
   return aufsteigend.includes(zodiac.name) ? "aufsteigend" : "absteigend";
+}
+
+/**
+ * Gibt alle exakten Hauptphasen-Daten zurück (wie MoonWorx).
+ * Sortiert nach Datum, mit Phase-Name und Uhrzeit.
+ */
+export interface ExaktePhase {
+  datum: Date;
+  name: string;
+  emoji: string;
+}
+
+export function getExakteHauptphasen(): ExaktePhase[] {
+  const phasen: ExaktePhase[] = [];
+  for (const d of NEUMONDE_2026) phasen.push({ datum: d, name: "Neumond", emoji: "🌑" });
+  for (const d of ERSTES_VIERTEL_2026) phasen.push({ datum: d, name: "Erstes Viertel", emoji: "🌓" });
+  for (const d of VOLLMONDE_2026) phasen.push({ datum: d, name: "Vollmond", emoji: "🌕" });
+  for (const d of LETZTES_VIERTEL_2026) phasen.push({ datum: d, name: "Letztes Viertel", emoji: "🌗" });
+  phasen.sort((a, b) => a.datum.getTime() - b.datum.getTime());
+  return phasen;
+}
+
+/**
+ * Gibt die nächsten N exakten Hauptphasen ab einem Datum zurück.
+ */
+export function getNextExaktePhasen(fromDate: Date, count: number = 8): ExaktePhase[] {
+  const alle = getExakteHauptphasen();
+  const now = fromDate.getTime();
+  const upcoming = alle.filter(p => p.datum.getTime() > now);
+  return upcoming.slice(0, count);
 }
