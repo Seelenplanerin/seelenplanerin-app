@@ -381,3 +381,51 @@ export function getNextExaktePhasen(fromDate: Date, count: number = 8): ExaktePh
   const upcoming = alle.filter(p => p.datum.getTime() > now);
   return upcoming.slice(0, count);
 }
+
+/**
+ * Gibt den nächsten Vollmond AB einem bestimmten Datum zurück.
+ */
+export function getNextVollmondFromDate(date: Date): Date {
+  const t = date.getTime();
+  for (const vm of VOLLMONDE_2026) {
+    if (vm.getTime() > t) return vm;
+  }
+  return VOLLMONDE_2026[VOLLMONDE_2026.length - 1];
+}
+
+/**
+ * Gibt den nächsten Neumond AB einem bestimmten Datum zurück.
+ */
+export function getNextNeumondFromDate(date: Date): Date {
+  const t = date.getTime();
+  for (const nm of NEUMONDE_2026) {
+    if (nm.getTime() > t) return nm;
+  }
+  return NEUMONDE_2026[NEUMONDE_2026.length - 1];
+}
+
+/**
+ * Prüft ob ein bestimmter Tag ein Hauptphasen-Tag ist.
+ * Gibt die ExaktePhase zurück oder null.
+ */
+export function getExaktePhaseForDate(date: Date): ExaktePhase | null {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(date);
+  dayEnd.setHours(23, 59, 59, 999);
+  
+  const alle = getExakteHauptphasen();
+  for (const p of alle) {
+    const pLocal = new Date(p.datum.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+    if (pLocal >= dayStart && pLocal <= dayEnd) return p;
+  }
+  return null;
+}
+
+/**
+ * Gibt das Emoji für eine Beleuchtung und Richtung zurück.
+ */
+export function getMoonEmoji(date: Date): string {
+  const phase = getMoonPhaseForDate(date);
+  return phase.emoji;
+}

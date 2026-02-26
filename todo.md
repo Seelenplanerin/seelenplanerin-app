@@ -306,3 +306,19 @@
 - [x] Shop-Tab: Als eigener Tab in der Navigation hinzugefügt (storefront Icon)
 - [x] Passwort vergessen: Setzt jetzt tatsächlich das Passwort zurück mit temporärem Passwort
 - [x] Mond-Tab: Exakte Daten-Sektion mit 12 kommenden Hauptphasen + Uhrzeiten (MEZ/MESZ)
+
+## KRITISCH Feedback Runde 17 (26.02.2026)
+- [ ] Mond-Tab: KEINE exakten Daten sichtbar im Kalender – Vollmond/Neumond/Viertel mit Datum+Uhrzeit PROMINENT anzeigen
+- [ ] Passwort-Reset: KEINE echte Mail kommt an – muss über Backend-Server mit echtem E-Mail-Versand laufen
+- [ ] Mond-Icons: FLACHE SVGs statt 3D-Monde – Emojis verwenden die auf iOS als schöne 3D-Monde dargestellt werden
+
+## KRITISCH Feedback Runde 17 (26.02.2026)
+- [ ] Mond-Icons: FLACHE SVGs komplett entfernen – native Emojis verwenden (🌑🌒🌓🌔🌕🌖🌗🌘)
+- [ ] Mond-Tab: Exakte Daten PROMINENT anzeigen (Vollmond/Neumond/Viertel mit Datum+Uhrzeit)
+- [ ] Passwort-Reset: Echte Funktionalität über Backend-Server
+
+## KRITISCH Feedback Runde 18 (26.02.2026)
+- [x] Kalender: Monat wird jetzt bei jedem 1. des Monats angezeigt (z.B. "Mär" über dem Tag)
+- [x] Nächste Hauptphasen: DYNAMISCH zum gewählten Datum (scrollt man in Juli, zeigt es Juli-Phasen)
+- [x] SVG-Icons: Komplett durch native Emojis ersetzt (🌑🌒🌓🌔🌕🌖🌗🌘) – 3D auf iOS
+- [x] Exakte Daten: Vollmond/Neumond-Tage im Kalender mit VM/NM Label + goldener/grauer Umrandung markiert

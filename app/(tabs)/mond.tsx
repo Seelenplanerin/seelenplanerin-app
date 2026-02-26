@@ -6,27 +6,28 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
-  Dimensions,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
-import { MoonIcon, MoonIconSmall } from "@/components/moon-icon";
 import {
   MOON_PHASES,
   getMoonPhaseForDate,
-  getNextVollmond,
-  getNextNeumond,
   getMoonZodiac,
   getMoonIllumination,
   getMoonDirection,
   isMoonWaxing,
   getNextExaktePhasen,
+  getNextVollmondFromDate,
+  getNextNeumondFromDate,
+  getExaktePhaseForDate,
+  getMoonEmoji,
   type ExaktePhase,
 } from "@/lib/moon-phase";
 
 const WOCHENTAGE_KURZ = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 const WOCHENTAGE_LANG = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 const MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const MONATE_KURZ = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
 // MoonWorx-inspiriertes dunkles Farbschema
 const C = {
@@ -167,8 +168,8 @@ function getEignungColor(eignung: "sehr_gut" | "gut" | "ungeeignet") {
   }
 }
 
-// ── Unendlicher Kalender: Generiert Tage um ein Zentrum ──
-const DAYS_BUFFER = 365; // 1 Jahr in jede Richtung
+// ── Unendlicher Kalender ──
+const DAYS_BUFFER = 365;
 
 function generateDays(centerDate: Date, count: number, startOffset: number): { date: Date; key: string }[] {
   const days: { date: Date; key: string }[] = [];
@@ -180,8 +181,8 @@ function generateDays(centerDate: Date, count: number, startOffset: number): { d
   return days;
 }
 
-const DAY_WIDTH = 58;
-const DAY_GAP = 8;
+const DAY_WIDTH = 62;
+const DAY_GAP = 6;
 const ITEM_SIZE = DAY_WIDTH + DAY_GAP;
 
 export default function MondScreen() {
@@ -191,15 +192,13 @@ export default function MondScreen() {
     return d;
   }, []);
 
-  // Unendlicher Kalender: 365 Tage zurück + 365 Tage voraus = 731 Tage
   const allDays = useMemo(() => generateDays(today, DAYS_BUFFER * 2 + 1, -DAYS_BUFFER), [today]);
-  const todayIndex = DAYS_BUFFER; // Index von "heute" in der Liste
+  const todayIndex = DAYS_BUFFER;
 
   const [selectedIndex, setSelectedIndex] = useState(todayIndex);
   const calendarRef = useRef<FlatList>(null);
   const hasScrolledToToday = useRef(false);
 
-  // Scroll zum heutigen Tag beim ersten Render
   useEffect(() => {
     if (!hasScrolledToToday.current && calendarRef.current) {
       setTimeout(() => {
@@ -221,20 +220,23 @@ export default function MondScreen() {
   const selectedWaxing = useMemo(() => isMoonWaxing(selectedDate), [selectedIndex]);
   const selectedKoerper = KOERPERREGIONEN[selectedZodiac.name];
   const selectedTipps = useMemo(() => getTagesTipps(selectedDate), [selectedIndex]);
+  const selectedEmoji = useMemo(() => getMoonEmoji(selectedDate), [selectedIndex]);
 
-  const nextVollmond = useMemo(() => getNextVollmond(), []);
-  const nextNeumond = useMemo(() => getNextNeumond(), []);
-  const exaktePhasen = useMemo(() => getNextExaktePhasen(new Date(), 12), []);
+  // DYNAMISCH: Nächste Hauptphasen basierend auf dem GEWÄHLTEN Datum
+  const nextVollmond = useMemo(() => getNextVollmondFromDate(selectedDate), [selectedIndex]);
+  const nextNeumond = useMemo(() => getNextNeumondFromDate(selectedDate), [selectedIndex]);
+  const exaktePhasen = useMemo(() => getNextExaktePhasen(selectedDate, 12), [selectedIndex]);
+
+  // Prüfe ob der gewählte Tag ein Hauptphasen-Tag ist
+  const exaktePhaseHeute = useMemo(() => getExaktePhaseForDate(selectedDate), [selectedIndex]);
 
   const isToday = selectedIndex === todayIndex;
 
-  // Datum-Label
   const selectedDateLabel = useMemo(() => {
     const d = selectedDate;
     return `${WOCHENTAGE_LANG[d.getDay()]}, ${d.getDate()}. ${MONATE[d.getMonth()]} ${d.getFullYear()}`;
   }, [selectedIndex]);
 
-  // Pfeil-Navigation: einen Tag vor/zurück
   const goToPrevDay = () => {
     if (selectedIndex > 0) {
       const newIdx = selectedIndex - 1;
@@ -254,16 +256,18 @@ export default function MondScreen() {
     calendarRef.current?.scrollToOffset({ offset: (todayIndex - 2) * ITEM_SIZE, animated: true });
   };
 
-  // Kalender-Item rendern
+  // Kalender-Item: JETZT MIT MONAT UND EMOJI
   const renderCalendarDay = useCallback(({ item, index }: { item: { date: Date; key: string }; index: number }) => {
     const d = item.date;
     const isSelected = index === selectedIndex;
     const isTodayItem = index === todayIndex;
-    const illum = getMoonIllumination(d);
-    const waxing = isMoonWaxing(d);
+    const emoji = getMoonEmoji(d);
     const phase = getMoonPhaseForDate(d);
     const isVollmond = phase.name === "Vollmond";
     const isNeumond = phase.name === "Neumond";
+
+    // Zeige Monat wenn es der 1. des Monats ist ODER der erste sichtbare Tag
+    const showMonth = d.getDate() === 1 || index === 0;
 
     return (
       <TouchableOpacity
@@ -276,14 +280,21 @@ export default function MondScreen() {
         ]}
         activeOpacity={0.7}
       >
+        {showMonth && (
+          <Text style={[st.calDayMonth, isSelected && st.calDayTextDark]}>
+            {MONATE_KURZ[d.getMonth()]}
+          </Text>
+        )}
         <Text style={[st.calDayWeekday, isSelected && st.calDayTextDark]}>
           {WOCHENTAGE_KURZ[d.getDay()]}
         </Text>
         <Text style={[st.calDayNum, isSelected && st.calDayTextDark]}>
           {d.getDate()}
         </Text>
-        <MoonIconSmall illumination={illum} isWaxing={waxing} size={22} />
+        <Text style={st.calDayEmoji}>{emoji}</Text>
         {isTodayItem && !isSelected && <View style={st.calTodayDot} />}
+        {isVollmond && !isSelected && <Text style={st.calDayLabel}>VM</Text>}
+        {isNeumond && !isSelected && <Text style={st.calDayLabel}>NM</Text>}
       </TouchableOpacity>
     );
   }, [selectedIndex, todayIndex]);
@@ -294,9 +305,18 @@ export default function MondScreen() {
     index,
   }), []);
 
+  // Countdown-Berechnung
+  const daysUntil = (target: Date) => {
+    const diff = target.getTime() - selectedDate.getTime();
+    const days = Math.ceil(diff / (24 * 60 * 60 * 1000));
+    if (days === 0) return "Heute!";
+    if (days === 1) return "Morgen";
+    return `in ${days} Tagen`;
+  };
+
   return (
     <ScreenContainer containerClassName="bg-[#0A0E1A]">
-      {/* ── HEADER mit Datum-Navigation (wie MoonWorx) ── */}
+      {/* ── HEADER mit Datum-Navigation ── */}
       <View style={st.header}>
         <TouchableOpacity onPress={goToToday} style={st.todayBtn} activeOpacity={0.7}>
           <Text style={st.todayBtnText}>Heute</Text>
@@ -312,7 +332,7 @@ export default function MondScreen() {
         </View>
       </View>
 
-      {/* ── KALENDER-LEISTE OBEN (unendlich scrollbar) ── */}
+      {/* ── KALENDER-LEISTE OBEN (unendlich scrollbar, mit Monat + Emoji) ── */}
       <FlatList
         ref={calendarRef}
         data={allDays}
@@ -336,8 +356,7 @@ export default function MondScreen() {
       >
         {/* ── HERO: Mondphase des gewählten Tages ── */}
         <View style={st.heroCard}>
-          <MoonIcon illumination={selectedIllum} isWaxing={selectedWaxing} size={100} />
-          <View style={{ height: 12 }} />
+          <Text style={st.heroEmoji}>{selectedEmoji}</Text>
           <Text style={st.heroTitle}>{selectedPhase.name}</Text>
           <Text style={st.heroZodiac}>
             {selectedZodiac.symbol} im {selectedZodiac.name}
@@ -345,6 +364,18 @@ export default function MondScreen() {
           <Text style={st.heroElement}>
             {selectedZodiac.element} · {selectedZodiac.qualitaet}
           </Text>
+
+          {/* Exaktes Datum wenn Hauptphase */}
+          {exaktePhaseHeute && (
+            <View style={st.exaktHeuteBox}>
+              <Text style={st.exaktHeuteText}>
+                {exaktePhaseHeute.emoji} {exaktePhaseHeute.name} um{" "}
+                {exaktePhaseHeute.datum.toLocaleTimeString("de-DE", {
+                  hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
+                })} Uhr
+              </Text>
+            </View>
+          )}
 
           <View style={st.illuminationContainer}>
             <View style={st.illuminationBar}>
@@ -367,15 +398,14 @@ export default function MondScreen() {
           </View>
         </View>
 
-        {/* ── Nächste Hauptphasen ── */}
+        {/* ── Nächste Hauptphasen (DYNAMISCH zum gewählten Datum) ── */}
         <View style={st.nextPhasesRow}>
           <View style={st.nextPhaseCard}>
-            <MoonIcon illumination={100} isWaxing={false} size={36} />
-            <View style={{ height: 4 }} />
+            <Text style={st.nextPhaseEmoji}>🌕</Text>
             <Text style={st.nextPhaseLabel}>Vollmond</Text>
             <Text style={st.nextPhaseDate}>
               {nextVollmond.toLocaleDateString("de-DE", {
-                day: "numeric", month: "long", timeZone: "Europe/Berlin",
+                day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Berlin",
               })}
             </Text>
             <Text style={st.nextPhaseTime}>
@@ -383,14 +413,14 @@ export default function MondScreen() {
                 hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
               })} Uhr
             </Text>
+            <Text style={st.nextPhaseCountdown}>{daysUntil(nextVollmond)}</Text>
           </View>
           <View style={st.nextPhaseCard}>
-            <MoonIcon illumination={0} isWaxing={true} size={36} />
-            <View style={{ height: 4 }} />
+            <Text style={st.nextPhaseEmoji}>🌑</Text>
             <Text style={st.nextPhaseLabel}>Neumond</Text>
             <Text style={st.nextPhaseDate}>
               {nextNeumond.toLocaleDateString("de-DE", {
-                day: "numeric", month: "long", timeZone: "Europe/Berlin",
+                day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Berlin",
               })}
             </Text>
             <Text style={st.nextPhaseTime}>
@@ -398,13 +428,14 @@ export default function MondScreen() {
                 hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
               })} Uhr
             </Text>
+            <Text style={st.nextPhaseCountdown}>{daysUntil(nextNeumond)}</Text>
           </View>
         </View>
 
         {/* ── Tagesqualität ── */}
         <View style={st.qualityCard}>
           <Text style={st.sectionLabel}>
-            TAGESQUALITÄT · {selectedDate.getDate()}. {MONATE[selectedDate.getMonth()]}
+            TAGESQUALITÄT · {selectedDate.getDate()}. {MONATE[selectedDate.getMonth()]} {selectedDate.getFullYear()}
           </Text>
           <Text style={st.qualityTitle}>
             {selectedPhase.name} im {selectedZodiac.name}
@@ -444,7 +475,7 @@ export default function MondScreen() {
         {/* ── Tages-Tipps ── */}
         <View style={st.tippSection}>
           <Text style={st.sectionLabel}>
-            TAGES-TIPPS · {selectedDate.getDate()}. {MONATE[selectedDate.getMonth()]}
+            TAGES-TIPPS · {selectedDate.getDate()}. {MONATE[selectedDate.getMonth()]} {selectedDate.getFullYear()}
           </Text>
           <Text style={st.tippSubtitle}>
             {isToday ? "Was ist heute gut geeignet?" : `Was ist am ${selectedDate.getDate()}. ${MONATE[selectedDate.getMonth()]} gut geeignet?`}
@@ -466,22 +497,24 @@ export default function MondScreen() {
           })}
         </View>
 
-        {/* ── Exakte Mondphasen-Daten (wie MoonWorx) ── */}
+        {/* ── Exakte Mondphasen-Daten 2026 (wie MoonWorx) ── */}
         <View style={st.exaktSection}>
-          <Text style={st.sectionLabel}>MONDKALENDER · EXAKTE DATEN 2026</Text>
+          <Text style={st.sectionLabel}>MONDKALENDER · EXAKTE DATEN</Text>
           <Text style={st.exaktSubtitle}>Astronomisch exakte Zeiten (MEZ/MESZ)</Text>
           {exaktePhasen.map((phase, i) => {
-            const illumMap: Record<string, number> = { "Neumond": 0, "Erstes Viertel": 50, "Vollmond": 100, "Letztes Viertel": 50 };
-            const waxMap: Record<string, boolean> = { "Neumond": true, "Erstes Viertel": true, "Vollmond": false, "Letztes Viertel": false };
-            const tagName = WOCHENTAGE_LANG[phase.datum.getDay()];
-            const datumStr = `${tagName}, ${phase.datum.toLocaleDateString("de-DE", { day: "numeric", month: "long", timeZone: "Europe/Berlin" })}`;
-            const zeitStr = phase.datum.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin" });
+            const tagName = WOCHENTAGE_KURZ[phase.datum.getDay()];
+            const datumStr = phase.datum.toLocaleDateString("de-DE", {
+              day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/Berlin",
+            });
+            const zeitStr = phase.datum.toLocaleTimeString("de-DE", {
+              hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
+            });
             return (
               <View key={i} style={[st.exaktCard, i === exaktePhasen.length - 1 && { borderBottomWidth: 0 }]}>
-                <MoonIcon illumination={illumMap[phase.name] ?? 50} isWaxing={waxMap[phase.name] ?? true} size={32} />
+                <Text style={st.exaktEmoji}>{phase.emoji}</Text>
                 <View style={st.exaktContent}>
                   <Text style={st.exaktName}>{phase.name}</Text>
-                  <Text style={st.exaktDatum}>{datumStr}</Text>
+                  <Text style={st.exaktDatum}>{tagName}, {datumStr}</Text>
                 </View>
                 <Text style={st.exaktZeit}>{zeitStr} Uhr</Text>
               </View>
@@ -493,7 +526,7 @@ export default function MondScreen() {
         <Text style={st.sectionTitle}>Mondphasen-Guide</Text>
         {MOON_PHASES.map((phase, index) => (
           <View key={index} style={st.phaseGuideCard}>
-            <MoonIcon illumination={phase.illumination} isWaxing={index < 4} size={36} />
+            <Text style={st.phaseGuideEmoji}>{phase.emoji}</Text>
             <View style={st.phaseGuideContent}>
               <Text style={st.phaseGuideName}>{phase.name}</Text>
               <Text style={st.phaseGuideDesc} numberOfLines={2}>{phase.description}</Text>
@@ -508,10 +541,10 @@ export default function MondScreen() {
 }
 
 const st = StyleSheet.create({
-  // Header mit Datum-Navigation
+  // Header
   header: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8,
+    paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4,
   },
   todayBtn: {
     backgroundColor: C.goldDim, borderRadius: 10,
@@ -521,22 +554,25 @@ const st = StyleSheet.create({
   dateNav: { flexDirection: "row", alignItems: "center", gap: 4, flex: 1, justifyContent: "flex-end" },
   navArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.card, alignItems: "center", justifyContent: "center" },
   navArrowText: { color: C.white, fontSize: 22, fontWeight: "600", marginTop: -2 },
-  dateNavText: { color: C.white, fontSize: 14, fontWeight: "600" },
+  dateNavText: { color: C.white, fontSize: 13, fontWeight: "600" },
 
-  // Kalender-Leiste oben
-  calContainer: { maxHeight: 100, flexGrow: 0 },
-  calRow: { gap: DAY_GAP, paddingHorizontal: 16, paddingVertical: 8 },
+  // Kalender
+  calContainer: { maxHeight: 115, flexGrow: 0 },
+  calRow: { gap: DAY_GAP, paddingHorizontal: 16, paddingVertical: 6 },
   calDay: {
     width: DAY_WIDTH, borderRadius: 14, borderWidth: 1, borderColor: C.border,
-    backgroundColor: C.card, padding: 6, alignItems: "center", gap: 3,
+    backgroundColor: C.card, padding: 5, alignItems: "center", gap: 1,
   },
   calDaySelected: { backgroundColor: C.gold, borderColor: C.gold },
-  calDayVollmond: { borderColor: C.goldDim },
-  calDayNeumond: { borderColor: C.mutedDim },
+  calDayVollmond: { borderColor: C.goldLight, borderWidth: 2 },
+  calDayNeumond: { borderColor: C.mutedDim, borderWidth: 2 },
+  calDayMonth: { fontSize: 9, fontWeight: "700", color: C.gold, letterSpacing: 0.5 },
   calDayWeekday: { fontSize: 10, fontWeight: "500", color: C.muted },
-  calDayNum: { fontSize: 17, fontWeight: "700", color: C.white },
+  calDayNum: { fontSize: 16, fontWeight: "700", color: C.white },
+  calDayEmoji: { fontSize: 18 },
   calDayTextDark: { color: "#0A0E1A" },
-  calTodayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.gold, marginTop: 2 },
+  calTodayDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: C.gold, marginTop: 1 },
+  calDayLabel: { fontSize: 8, fontWeight: "800", color: C.gold, marginTop: 1 },
 
   // Scroll-Content
   scrollContent: { paddingHorizontal: 16, paddingBottom: 40 },
@@ -547,9 +583,17 @@ const st = StyleSheet.create({
     alignItems: "center", marginBottom: 16, marginTop: 8,
     borderWidth: 1, borderColor: C.border,
   },
+  heroEmoji: { fontSize: 80, marginBottom: 8 },
   heroTitle: { color: C.gold, fontSize: 24, fontWeight: "800", marginBottom: 4 },
   heroZodiac: { color: C.white, fontSize: 16, fontWeight: "600", marginBottom: 2 },
-  heroElement: { color: C.muted, fontSize: 13, marginBottom: 16 },
+  heroElement: { color: C.muted, fontSize: 13, marginBottom: 12 },
+
+  // Exakte Phase heute
+  exaktHeuteBox: {
+    backgroundColor: C.goldDim, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8,
+    marginBottom: 12,
+  },
+  exaktHeuteText: { color: C.gold, fontSize: 14, fontWeight: "700", textAlign: "center" },
 
   illuminationContainer: { width: "100%", alignItems: "center", marginBottom: 12 },
   illuminationBar: {
@@ -572,9 +616,11 @@ const st = StyleSheet.create({
     flex: 1, backgroundColor: C.card, borderRadius: 18, padding: 14,
     alignItems: "center", borderWidth: 1, borderColor: C.border,
   },
+  nextPhaseEmoji: { fontSize: 32, marginBottom: 4 },
   nextPhaseLabel: { fontSize: 13, fontWeight: "700", color: C.white, marginBottom: 2 },
-  nextPhaseDate: { fontSize: 14, fontWeight: "800", color: C.gold, marginBottom: 2, textAlign: "center" },
+  nextPhaseDate: { fontSize: 15, fontWeight: "800", color: C.gold, marginBottom: 2, textAlign: "center" },
   nextPhaseTime: { fontSize: 12, color: C.muted },
+  nextPhaseCountdown: { fontSize: 11, color: C.gold, fontWeight: "600", marginTop: 4 },
 
   // Tagesqualität
   qualityCard: {
@@ -624,6 +670,7 @@ const st = StyleSheet.create({
     borderRadius: 12, borderWidth: 1, borderColor: C.border,
     padding: 12, marginBottom: 8, gap: 12,
   },
+  phaseGuideEmoji: { fontSize: 32 },
   phaseGuideContent: { flex: 1 },
   phaseGuideName: { fontSize: 15, fontWeight: "700", color: C.white, marginBottom: 2 },
   phaseGuideDesc: { fontSize: 13, color: C.muted, lineHeight: 18 },
@@ -638,6 +685,7 @@ const st = StyleSheet.create({
     flexDirection: "row", alignItems: "center", paddingVertical: 10,
     borderBottomWidth: 1, borderBottomColor: C.border, gap: 12,
   },
+  exaktEmoji: { fontSize: 28 },
   exaktContent: { flex: 1 },
   exaktName: { fontSize: 14, fontWeight: "700", color: C.white, marginBottom: 2 },
   exaktDatum: { fontSize: 13, color: C.silver },
