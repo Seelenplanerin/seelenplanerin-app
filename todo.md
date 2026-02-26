@@ -353,3 +353,11 @@
 - [x] Admin: Beim Anlegen eines Mitglieds automatisch E-Mail mit Login-Daten senden
 - [x] Admin: Beim Passwort-Reset automatisch E-Mail mit neuem temporären Passwort senden
 - [x] E-Mail-Template: Schöne HTML-Mail im Seelenplanerin-Design (Header, Login-Daten-Box, Anleitung, Footer)
+
+## Feature: Admin-Bereich Erweiterung – Volle Kontrolle (26.02.2026)
+- [x] Admin-PIN änderbar machen (direkt in der App, alten PIN eingeben + neuen PIN bestätigen)
+- [x] Musik verwalten: Admin kann Songs mit Streaming-Links (Spotify, Apple Music, YouTube) hinzufügen
+- [x] Musik verwalten: Songs bearbeiten, löschen, Emoji/Kategorie wählen, verfügbar/bald-verfügbar setzen
+- [x] Inhalte steuern: Tagesimpulse erstellen, sammeln und aktivieren (Schnelleingabe + Impulse-Bibliothek)
+- [ ] Inhalte steuern: Rituale-Texte bearbeiten (noch offen)
+- [x] Admin-Bereich: Tab-basierte Steuerungszentrale (Mitglieder, Musik, Impulse, Einstellungen)

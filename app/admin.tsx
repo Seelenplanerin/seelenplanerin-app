@@ -15,16 +15,11 @@ const C = {
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
 
-const ADMIN_PIN = "1234";
-
-const THEMEN = [
-  { key: "rose", label: "Rose & Creme (Standard)", primary: "#C4826A", bg: "#FDF8F4" },
-  { key: "lila", label: "Mondviolett", primary: "#7B5EA7", bg: "#F8F4FD" },
-  { key: "gold", label: "Goldenes Licht", primary: "#C9A96E", bg: "#FDFAF4" },
-  { key: "dunkel", label: "Dunkle Mondnacht", primary: "#C4826A", bg: "#1A1A2E" },
-];
-
+const DEFAULT_PIN = "1234";
+const PIN_KEY = "admin_pin";
 const USERS_KEY = "community_users";
+const SONGS_KEY = "lara_songs";
+const IMPULSE_KEY = "admin_tagesimpulse_liste";
 
 interface CommunityUser {
   email: string;
@@ -33,13 +28,47 @@ interface CommunityUser {
   mustChangePassword?: boolean;
 }
 
+interface Song {
+  id: string;
+  titel: string;
+  beschreibung: string;
+  spotifyUrl?: string;
+  appleMusicUrl?: string;
+  youtubeUrl?: string;
+  emoji: string;
+  kategorie: "musik" | "meditation" | "ritual" | "mantra";
+  verfuegbar: boolean;
+}
+
+interface Tagesimpuls {
+  id: string;
+  text: string;
+  autor: string;
+  datum?: string; // optional: geplantes Datum
+}
+
 async function getUsers(): Promise<CommunityUser[]> {
   const data = await AsyncStorage.getItem(USERS_KEY);
   return data ? JSON.parse(data) : [];
 }
-
 async function saveUsers(users: CommunityUser[]) {
   await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+async function getSongs(): Promise<Song[]> {
+  const data = await AsyncStorage.getItem(SONGS_KEY);
+  return data ? JSON.parse(data) : [];
+}
+async function saveSongs(songs: Song[]) {
+  await AsyncStorage.setItem(SONGS_KEY, JSON.stringify(songs));
+}
+
+async function getImpulse(): Promise<Tagesimpuls[]> {
+  const data = await AsyncStorage.getItem(IMPULSE_KEY);
+  return data ? JSON.parse(data) : [];
+}
+async function saveImpulse(impulse: Tagesimpuls[]) {
+  await AsyncStorage.setItem(IMPULSE_KEY, JSON.stringify(impulse));
 }
 
 function generateTempPassword(): string {
@@ -49,15 +78,37 @@ function generateTempPassword(): string {
   return pw;
 }
 
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+const EMOJI_OPTIONS = ["🎶", "🔥", "ᛋ", "🧘‍♀️", "🌙", "💎", "🌸", "✨", "🎵", "🕯️", "🌊", "🦋"];
+const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
+  { key: "musik", label: "Musik" },
+  { key: "ritual", label: "Ritual" },
+  { key: "mantra", label: "Mantra" },
+  { key: "meditation", label: "Meditation" },
+];
+
+type AdminTab = "mitglieder" | "musik" | "impulse" | "einstellungen";
+
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pin, setPin] = useState("");
+  const [currentPin, setCurrentPin] = useState(DEFAULT_PIN);
   const [fehler, setFehler] = useState("");
+  const [activeTab, setActiveTab] = useState<AdminTab>("mitglieder");
+
+  // PIN ändern
+  const [showPinChange, setShowPinChange] = useState(false);
+  const [oldPin, setOldPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [newPinConfirm, setNewPinConfirm] = useState("");
+  const [pinChangeFehler, setPinChangeFehler] = useState("");
 
   // Einstellungen
   const [tagesimpulsText, setTagesimpulsText] = useState("");
   const [musikAktiv, setMusikAktiv] = useState(false);
-  const [gewaehltesThema, setGewaehltesThema] = useState("rose");
   const [gespeichert, setGespeichert] = useState(false);
 
   // Mitgliederverwaltung
@@ -69,6 +120,27 @@ export default function AdminScreen() {
   const [memberFehler, setMemberFehler] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
 
+  // Musik-Verwaltung
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [showAddSong, setShowAddSong] = useState(false);
+  const [editSongId, setEditSongId] = useState<string | null>(null);
+  const [songTitel, setSongTitel] = useState("");
+  const [songBeschreibung, setSongBeschreibung] = useState("");
+  const [songSpotify, setSongSpotify] = useState("");
+  const [songApple, setSongApple] = useState("");
+  const [songYoutube, setSongYoutube] = useState("");
+  const [songEmoji, setSongEmoji] = useState("🎶");
+  const [songKat, setSongKat] = useState<Song["kategorie"]>("musik");
+  const [songVerfuegbar, setSongVerfuegbar] = useState(true);
+  const [songFehler, setSongFehler] = useState("");
+
+  // Tagesimpulse-Verwaltung
+  const [impulse, setImpulse] = useState<Tagesimpuls[]>([]);
+  const [showAddImpuls, setShowAddImpuls] = useState(false);
+  const [impulsText, setImpulsText] = useState("");
+  const [impulsAutor, setImpulsAutor] = useState("Die Seelenplanerin");
+  const [impulsFehler, setImpulsFehler] = useState("");
+
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
   const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
@@ -77,19 +149,21 @@ export default function AdminScreen() {
     AsyncStorage.getItem("admin_auth").then(val => {
       if (val === "true") setIsLoggedIn(true);
     });
+    AsyncStorage.getItem(PIN_KEY).then(val => { if (val) setCurrentPin(val); });
     AsyncStorage.getItem("admin_tagesimpuls").then(val => { if (val) setTagesimpulsText(val); });
     AsyncStorage.getItem("admin_musik").then(val => { if (val) setMusikAktiv(val === "true"); });
-    AsyncStorage.getItem("admin_thema").then(val => { if (val) setGewaehltesThema(val); });
   }, []);
 
   useEffect(() => {
     if (isLoggedIn) {
       getUsers().then(setMembers);
+      getSongs().then(setSongs);
+      getImpulse().then(setImpulse);
     }
   }, [isLoggedIn]);
 
   const handleLogin = () => {
-    if (pin === ADMIN_PIN) {
+    if (pin === currentPin) {
       setIsLoggedIn(true);
       setFehler("");
       AsyncStorage.setItem("admin_auth", "true");
@@ -98,10 +172,23 @@ export default function AdminScreen() {
     }
   };
 
+  const handlePinChange = async () => {
+    if (oldPin !== currentPin) { setPinChangeFehler("Aktueller PIN ist falsch."); return; }
+    if (newPin.length < 4) { setPinChangeFehler("Neuer PIN muss mindestens 4 Zeichen haben."); return; }
+    if (newPin !== newPinConfirm) { setPinChangeFehler("PINs stimmen nicht überein."); return; }
+    await AsyncStorage.setItem(PIN_KEY, newPin);
+    setCurrentPin(newPin);
+    setShowPinChange(false);
+    setOldPin("");
+    setNewPin("");
+    setNewPinConfirm("");
+    setPinChangeFehler("");
+    Alert.alert("PIN geändert ✓", "Dein neuer Admin-PIN wurde gespeichert.");
+  };
+
   const handleSpeichern = async () => {
     await AsyncStorage.setItem("admin_tagesimpuls", tagesimpulsText);
     await AsyncStorage.setItem("admin_musik", musikAktiv ? "true" : "false");
-    await AsyncStorage.setItem("admin_thema", gewaehltesThema);
     setGespeichert(true);
     setTimeout(() => setGespeichert(false), 2000);
   };
@@ -112,162 +199,150 @@ export default function AdminScreen() {
     router.back();
   };
 
+  // ── Mitglieder ──
   const handleAddMember = async () => {
     if (!newMemberName.trim()) { setMemberFehler("Bitte gib einen Namen ein."); return; }
     if (!newMemberEmail.trim()) { setMemberFehler("Bitte gib eine E-Mail-Adresse ein."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newMemberEmail.trim())) {
       setMemberFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return;
     }
-
     const users = await getUsers();
-    const exists = users.find(u => u.email.toLowerCase() === newMemberEmail.trim().toLowerCase());
-    if (exists) {
-      setMemberFehler("Diese E-Mail ist bereits registriert.");
-      return;
+    if (users.find(u => u.email.toLowerCase() === newMemberEmail.trim().toLowerCase())) {
+      setMemberFehler("Diese E-Mail ist bereits registriert."); return;
     }
-
     const tempPw = newMemberPw.trim() || generateTempPassword();
     const newUser: CommunityUser = {
-      email: newMemberEmail.trim().toLowerCase(),
-      password: tempPw,
-      name: newMemberName.trim(),
-      mustChangePassword: true,
+      email: newMemberEmail.trim().toLowerCase(), password: tempPw,
+      name: newMemberName.trim(), mustChangePassword: true,
     };
-
     users.push(newUser);
     await saveUsers(users);
     setMembers(users);
     setMemberFehler("");
-
-    // Automatisch E-Mail senden
     setSendingEmail(true);
     try {
       const result = await sendWelcomeMutation.mutateAsync({
-        toEmail: newUser.email,
-        toName: newUser.name,
-        tempPassword: tempPw,
+        toEmail: newUser.email, toName: newUser.name, tempPassword: tempPw,
       });
-
-      if (result.success) {
-        Alert.alert(
-          "Mitglied angelegt ✨",
-          `${newUser.name} wurde erfolgreich angelegt.\n\n` +
-          `📧 Willkommens-E-Mail wurde automatisch an ${newUser.email} gesendet!\n\n` +
-          `Das Mitglied erhält die Login-Daten per E-Mail und wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.`,
-          [{ text: "OK" }]
-        );
-      } else {
-        Alert.alert(
-          "Mitglied angelegt – E-Mail fehlgeschlagen",
-          `${newUser.name} wurde angelegt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
-          `Fehler: ${result.error}\n\n` +
-          `Temporäres Passwort: ${tempPw}\n\n` +
-          `Bitte sende die Zugangsdaten manuell per E-Mail.`,
-          [{ text: "OK" }]
-        );
-      }
-    } catch (err: any) {
       Alert.alert(
-        "Mitglied angelegt – E-Mail fehlgeschlagen",
-        `${newUser.name} wurde angelegt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
-        `Temporäres Passwort: ${tempPw}\n\n` +
-        `Bitte sende die Zugangsdaten manuell per E-Mail.`,
-        [{ text: "OK" }]
+        result.success ? "Mitglied angelegt ✨" : "Mitglied angelegt – E-Mail fehlgeschlagen",
+        result.success
+          ? `${newUser.name} wurde angelegt.\n📧 E-Mail gesendet an ${newUser.email}!`
+          : `Angelegt, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}\nBitte manuell senden.`,
       );
-    } finally {
-      setSendingEmail(false);
-    }
-
-    setNewMemberName("");
-    setNewMemberEmail("");
-    setNewMemberPw("");
-    setShowAddMember(false);
+    } catch {
+      Alert.alert("Mitglied angelegt", `E-Mail konnte nicht gesendet werden.\nPasswort: ${tempPw}`);
+    } finally { setSendingEmail(false); }
+    setNewMemberName(""); setNewMemberEmail(""); setNewMemberPw(""); setShowAddMember(false);
   };
 
   const handleDeleteMember = (email: string, name: string) => {
-    Alert.alert(
-      "Mitglied entfernen",
-      `Möchtest du ${name} (${email}) wirklich aus der Community entfernen?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Entfernen", style: "destructive", onPress: async () => {
-            const users = await getUsers();
-            const filtered = users.filter(u => u.email !== email);
-            await saveUsers(filtered);
-            setMembers(filtered);
-          }
-        },
-      ]
-    );
+    Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
+      { text: "Abbrechen", style: "cancel" },
+      { text: "Entfernen", style: "destructive", onPress: async () => {
+        const users = (await getUsers()).filter(u => u.email !== email);
+        await saveUsers(users); setMembers(users);
+      }},
+    ]);
   };
 
   const handleResetMemberPw = (email: string, name: string) => {
     const tempPw = generateTempPassword();
-    Alert.alert(
-      "Passwort zurücksetzen",
-      `Neues temporäres Passwort für ${name} generieren und per E-Mail senden?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Zurücksetzen & E-Mail senden", onPress: async () => {
-            // Passwort in der lokalen Datenbank aktualisieren
-            const users = await getUsers();
-            const idx = users.findIndex(u => u.email === email);
-            if (idx >= 0) {
-              users[idx].password = tempPw;
-              users[idx].mustChangePassword = true;
-              await saveUsers(users);
-              setMembers([...users]);
-            }
-
-            // E-Mail senden
-            try {
-              const result = await sendResetMutation.mutateAsync({
-                toEmail: email,
-                toName: name,
-                tempPassword: tempPw,
-              });
-
-              if (result.success) {
-                Alert.alert(
-                  "Passwort zurückgesetzt ✨",
-                  `Das neue temporäre Passwort wurde per E-Mail an ${name} (${email}) gesendet.\n\n` +
-                  `${name} wird beim nächsten Login aufgefordert, ein eigenes Passwort zu wählen.`,
-                  [{ text: "OK" }]
-                );
-              } else {
-                Alert.alert(
-                  "Passwort zurückgesetzt – E-Mail fehlgeschlagen",
-                  `Das Passwort wurde zurückgesetzt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
-                  `Fehler: ${result.error}\n\n` +
-                  `Temporäres Passwort: ${tempPw}\n\n` +
-                  `Bitte sende es manuell an ${email}.`,
-                  [{ text: "OK" }]
-                );
-              }
-            } catch (err: any) {
-              Alert.alert(
-                "Passwort zurückgesetzt – E-Mail fehlgeschlagen",
-                `Das Passwort wurde zurückgesetzt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
-                `Temporäres Passwort: ${tempPw}\n\n` +
-                `Bitte sende es manuell an ${email}.`,
-                [{ text: "OK" }]
-              );
-            }
-          }
-        },
-      ]
-    );
+    Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
+      { text: "Abbrechen", style: "cancel" },
+      { text: "Zurücksetzen & senden", onPress: async () => {
+        const users = await getUsers();
+        const idx = users.findIndex(u => u.email === email);
+        if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
+        try {
+          const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
+          Alert.alert(result.success ? "Passwort zurückgesetzt ✨" : "Zurückgesetzt – E-Mail fehlgeschlagen",
+            result.success ? `E-Mail an ${email} gesendet.` : `Passwort: ${tempPw}\nBitte manuell senden.`);
+        } catch { Alert.alert("Zurückgesetzt", `E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`); }
+      }},
+    ]);
   };
 
+  // ── Musik ──
+  const resetSongForm = () => {
+    setSongTitel(""); setSongBeschreibung(""); setSongSpotify(""); setSongApple("");
+    setSongYoutube(""); setSongEmoji("🎶"); setSongKat("musik"); setSongVerfuegbar(true);
+    setSongFehler(""); setEditSongId(null);
+  };
+
+  const handleSaveSong = async () => {
+    if (!songTitel.trim()) { setSongFehler("Bitte gib einen Titel ein."); return; }
+    const allSongs = await getSongs();
+    const songData: Song = {
+      id: editSongId || generateId(),
+      titel: songTitel.trim(), beschreibung: songBeschreibung.trim(),
+      spotifyUrl: songSpotify.trim() || undefined, appleMusicUrl: songApple.trim() || undefined,
+      youtubeUrl: songYoutube.trim() || undefined,
+      emoji: songEmoji, kategorie: songKat, verfuegbar: songVerfuegbar,
+    };
+    if (editSongId) {
+      const idx = allSongs.findIndex(s => s.id === editSongId);
+      if (idx >= 0) allSongs[idx] = songData;
+    } else {
+      allSongs.push(songData);
+    }
+    await saveSongs(allSongs); setSongs(allSongs);
+    resetSongForm(); setShowAddSong(false);
+    Alert.alert("Gespeichert ✓", editSongId ? "Song wurde aktualisiert." : "Neuer Song wurde hinzugefügt.");
+  };
+
+  const handleEditSong = (song: Song) => {
+    setEditSongId(song.id); setSongTitel(song.titel); setSongBeschreibung(song.beschreibung);
+    setSongSpotify(song.spotifyUrl || ""); setSongApple(song.appleMusicUrl || "");
+    setSongYoutube(song.youtubeUrl || ""); setSongEmoji(song.emoji);
+    setSongKat(song.kategorie); setSongVerfuegbar(song.verfuegbar);
+    setShowAddSong(true);
+  };
+
+  const handleDeleteSong = (id: string, titel: string) => {
+    Alert.alert("Song löschen", `"${titel}" wirklich löschen?`, [
+      { text: "Abbrechen", style: "cancel" },
+      { text: "Löschen", style: "destructive", onPress: async () => {
+        const allSongs = (await getSongs()).filter(s => s.id !== id);
+        await saveSongs(allSongs); setSongs(allSongs);
+      }},
+    ]);
+  };
+
+  // ── Tagesimpulse ──
+  const handleAddImpuls = async () => {
+    if (!impulsText.trim()) { setImpulsFehler("Bitte gib einen Impuls-Text ein."); return; }
+    const all = await getImpulse();
+    all.push({ id: generateId(), text: impulsText.trim(), autor: impulsAutor.trim() || "Die Seelenplanerin" });
+    await saveImpulse(all); setImpulse(all);
+    setImpulsText(""); setImpulsFehler(""); setShowAddImpuls(false);
+    // Auch den aktuellen Tagesimpuls setzen
+    await AsyncStorage.setItem("admin_tagesimpuls", impulsText.trim());
+    setTagesimpulsText(impulsText.trim());
+    Alert.alert("Impuls gespeichert ✓", "Der neue Tagesimpuls ist jetzt aktiv.");
+  };
+
+  const handleDeleteImpuls = (id: string) => {
+    Alert.alert("Impuls löschen", "Diesen Impuls wirklich löschen?", [
+      { text: "Abbrechen", style: "cancel" },
+      { text: "Löschen", style: "destructive", onPress: async () => {
+        const all = (await getImpulse()).filter(i => i.id !== id);
+        await saveImpulse(all); setImpulse(all);
+      }},
+    ]);
+  };
+
+  const handleSetActiveImpuls = async (impuls: Tagesimpuls) => {
+    await AsyncStorage.setItem("admin_tagesimpuls", impuls.text);
+    setTagesimpulsText(impuls.text);
+    Alert.alert("Aktiv ✓", `"${impuls.text.slice(0, 40)}..." ist jetzt der Tagesimpuls.`);
+  };
+
+  // ── LOGIN SCREEN ──
   if (!isLoggedIn) {
     return (
       <ScreenContainer containerClassName="bg-background">
-        <KeyboardAvoidingView
-          style={{ flex: 1, backgroundColor: C.bg }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-        >
+        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.bg }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View style={s.pinContainer}>
             <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
               <Text style={s.backBtnText}>← Zurück</Text>
@@ -276,16 +351,9 @@ export default function AdminScreen() {
             <Text style={s.pinTitel}>Admin-Bereich</Text>
             <Text style={s.pinSub}>Nur für die Seelenplanerin</Text>
             <TextInput
-              style={s.pinInput}
-              placeholder="PIN eingeben"
-              placeholderTextColor={C.muted}
-              secureTextEntry
-              keyboardType="number-pad"
-              value={pin}
-              onChangeText={setPin}
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-              maxLength={4}
+              style={s.pinInput} placeholder="PIN eingeben" placeholderTextColor={C.muted}
+              secureTextEntry keyboardType="number-pad" value={pin} onChangeText={setPin}
+              returnKeyType="done" onSubmitEditing={handleLogin} maxLength={8}
             />
             {fehler !== "" && <Text style={s.pinFehler}>{fehler}</Text>}
             <TouchableOpacity style={s.pinBtn} onPress={handleLogin} activeOpacity={0.85}>
@@ -297,235 +365,379 @@ export default function AdminScreen() {
     );
   }
 
+  // ── ADMIN DASHBOARD ──
+  const TABS: { key: AdminTab; label: string; emoji: string }[] = [
+    { key: "mitglieder", label: "Mitglieder", emoji: "👥" },
+    { key: "musik", label: "Musik", emoji: "🎵" },
+    { key: "impulse", label: "Impulse", emoji: "✨" },
+    { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
+  ];
+
   return (
     <ScreenContainer containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
+      <View style={{ flex: 1, backgroundColor: C.bg }}>
         {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.8}>
             <Text style={[s.backBtnText, { color: C.rose }]}>← Zurück</Text>
           </TouchableOpacity>
           <Text style={s.headerTitle}>🔐 Admin-Bereich</Text>
-          <Text style={s.headerSub}>Deine persönlichen Einstellungen</Text>
+          <Text style={s.headerSub}>Steuere deine App-Inhalte</Text>
         </View>
 
-        {/* ── Mitgliederverwaltung ── */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>👥 Mitgliederverwaltung</Text>
-          <Text style={s.sectionHint}>
-            Lege hier neue Community-Mitglieder an. Die Login-Daten werden automatisch per E-Mail an das neue Mitglied gesendet.
-            Beim ersten Login wird das Mitglied aufgefordert, ein eigenes Passwort zu wählen.
-          </Text>
+        {/* Tab-Navigation */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 12, gap: 6, paddingVertical: 10 }}>
+          {TABS.map(t => (
+            <TouchableOpacity key={t.key}
+              style={[s.tabBtn, activeTab === t.key && s.tabBtnActive]}
+              onPress={() => setActiveTab(t.key)} activeOpacity={0.8}>
+              <Text style={{ fontSize: 16 }}>{t.emoji}</Text>
+              <Text style={[s.tabText, activeTab === t.key && s.tabTextActive]}>{t.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-          {/* Mitgliederliste */}
-          {members.length > 0 ? (
-            <View style={{ marginBottom: 12 }}>
-              <Text style={{ fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 }}>
-                {members.length} Mitglied{members.length !== 1 ? "er" : ""}
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 80 }}>
+
+          {/* ═══════ MITGLIEDER TAB ═══════ */}
+          {activeTab === "mitglieder" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>👥 Mitgliederverwaltung</Text>
+              <Text style={s.sectionHint}>
+                Lege neue Mitglieder an – Login-Daten werden automatisch per E-Mail gesendet.
               </Text>
-              {members.map((m) => (
-                <View key={m.email} style={s.memberRow}>
-                  <View style={s.memberAvatar}>
-                    <Text style={{ fontSize: 14, color: "#FFF", fontWeight: "700" }}>
-                      {m.name.charAt(0).toUpperCase()}
-                    </Text>
+
+              {members.length > 0 ? (
+                <View style={{ marginBottom: 12 }}>
+                  <Text style={{ fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 }}>
+                    {members.length} Mitglied{members.length !== 1 ? "er" : ""}
+                  </Text>
+                  {members.map(m => (
+                    <View key={m.email} style={s.memberRow}>
+                      <View style={s.memberAvatar}>
+                        <Text style={{ fontSize: 14, color: "#FFF", fontWeight: "700" }}>{m.name.charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.memberName}>{m.name}</Text>
+                        <Text style={s.memberEmail}>{m.email}</Text>
+                        {m.mustChangePassword && <Text style={{ fontSize: 10, color: C.gold, fontWeight: "600" }}>⏳ Muss PW ändern</Text>}
+                      </View>
+                      <TouchableOpacity onPress={() => handleResetMemberPw(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 12, color: C.gold }}>🔑</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDeleteMember(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>Noch keine Mitglieder.</Text>
+              )}
+
+              <TouchableOpacity style={[s.actionBtn, { borderColor: C.rose }]}
+                onPress={() => setShowAddMember(!showAddMember)} activeOpacity={0.85}>
+                <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddMember ? "✕" : "➕"}</Text>
+                <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                  {showAddMember ? "Schließen" : "Neues Mitglied anlegen"}
+                </Text>
+              </TouchableOpacity>
+
+              {showAddMember && (
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Name</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. Sarah Müller" placeholderTextColor={C.muted}
+                    value={newMemberName} onChangeText={t => { setNewMemberName(t); setMemberFehler(""); }}
+                    autoCapitalize="words" returnKeyType="next" />
+                  <Text style={s.formLabel}>E-Mail-Adresse</Text>
+                  <TextInput style={s.formInput} placeholder="sarah@beispiel.de" placeholderTextColor={C.muted}
+                    value={newMemberEmail} onChangeText={t => { setNewMemberEmail(t); setMemberFehler(""); }}
+                    keyboardType="email-address" autoCapitalize="none" autoComplete="email" returnKeyType="next" />
+                  <Text style={s.formLabel}>Temporäres Passwort (optional)</Text>
+                  <TextInput style={s.formInput} placeholder="Leer = automatisch" placeholderTextColor={C.muted}
+                    value={newMemberPw} onChangeText={t => { setNewMemberPw(t); setMemberFehler(""); }}
+                    autoCapitalize="none" returnKeyType="done" onSubmitEditing={handleAddMember} />
+                  {memberFehler !== "" && <Text style={s.formError}>{memberFehler}</Text>}
+                  <TouchableOpacity style={[s.submitBtn, sendingEmail && { opacity: 0.6 }]}
+                    onPress={handleAddMember} activeOpacity={0.85} disabled={sendingEmail}>
+                    {sendingEmail ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <ActivityIndicator size="small" color="#FFF" />
+                        <Text style={s.submitBtnText}>E-Mail wird gesendet...</Text>
+                      </View>
+                    ) : (
+                      <Text style={s.submitBtnText}>📧 Anlegen & E-Mail senden</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* ═══════ MUSIK TAB ═══════ */}
+          {activeTab === "musik" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>🎵 Musik verwalten</Text>
+              <Text style={s.sectionHint}>
+                Füge Songs mit Streaming-Links hinzu. Nutzer sehen sie im Musik-Bereich der App.
+                Du kannst Spotify-, Apple Music- und YouTube-Links hinterlegen.
+              </Text>
+
+              {songs.length > 0 && songs.map(song => (
+                <View key={song.id} style={[s.memberRow, !song.verfuegbar && { opacity: 0.5 }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: C.goldLight }]}>
+                    <Text style={{ fontSize: 16 }}>{song.emoji}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={s.memberName}>{m.name}</Text>
-                    <Text style={s.memberEmail}>{m.email}</Text>
-                    {m.mustChangePassword && (
-                      <Text style={{ fontSize: 10, color: C.gold, fontWeight: "600" }}>⏳ Muss Passwort ändern</Text>
-                    )}
+                    <Text style={s.memberName}>{song.titel}</Text>
+                    <Text style={s.memberEmail}>{song.beschreibung || song.kategorie}</Text>
+                    <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
+                      {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#1DB954" }}>● Spotify</Text>}
+                      {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#FC3C44" }}>● Apple</Text>}
+                      {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#FF0000" }}>● YouTube</Text>}
+                    </View>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleResetMemberPw(m.email, m.name)}
-                    style={s.memberAction}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={{ fontSize: 12, color: C.gold }}>🔑</Text>
+                  <TouchableOpacity onPress={() => handleEditSong(song)} style={s.memberAction} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 12, color: C.gold }}>✏️</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteMember(m.email, m.name)}
-                    style={s.memberAction}
-                    activeOpacity={0.7}
-                  >
+                  <TouchableOpacity onPress={() => handleDeleteSong(song.id, song.titel)} style={s.memberAction} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
                   </TouchableOpacity>
                 </View>
               ))}
-            </View>
-          ) : (
-            <Text style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>
-              Noch keine Mitglieder angelegt. Nutzer können sich auch selbst registrieren.
-            </Text>
-          )}
 
-          {/* Neues Mitglied hinzufügen */}
-          <TouchableOpacity
-            style={[s.themaBtn, { borderColor: C.rose }]}
-            onPress={() => setShowAddMember(!showAddMember)}
-            activeOpacity={0.85}
-          >
-            <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddMember ? "✕" : "➕"}</Text>
-            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
-              {showAddMember ? "Schließen" : "Neues Mitglied anlegen"}
-            </Text>
-          </TouchableOpacity>
-
-          {showAddMember && (
-            <View style={{ marginTop: 12, backgroundColor: C.roseLight, borderRadius: 14, padding: 14 }}>
-              <Text style={s.memberFormLabel}>Name</Text>
-              <TextInput
-                style={s.memberFormInput}
-                placeholder="z.B. Sarah Müller"
-                placeholderTextColor={C.muted}
-                value={newMemberName}
-                onChangeText={(t) => { setNewMemberName(t); setMemberFehler(""); }}
-                autoCapitalize="words"
-                returnKeyType="next"
-              />
-
-              <Text style={s.memberFormLabel}>E-Mail-Adresse</Text>
-              <TextInput
-                style={s.memberFormInput}
-                placeholder="sarah@beispiel.de"
-                placeholderTextColor={C.muted}
-                value={newMemberEmail}
-                onChangeText={(t) => { setNewMemberEmail(t); setMemberFehler(""); }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                returnKeyType="next"
-              />
-
-              <Text style={s.memberFormLabel}>Temporäres Passwort (optional)</Text>
-              <TextInput
-                style={s.memberFormInput}
-                placeholder="Leer = automatisch generiert"
-                placeholderTextColor={C.muted}
-                value={newMemberPw}
-                onChangeText={(t) => { setNewMemberPw(t); setMemberFehler(""); }}
-                autoCapitalize="none"
-                returnKeyType="done"
-                onSubmitEditing={handleAddMember}
-              />
-
-              {memberFehler !== "" && <Text style={{ fontSize: 12, color: "#C87C82", marginBottom: 8 }}>{memberFehler}</Text>}
-
-              <TouchableOpacity
-                style={[s.addMemberBtn, sendingEmail && { opacity: 0.6 }]}
-                onPress={handleAddMember}
-                activeOpacity={0.85}
-                disabled={sendingEmail}
-              >
-                {sendingEmail ? (
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                    <ActivityIndicator size="small" color="#FFF" />
-                    <Text style={s.addMemberBtnText}>E-Mail wird gesendet...</Text>
-                  </View>
-                ) : (
-                  <Text style={s.addMemberBtnText}>📧 Mitglied anlegen & E-Mail senden →</Text>
-                )}
+              <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]}
+                onPress={() => { if (showAddSong) { resetSongForm(); setShowAddSong(false); } else { resetSongForm(); setShowAddSong(true); } }}
+                activeOpacity={0.85}>
+                <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddSong ? "✕" : "➕"}</Text>
+                <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                  {showAddSong ? "Schließen" : (editSongId ? "Song bearbeiten" : "Neuen Song hinzufügen")}
+                </Text>
               </TouchableOpacity>
+
+              {showAddSong && (
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Titel *</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. Seelenklänge" placeholderTextColor={C.muted}
+                    value={songTitel} onChangeText={t => { setSongTitel(t); setSongFehler(""); }} returnKeyType="next" />
+
+                  <Text style={s.formLabel}>Beschreibung</Text>
+                  <TextInput style={s.formInput} placeholder="Kurze Beschreibung" placeholderTextColor={C.muted}
+                    value={songBeschreibung} onChangeText={setSongBeschreibung} returnKeyType="next" />
+
+                  <Text style={s.formLabel}>Emoji</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                    {EMOJI_OPTIONS.map(e => (
+                      <TouchableOpacity key={e} onPress={() => setSongEmoji(e)}
+                        style={[s.emojiBtn, songEmoji === e && s.emojiBtnActive]} activeOpacity={0.8}>
+                        <Text style={{ fontSize: 20 }}>{e}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  <Text style={s.formLabel}>Kategorie</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                    {KAT_OPTIONS.map(k => (
+                      <TouchableOpacity key={k.key} onPress={() => setSongKat(k.key)}
+                        style={[s.katBtn, songKat === k.key && s.katBtnActive]} activeOpacity={0.8}>
+                        <Text style={[s.katText, songKat === k.key && s.katTextActive]}>{k.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <Text style={s.formLabel}>🟢 Spotify-Link</Text>
+                  <TextInput style={s.formInput} placeholder="https://open.spotify.com/..." placeholderTextColor={C.muted}
+                    value={songSpotify} onChangeText={setSongSpotify} autoCapitalize="none" keyboardType="url" />
+
+                  <Text style={s.formLabel}>🎵 Apple Music-Link</Text>
+                  <TextInput style={s.formInput} placeholder="https://music.apple.com/..." placeholderTextColor={C.muted}
+                    value={songApple} onChangeText={setSongApple} autoCapitalize="none" keyboardType="url" />
+
+                  <Text style={s.formLabel}>▶️ YouTube-Link</Text>
+                  <TextInput style={s.formInput} placeholder="https://youtube.com/..." placeholderTextColor={C.muted}
+                    value={songYoutube} onChangeText={setSongYoutube} autoCapitalize="none" keyboardType="url" />
+
+                  <View style={[s.switchRow, { marginVertical: 8 }]}>
+                    <Text style={{ fontSize: 14, color: C.brownMid }}>Sofort verfügbar</Text>
+                    <Switch value={songVerfuegbar} onValueChange={setSongVerfuegbar}
+                      trackColor={{ false: C.border, true: C.rose }} thumbColor="#FFF" />
+                  </View>
+
+                  {songFehler !== "" && <Text style={s.formError}>{songFehler}</Text>}
+                  <TouchableOpacity style={s.submitBtn} onPress={handleSaveSong} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{editSongId ? "✓ Song aktualisieren" : "🎵 Song hinzufügen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0" }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Kopiere die Links direkt aus Spotify, Apple Music oder YouTube.{"\n"}
+                  In Spotify: Song → Teilen → Link kopieren{"\n"}
+                  In Apple Music: Song → Teilen → Link kopieren{"\n"}
+                  In YouTube: Video → Teilen → Link kopieren
+                </Text>
+              </View>
             </View>
           )}
-        </View>
 
-        {/* Tagesimpuls */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>✨ Tagesimpuls</Text>
-          <Text style={s.sectionHint}>Dein persönlicher Impuls für heute. Leer lassen für automatischen Impuls.</Text>
-          <TextInput
-            style={[s.input, { height: 80, textAlignVertical: "top" }]}
-            value={tagesimpulsText}
-            onChangeText={setTagesimpulsText}
-            placeholder="Dein heutiger Impuls für die Community..."
-            placeholderTextColor={C.muted}
-            multiline
-          />
-        </View>
-
-        {/* Musik */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>🎵 Hintergrundmusik</Text>
-          <Text style={s.sectionHint}>Sanfte Meditationsmusik in der App aktivieren.</Text>
-          <View style={s.switchRow}>
-            <Text style={s.switchLabel}>{musikAktiv ? "Musik aktiv" : "Musik deaktiviert"}</Text>
-            <Switch
-              value={musikAktiv}
-              onValueChange={setMusikAktiv}
-              trackColor={{ false: C.border, true: C.rose }}
-              thumbColor="#FFF"
-            />
-          </View>
-        </View>
-
-        {/* Farbthema */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>🎨 App-Farbthema</Text>
-          <Text style={s.sectionHint}>Wähle das Farbschema für die gesamte App.</Text>
-          {THEMEN.map(t => (
-            <TouchableOpacity
-              key={t.key}
-              style={[s.themaBtn, gewaehltesThema === t.key && s.themaBtnActive]}
-              onPress={() => setGewaehltesThema(t.key)}
-              activeOpacity={0.85}
-            >
-              <View style={[s.themaFarbe, { backgroundColor: t.primary }]} />
-              <Text style={[s.themaLabel, gewaehltesThema === t.key && { color: C.brown, fontWeight: "700" }]}>
-                {t.label}
+          {/* ═══════ IMPULSE TAB ═══════ */}
+          {activeTab === "impulse" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>✨ Tagesimpulse verwalten</Text>
+              <Text style={s.sectionHint}>
+                Erstelle Tagesimpulse, die auf der Startseite angezeigt werden.
+                Der zuletzt aktivierte Impuls wird angezeigt.
               </Text>
-              {gewaehltesThema === t.key && <Text style={{ color: C.gold, fontSize: 18 }}>✓</Text>}
-            </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Musik verwalten */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>🎵 Musik verwalten</Text>
-          <Text style={s.sectionHint}>Füge deine Spotify- und Apple Music-Songs hinzu. Nutzer finden sie unter "Meine Musik".</Text>
-          <TouchableOpacity
-            style={[s.themaBtn, { borderColor: C.rose }]}
-            onPress={() => router.push("/musik" as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={{ fontSize: 18, marginRight: 10 }}>🎵</Text>
-            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>Musik-Bereich öffnen</Text>
-            <Text style={{ color: C.rose, fontSize: 16 }}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[s.themaBtn, { borderColor: C.gold }]}
-            onPress={() => router.push("/meditation" as any)}
-            activeOpacity={0.85}
-          >
-            <Text style={{ fontSize: 18, marginRight: 10 }}>🧘‍♀️</Text>
-            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>Meditationen verwalten</Text>
-            <Text style={{ color: C.gold, fontSize: 16 }}>›</Text>
-          </TouchableOpacity>
-        </View>
+              {/* Aktueller Impuls */}
+              {tagesimpulsText ? (
+                <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0" }]}>
+                  <Text style={{ fontSize: 11, color: C.gold, fontWeight: "700", marginBottom: 4 }}>AKTUELLER TAGESIMPULS</Text>
+                  <Text style={{ fontSize: 14, color: C.brown, fontStyle: "italic", lineHeight: 20 }}>
+                    "{tagesimpulsText}"
+                  </Text>
+                </View>
+              ) : (
+                <Text style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>
+                  Kein Tagesimpuls aktiv. Es wird ein Standard-Impuls angezeigt.
+                </Text>
+              )}
 
-        {/* Admin-PIN ändern */}
-        <View style={s.section}>
-          <Text style={s.sectionTitle}>🔒 Admin-PIN</Text>
-          <Text style={s.sectionHint}>Aktueller PIN: {ADMIN_PIN}. Um den PIN zu ändern, wende dich an den App-Entwickler.</Text>
-        </View>
+              {/* Gespeicherte Impulse */}
+              {impulse.length > 0 && (
+                <View style={{ marginBottom: 12 }}>
+                  <Text style={{ fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 }}>
+                    {impulse.length} gespeicherte Impulse
+                  </Text>
+                  {impulse.map(imp => (
+                    <View key={imp.id} style={s.memberRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 13, color: C.brown, fontStyle: "italic", lineHeight: 18 }} numberOfLines={2}>
+                          "{imp.text}"
+                        </Text>
+                        <Text style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>— {imp.autor}</Text>
+                      </View>
+                      <TouchableOpacity onPress={() => handleSetActiveImpuls(imp)} style={s.memberAction} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 12, color: C.gold }}>✨</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleDeleteImpuls(imp.id)} style={s.memberAction} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
 
-        {/* Speichern */}
-        <TouchableOpacity
-          style={[s.speichernBtn, gespeichert && s.speichernBtnSuccess]}
-          onPress={handleSpeichern}
-          activeOpacity={0.85}
-        >
-          <Text style={s.speichernBtnText}>{gespeichert ? "✓ Gespeichert!" : "Einstellungen speichern"}</Text>
-        </TouchableOpacity>
+              <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]}
+                onPress={() => setShowAddImpuls(!showAddImpuls)} activeOpacity={0.85}>
+                <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddImpuls ? "✕" : "➕"}</Text>
+                <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                  {showAddImpuls ? "Schließen" : "Neuen Impuls erstellen"}
+                </Text>
+              </TouchableOpacity>
 
-        {/* Abmelden */}
-        <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
-          <Text style={s.logoutText}>Admin-Bereich verlassen</Text>
-        </TouchableOpacity>
+              {showAddImpuls && (
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Impuls-Text *</Text>
+                  <TextInput style={[s.formInput, { height: 80, textAlignVertical: "top" }]}
+                    placeholder="Dein Impuls für die Community..." placeholderTextColor={C.muted}
+                    value={impulsText} onChangeText={t => { setImpulsText(t); setImpulsFehler(""); }}
+                    multiline />
+                  <Text style={s.formLabel}>Autor</Text>
+                  <TextInput style={s.formInput} placeholder="Die Seelenplanerin" placeholderTextColor={C.muted}
+                    value={impulsAutor} onChangeText={setImpulsAutor} returnKeyType="done" />
+                  {impulsFehler !== "" && <Text style={s.formError}>{impulsFehler}</Text>}
+                  <TouchableOpacity style={s.submitBtn} onPress={handleAddImpuls} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>✨ Impuls speichern & aktivieren</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
-        <View style={{ height: 60 }} />
-      </ScrollView>
+              {/* Schnelleingabe */}
+              <View style={[s.formBox, { marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 6 }}>⚡ Schnelleingabe</Text>
+                <Text style={s.sectionHint}>Ändere den aktuellen Tagesimpuls direkt:</Text>
+                <TextInput style={[s.formInput, { height: 60, textAlignVertical: "top" }]}
+                  value={tagesimpulsText} onChangeText={setTagesimpulsText}
+                  placeholder="Dein heutiger Impuls..." placeholderTextColor={C.muted} multiline />
+                <TouchableOpacity style={[s.submitBtn, { backgroundColor: C.gold, marginTop: 8 }]}
+                  onPress={async () => {
+                    await AsyncStorage.setItem("admin_tagesimpuls", tagesimpulsText);
+                    Alert.alert("Gespeichert ✓", "Der Tagesimpuls wurde aktualisiert.");
+                  }} activeOpacity={0.85}>
+                  <Text style={s.submitBtnText}>Impuls aktualisieren</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ EINSTELLUNGEN TAB ═══════ */}
+          {activeTab === "einstellungen" && (
+            <>
+              {/* PIN ändern */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🔒 Admin-PIN ändern</Text>
+                <Text style={s.sectionHint}>Ändere deinen PIN für den Admin-Zugang.</Text>
+                <TouchableOpacity style={[s.actionBtn, { borderColor: C.rose }]}
+                  onPress={() => setShowPinChange(!showPinChange)} activeOpacity={0.85}>
+                  <Text style={{ fontSize: 18, marginRight: 10 }}>🔑</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                    {showPinChange ? "Schließen" : "PIN ändern"}
+                  </Text>
+                </TouchableOpacity>
+
+                {showPinChange && (
+                  <View style={s.formBox}>
+                    <Text style={s.formLabel}>Aktueller PIN</Text>
+                    <TextInput style={s.formInput} placeholder="Dein aktueller PIN" placeholderTextColor={C.muted}
+                      value={oldPin} onChangeText={t => { setOldPin(t); setPinChangeFehler(""); }}
+                      secureTextEntry keyboardType="number-pad" maxLength={8} returnKeyType="next" />
+                    <Text style={s.formLabel}>Neuer PIN (mind. 4 Zeichen)</Text>
+                    <TextInput style={s.formInput} placeholder="Neuer PIN" placeholderTextColor={C.muted}
+                      value={newPin} onChangeText={t => { setNewPin(t); setPinChangeFehler(""); }}
+                      secureTextEntry keyboardType="number-pad" maxLength={8} returnKeyType="next" />
+                    <Text style={s.formLabel}>Neuen PIN bestätigen</Text>
+                    <TextInput style={s.formInput} placeholder="Neuen PIN wiederholen" placeholderTextColor={C.muted}
+                      value={newPinConfirm} onChangeText={t => { setNewPinConfirm(t); setPinChangeFehler(""); }}
+                      secureTextEntry keyboardType="number-pad" maxLength={8} returnKeyType="done"
+                      onSubmitEditing={handlePinChange} />
+                    {pinChangeFehler !== "" && <Text style={s.formError}>{pinChangeFehler}</Text>}
+                    <TouchableOpacity style={s.submitBtn} onPress={handlePinChange} activeOpacity={0.85}>
+                      <Text style={s.submitBtnText}>🔒 PIN ändern</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+
+              {/* Hintergrundmusik */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🎵 Hintergrundmusik</Text>
+                <View style={s.switchRow}>
+                  <Text style={{ fontSize: 14, color: C.brownMid }}>{musikAktiv ? "Musik aktiv" : "Musik deaktiviert"}</Text>
+                  <Switch value={musikAktiv} onValueChange={setMusikAktiv}
+                    trackColor={{ false: C.border, true: C.rose }} thumbColor="#FFF" />
+                </View>
+              </View>
+
+              {/* Speichern */}
+              <TouchableOpacity style={[s.speichernBtn, gespeichert && s.speichernBtnSuccess]}
+                onPress={handleSpeichern} activeOpacity={0.85}>
+                <Text style={s.speichernBtnText}>{gespeichert ? "✓ Gespeichert!" : "Einstellungen speichern"}</Text>
+              </TouchableOpacity>
+
+              {/* Abmelden */}
+              <TouchableOpacity style={s.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
+                <Text style={s.logoutText}>Admin-Bereich verlassen</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </ScrollView>
+      </View>
     </ScreenContainer>
   );
 }
@@ -544,46 +756,51 @@ const s = StyleSheet.create({
   backBtnText: { fontSize: 15, fontWeight: "600" },
   headerTitle: { fontSize: 24, fontWeight: "700", color: C.brown },
   headerSub: { fontSize: 13, color: C.muted, marginTop: 4 },
+
+  // Tabs
+  tabBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: C.card, borderWidth: 1, borderColor: C.border },
+  tabBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
+  tabText: { fontSize: 13, fontWeight: "600", color: C.muted },
+  tabTextActive: { color: "#FFF" },
+
+  // Sections
   section: { margin: 16, marginBottom: 0, backgroundColor: C.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.border },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 6 },
   sectionHint: { fontSize: 12, color: C.muted, lineHeight: 18, marginBottom: 12 },
-  input: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border },
+
+  // Forms
+  formBox: { marginTop: 12, backgroundColor: C.roseLight, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: C.border },
+  formLabel: { fontSize: 12, color: C.brownMid, fontWeight: "600", marginBottom: 4, marginTop: 4 },
+  formInput: { backgroundColor: C.card, borderRadius: 10, padding: 12, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 6 },
+  formError: { fontSize: 12, color: "#C87C82", marginBottom: 8 },
+  submitBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 12, alignItems: "center", marginTop: 4 },
+  submitBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
+
+  // Action buttons
+  actionBtn: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 12, marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
+
+  // Members
+  memberRow: { flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 12, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: C.border },
+  memberAvatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.rose, alignItems: "center", justifyContent: "center", marginRight: 10 },
+  memberName: { fontSize: 14, fontWeight: "700", color: C.brown },
+  memberEmail: { fontSize: 11, color: C.muted },
+  memberAction: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.card, alignItems: "center", justifyContent: "center", marginLeft: 6, borderWidth: 1, borderColor: C.border },
+
+  // Switch
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  switchLabel: { fontSize: 14, color: C.brownMid },
-  themaBtn: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 12, marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
-  themaBtnActive: { borderColor: C.rose, backgroundColor: C.roseLight },
-  themaFarbe: { width: 24, height: 24, borderRadius: 12, marginRight: 12 },
-  themaLabel: { flex: 1, fontSize: 14, color: C.muted },
+
+  // Emoji/Kat buttons
+  emojiBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.surface, alignItems: "center", justifyContent: "center", marginRight: 6, borderWidth: 1, borderColor: C.border },
+  emojiBtnActive: { backgroundColor: C.roseLight, borderColor: C.rose },
+  katBtn: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border },
+  katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
+  katText: { fontSize: 12, fontWeight: "600", color: C.muted },
+  katTextActive: { color: "#FFF" },
+
+  // Bottom buttons
   speichernBtn: { margin: 16, backgroundColor: C.rose, borderRadius: 16, paddingVertical: 16, alignItems: "center" },
   speichernBtnSuccess: { backgroundColor: "#5C8A5C" },
   speichernBtnText: { color: "#FFF", fontWeight: "700", fontSize: 16 },
   logoutBtn: { marginHorizontal: 16, marginBottom: 8, backgroundColor: C.surface, borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: C.border },
   logoutText: { fontSize: 14, color: C.muted },
-
-  // Mitgliederverwaltung
-  memberRow: {
-    flexDirection: "row", alignItems: "center", backgroundColor: C.surface,
-    borderRadius: 12, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: C.border,
-  },
-  memberAvatar: {
-    width: 34, height: 34, borderRadius: 17, backgroundColor: C.rose,
-    alignItems: "center", justifyContent: "center", marginRight: 10,
-  },
-  memberName: { fontSize: 14, fontWeight: "700", color: C.brown },
-  memberEmail: { fontSize: 11, color: C.muted },
-  memberAction: {
-    width: 30, height: 30, borderRadius: 15, backgroundColor: C.card,
-    alignItems: "center", justifyContent: "center", marginLeft: 6,
-    borderWidth: 1, borderColor: C.border,
-  },
-  memberFormLabel: { fontSize: 12, color: C.brownMid, fontWeight: "600", marginBottom: 4, marginTop: 4 },
-  memberFormInput: {
-    backgroundColor: C.card, borderRadius: 10, padding: 12, fontSize: 14,
-    color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 6,
-  },
-  addMemberBtn: {
-    backgroundColor: C.rose, borderRadius: 12, paddingVertical: 12,
-    alignItems: "center", marginTop: 4,
-  },
-  addMemberBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
 });
