@@ -113,8 +113,8 @@ export default function LaraScreen() {
         >
           <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 220, backgroundColor: "rgba(61,43,31,0.35)" }} />
           <View style={s.heroOverlay}>
-            <Text style={s.heroName}>Lara</Text>
-            <Text style={s.heroTitle}>Die Seelenplanerin ✦ Deine spirituelle Begleiterin</Text>
+            <Text style={s.heroName}>Die Seelenplanerin</Text>
+            <Text style={s.heroTitle}>Deine spirituelle Begleiterin ✦</Text>
           </View>
         </ImageBackground>
 

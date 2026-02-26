@@ -141,11 +141,11 @@ export default function AuraScreen() {
           </View>
         </View>
 
-        {/* ── LARAS BOTSCHAFT ── */}
+        {/* ── BOTSCHAFT DER SEELENPLANERIN ── */}
         <View style={s.botschaftCard}>
-          <Text style={s.botschaftLabel}>🌸 Laras Botschaft für dich heute</Text>
+          <Text style={s.botschaftLabel}>🌸 Botschaft der Seelenplanerin für dich heute</Text>
           <Text style={s.botschaftText}>"{aura.botschaft}"</Text>
-          <Text style={s.botschaftCredit}>— Lara, Die Seelenplanerin</Text>
+          <Text style={s.botschaftCredit}>— Die Seelenplanerin</Text>
         </View>
 
         {/* ── AURA READING BUCHUNG ── */}

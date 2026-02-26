@@ -252,7 +252,7 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
         <View style={s.ctaCard}>
           <Text style={s.ctaTitle}>✨ Passende Produkte von der Seelenplanerin</Text>
           <Text style={s.ctaText}>
-            Alle Materialien für dieses Ritual findest du in Laras Shop – handgravierte Runen-Armbänder, Schutzarmbänder mit schwarzem Turmalin, Räucherwerk und mehr. Mit Laras Energie und Liebe gefertigt.
+            Alle Materialien für dieses Ritual findest du im Shop der Seelenplanerin – handgravierte Runen-Armbänder, Schutzarmbänder mit schwarzem Turmalin, Räucherwerk und mehr. Mit Energie und Liebe gefertigt.
           </Text>
           <TouchableOpacity
             style={s.ctaBtn}

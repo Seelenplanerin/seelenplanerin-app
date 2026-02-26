@@ -322,3 +322,19 @@
 - [x] Nächste Hauptphasen: DYNAMISCH zum gewählten Datum (scrollt man in Juli, zeigt es Juli-Phasen)
 - [x] SVG-Icons: Komplett durch native Emojis ersetzt (🌑🌒🌓🌔🌕🌖🌗🌘) – 3D auf iOS
 - [x] Exakte Daten: Vollmond/Neumond-Tage im Kalender mit VM/NM Label + goldener/grauer Umrandung markiert
+
+## Korrekturen Runde 19 (26.02.2026)
+- [x] Premium-Mondkalender: Exakte astronomische Daten aus VOLLMONDE_2026/NEUMONDE_2026/ERSTES_VIERTEL_2026/LETZTES_VIERTEL_2026 Arrays statt eigene Berechnung
+- [x] Premium-Mondkalender: Emoji + Uhrzeit bei jeder Phase angezeigt
+- [x] Premium-Mondkalender: Vergangene Phasen ausgegraut (opacity 0.5)
+- [x] Premium-Mondkalender: Beschreibung aktualisiert "Alle exakten Mondphasen 2026 (astronomisch verifiziert)"
+- [x] Branding: "Lara" → "Die Seelenplanerin" in seelenimpuls.tsx (Testimonials, Botschaft, Autor)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in aura.tsx (Botschaft, Credit)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in mondtyp-quiz.tsx (CTA Text)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in runen-quiz.tsx (Botschaft, Armband CTA, Seelenimpuls CTA)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in admin.tsx (PIN-Seite)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in index.tsx (Hero-Kommentar, Tagesimpuls-Credit, Musik-Beschreibung)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in lara.tsx (Hero-Name, Untertitel korrigiert)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in rituale.tsx (Shop-CTA Text)
+- [x] Branding: "Lara" → "Die Seelenplanerin" in ich.tsx (Produkte-Sektion, Admin-Link, Version)
+- [x] 50 Tests bestanden, 0 TypeScript-Fehler

@@ -82,7 +82,7 @@ export default function AdminScreen() {
             </TouchableOpacity>
             <Text style={s.pinEmoji}>🔐</Text>
             <Text style={s.pinTitel}>Admin-Bereich</Text>
-            <Text style={s.pinSub}>Nur für Lara</Text>
+            <Text style={s.pinSub}>Nur für die Seelenplanerin</Text>
             <TextInput
               style={s.pinInput}
               placeholder="PIN eingeben"

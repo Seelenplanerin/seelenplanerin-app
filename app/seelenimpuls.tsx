@@ -22,7 +22,7 @@ const FEATURES = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Sarah M.", text: "Der Seelenimpuls hat mein Leben verändert. Laras Meditationen helfen mir jeden Morgen, zentriert in den Tag zu starten.", emoji: "🌸" },
+  { name: "Sarah M.", text: "Der Seelenimpuls hat mein Leben verändert. Die Meditationen der Seelenplanerin helfen mir jeden Morgen, zentriert in den Tag zu starten.", emoji: "🌸" },
   { name: "Julia K.", text: "Endlich eine spirituelle Begleitung die sich wirklich persönlich anfühlt. Die Seelenplanerin ist so authentisch und herzlich.", emoji: "✨" },
   { name: "Marie L.", text: "Die Mondphasen-Rituale haben mir geholfen, meinen eigenen Rhythmus zu finden. Ich bin so dankbar für diesen Raum.", emoji: "🌙" },
 ];
@@ -38,7 +38,7 @@ export default function SeelenimpulsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Laras Bild direkt auf der Hauptseite */}
+        {/* Bild der Seelenplanerin */}
         <View style={s.heroSection}>
           <Image
             source={require("@/assets/images/lara-profile.jpg")}
@@ -50,13 +50,13 @@ export default function SeelenimpulsScreen() {
           </View>
         </View>
 
-        {/* Lara's Botschaft */}
+        {/* Botschaft der Seelenplanerin */}
         <View style={s.botschaftCard}>
           <Text style={s.botschaftEmoji}>🌸</Text>
           <Text style={s.botschaftText}>
             "Ich habe den Seelenimpuls für alle Frauen geschaffen, die tiefer in ihre spirituelle Praxis eintauchen möchten. Hier bekommst du nicht nur Inhalte – du bekommst meine volle Präsenz und Begleitung."
           </Text>
-          <Text style={s.botschaftAutor}>— Lara, Die Seelenplanerin</Text>
+          <Text style={s.botschaftAutor}>— Die Seelenplanerin</Text>
         </View>
 
         {/* Features */}

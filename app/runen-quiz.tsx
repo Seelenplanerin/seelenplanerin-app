@@ -240,7 +240,7 @@ export default function RunenQuizScreen() {
 
           {/* Botschaft */}
           <View style={s.card}>
-            <Text style={s.cardTitel}>🌙 Laras Botschaft für dich</Text>
+            <Text style={s.cardTitel}>🌙 Botschaft der Seelenplanerin für dich</Text>
             <Text style={s.cardText}>{rune.botschaft}</Text>
           </View>
 
@@ -260,7 +260,7 @@ export default function RunenQuizScreen() {
           <View style={s.ctaCard}>
             <Text style={s.ctaSymbol}>{rune.symbol}</Text>
             <Text style={s.ctaTitel}>Trage deine Rune bei dir</Text>
-            <Text style={s.ctaText}>Lara graviert deine persönliche Rune {rune.name} von Hand auf einen Charm – mit Heilsteinpulver veredelt. Dein persönliches Schutzarmband.</Text>
+            <Text style={s.ctaText}>Die Seelenplanerin graviert deine persönliche Rune {rune.name} von Hand auf einen Charm – mit Heilsteinpulver veredelt. Dein persönliches Schutzarmband.</Text>
             <TouchableOpacity
               style={s.ctaBtn}
               onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/qnl3vN")}
@@ -273,7 +273,7 @@ export default function RunenQuizScreen() {
           {/* Seelenimpuls CTA */}
           <View style={[s.ctaCard, { backgroundColor: C.goldLight }]}>
             <Text style={s.ctaTitel}>Tiefer in die Runen eintauchen?</Text>
-            <Text style={s.ctaText}>Im Seelenimpuls bekommst du monatlich tiefe Runen-Readings, persönliche Deutungen und Laras Begleitung.</Text>
+            <Text style={s.ctaText}>Im Seelenimpuls bekommst du monatlich tiefe Runen-Readings, persönliche Deutungen und die Begleitung der Seelenplanerin.</Text>
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: C.gold }]}
               onPress={() => router.push("/seelenimpuls")}

@@ -96,7 +96,7 @@ export default function IchScreen() {
         </TouchableOpacity>
 
         {/* Produkte Highlights */}
-        <Text style={s.sec}>🛍️ Laras Produkte</Text>
+        <Text style={s.sec}>🛍️ Produkte der Seelenplanerin</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 10, paddingBottom: 4 }}>
           {PRODUKTE.map(p => (
             <TouchableOpacity
@@ -143,7 +143,7 @@ export default function IchScreen() {
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>🔐</Text>
-            <Text style={s.menuLabel}>Admin-Bereich (Lara)</Text>
+            <Text style={s.menuLabel}>Admin-Bereich</Text>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>
         </View>
@@ -154,7 +154,7 @@ export default function IchScreen() {
           <Text style={s.aboutText}>
             Diese App ist mit Liebe von der Seelenplanerin für alle Frauen geschaffen, die auf ihrer spirituellen Reise Begleitung suchen. Hier findest du Rituale, Mondenergie, Runen und persönliche Impulse – alles handgemacht und von Herzen.
           </Text>
-          <Text style={s.aboutVersion}>Version 1.0 · Made with 🌸 by Lara</Text>
+          <Text style={s.aboutVersion}>Version 1.0 · Made with 🌸 by Die Seelenplanerin</Text>
         </View>
 
         <View style={{ height: 32 }} />

@@ -219,7 +219,7 @@ export default function MondtypQuizScreen() {
           {/* Seelenimpuls CTA */}
           <View style={s.ctaCard}>
             <Text style={s.ctaTitel}>Tiefer eintauchen?</Text>
-            <Text style={s.ctaText}>Im Seelenimpuls bekommst du jeden Monat tiefe Mondenergie-Impulse, persönliche Rituale und Laras Begleitung – passend zu deinem Mondtyp.</Text>
+            <Text style={s.ctaText}>Im Seelenimpuls bekommst du jeden Monat tiefe Mondenergie-Impulse, persönliche Rituale und die Begleitung der Seelenplanerin – passend zu deinem Mondtyp.</Text>
             <TouchableOpacity style={s.ctaBtn} onPress={() => router.push("/seelenimpuls")} activeOpacity={0.85}>
               <Text style={s.ctaBtnText}>Zum Seelenimpuls → 17 € / Monat</Text>
             </TouchableOpacity>

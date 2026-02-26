@@ -5,7 +5,6 @@ import {
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
-import { MoonIcon } from "@/components/moon-icon";
 import {
   getMoonPhaseForDate,
   getMoonZodiac,
@@ -13,7 +12,9 @@ import {
   isMoonWaxing,
   getNextVollmond,
   getNextNeumond,
+  getExakteHauptphasen,
   MOON_PHASES,
+  type ExaktePhase,
 } from "@/lib/moon-phase";
 import {
   ZyklusEinstellungen,
@@ -47,37 +48,33 @@ const PREMIUM_MEDITATIONEN = [
   { id: "pm6", titel: "Mondwasser-Zeremonie", dauer: "10 Min.", emoji: "💧", beschreibung: "Anleitung zur Herstellung von Mondwasser", verfuegbar: false },
 ];
 
-// ── Premium Mondkalender ──
+// ── Premium Mondkalender mit EXAKTEN astronomischen Daten ──
 function getPremiumMondkalender() {
-  const events: { datum: string; phase: string; tierkreis: string; besonderheit: string }[] = [];
+  const alleExakt = getExakteHauptphasen();
   const now = new Date();
-  for (let monat = 0; monat < 3; monat++) {
-    const startDate = new Date(now);
-    startDate.setMonth(now.getMonth() + monat, 1);
-    const endDate = new Date(startDate);
-    endDate.setMonth(startDate.getMonth() + 1, 0);
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const phase = getMoonPhaseForDate(d);
-      const prevDay = new Date(d);
-      prevDay.setDate(d.getDate() - 1);
-      const prevPhase = getMoonPhaseForDate(prevDay);
-      if (phase.name !== prevPhase.name) {
-        const zodiac = getMoonZodiac(d);
-        let besonderheit = "";
-        if (phase.name === "Vollmond") besonderheit = "Manifestation & Loslassen";
-        else if (phase.name === "Neumond") besonderheit = "Intentionen setzen";
-        else if (phase.name === "Erstes Viertel") besonderheit = "Entscheidungen treffen";
-        else if (phase.name === "Letztes Viertel") besonderheit = "Reinigung & Aufräumen";
-        events.push({
-          datum: d.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", timeZone: "Europe/Berlin" }),
-          phase: phase.name,
-          tierkreis: `${zodiac.symbol} ${zodiac.name}`,
-          besonderheit,
-        });
-      }
-    }
-  }
-  return events;
+  // Zeige alle Phasen des aktuellen Jahres (2026)
+  return alleExakt.map((phase) => {
+    const zodiac = getMoonZodiac(phase.datum);
+    let besonderheit = "";
+    if (phase.name === "Vollmond") besonderheit = "Manifestation & Loslassen";
+    else if (phase.name === "Neumond") besonderheit = "Intentionen setzen";
+    else if (phase.name === "Erstes Viertel") besonderheit = "Entscheidungen treffen";
+    else if (phase.name === "Letztes Viertel") besonderheit = "Reinigung & Aufräumen";
+    const zeitStr = phase.datum.toLocaleTimeString("de-DE", {
+      hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
+    });
+    return {
+      datum: phase.datum.toLocaleDateString("de-DE", {
+        weekday: "short", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Berlin",
+      }),
+      phase: phase.name,
+      emoji: phase.emoji,
+      tierkreis: `${zodiac.symbol} ${zodiac.name}`,
+      besonderheit,
+      zeit: `${zeitStr} Uhr`,
+      istVergangen: phase.datum.getTime() < now.getTime(),
+    };
+  });
 }
 
 // ── Synchronisations-Farbe ──
@@ -182,19 +179,26 @@ export default function CommunityPremiumScreen() {
           {tab === "kalender" && (
             <View style={s.content}>
               <Text style={s.sectionTitle}>Mondphasen-Kalender</Text>
-              <Text style={s.sectionSub}>Alle Phasenwechsel der nächsten 3 Monate</Text>
+              <Text style={s.sectionSub}>Alle exakten Mondphasen 2026 (astronomisch verifiziert)</Text>
 
               {mondkalender.map((event, i) => {
                 const isVollmond = event.phase === "Vollmond";
                 const isNeumond = event.phase === "Neumond";
                 return (
-                  <View key={i} style={[s.eventCard, isVollmond && s.eventCardGold, isNeumond && s.eventCardDark]}>
+                  <View key={i} style={[
+                    s.eventCard,
+                    isVollmond && s.eventCardGold,
+                    isNeumond && s.eventCardDark,
+                    event.istVergangen && { opacity: 0.5 },
+                  ]}>
+                    <Text style={{ fontSize: 28, marginRight: 12 }}>{event.emoji}</Text>
                     <View style={s.eventLeft}>
                       <Text style={[s.eventPhase, isVollmond && { color: C.gold }, isNeumond && { color: C.muted }]}>
                         {event.phase}
                       </Text>
                       <Text style={s.eventDatum}>{event.datum}</Text>
                       <Text style={s.eventTierkreis}>{event.tierkreis}</Text>
+                      <Text style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>{event.zeit}</Text>
                     </View>
                     {event.besonderheit ? (
                       <View style={[s.eventBadge, isVollmond && { backgroundColor: C.goldLight }]}>

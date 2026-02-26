@@ -100,7 +100,7 @@ export default function AktuellesScreen() {
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── HERO: Laras Foto + Logo freigestellt ── */}
+        {/* ── HERO: Foto + Logo freigestellt ── */}
         <View style={s.heroWrapper}>
           <View style={s.hero}>
             <Image
@@ -132,7 +132,7 @@ export default function AktuellesScreen() {
         <View style={s.impulsCard}>
           <Text style={s.impulsLabel}>✨ Dein Tagesimpuls</Text>
           <Text style={s.impulsText}>"{impuls}"</Text>
-          <Text style={s.impulsCredit}>— Lara, Die Seelenplanerin</Text>
+          <Text style={s.impulsCredit}>— Die Seelenplanerin</Text>
         </View>
 
         {/* ── MONDPHASE (erweitert mit Tierkreiszeichen) ── */}
@@ -197,7 +197,7 @@ export default function AktuellesScreen() {
           <View style={s.musikContent}>
             <Text style={s.musikTitle}>Musik & Meditation</Text>
             <Text style={s.musikSubtitle}>Musik von der Seelenplanerin</Text>
-            <Text style={s.musikDesc}>Laras Musik auf Spotify hören</Text>
+            <Text style={s.musikDesc}>Musik der Seelenplanerin auf Spotify hören</Text>
           </View>
           <View style={s.musikPlayBtn}>
             <Text style={s.musikPlayText}>▶</Text>
