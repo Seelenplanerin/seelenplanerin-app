@@ -9,6 +9,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { trpc } from "@/lib/trpc";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 
 const C = {
@@ -301,62 +302,122 @@ export default function AdminScreen() {
     setSongFehler(""); setEditSongId(null); setSongMp3Url(""); setSongMp3FileName("");
   };
 
-  const handlePickMp3 = async () => {
+  // ── Gemeinsame Upload-Logik ──
+  const processAndUploadFile = async (
+    uri: string,
+    fileName: string,
+    mimeType: string,
+    setUrl: (url: string) => void,
+    setFileName: (name: string) => void,
+    setIsUploading: (v: boolean) => void,
+  ) => {
+    setIsUploading(true);
+    setFileName(fileName);
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: "audio/*",
-        copyToCacheDirectory: true,
-      });
-      if (result.canceled || !result.assets?.[0]) return;
-      const file = result.assets[0];
-      if (file.size && file.size > 64 * 1024 * 1024) {
-        Alert.alert("Datei zu groß", "Maximale Dateigröße: 64 MB");
-        return;
-      }
-      setUploading(true);
-      setSongMp3FileName(file.name);
-      try {
-        let base64Data: string;
-        if (Platform.OS === "web") {
-          // Web: fetch blob and convert to base64
-          const resp = await fetch(file.uri);
-          const blob = await resp.blob();
-          base64Data = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const dataUrl = reader.result as string;
-              resolve(dataUrl.split(",")[1] || "");
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } else {
-          // Native: use FileSystem
-          base64Data = await FileSystem.readAsStringAsync(file.uri, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-        }
-        const uploadResult = await uploadAudioMutation.mutateAsync({
-          fileName: file.name,
-          base64Data,
-          contentType: file.mimeType || "audio/mpeg",
+      let base64Data: string;
+      if (Platform.OS === "web") {
+        const resp = await fetch(uri);
+        const blob = await resp.blob();
+        base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            resolve(dataUrl.split(",")[1] || "");
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
         });
-        if (uploadResult.success) {
-          setSongMp3Url(uploadResult.url!);
-          Alert.alert("Upload erfolgreich ✓", `"${file.name}" wurde hochgeladen.`);
-        } else {
-          Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler");
-        }
-      } catch (err: any) {
-        Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen");
-      } finally {
-        setUploading(false);
+      } else {
+        base64Data = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
+      const uploadResult = await uploadAudioMutation.mutateAsync({
+        fileName,
+        base64Data,
+        contentType: mimeType,
+      });
+      if (uploadResult.success) {
+        setUrl(uploadResult.url!);
+        Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
+      } else {
+        Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler");
       }
     } catch (err: any) {
-      if (err.message !== "User canceled document picker") {
-        Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden.");
-      }
+      Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen");
+    } finally {
+      setIsUploading(false);
     }
+  };
+
+  // ── Upload-Auswahl-Dialog (Fotos, Kamera, Dateien) ──
+  const showUploadPicker = (
+    setUrl: (url: string) => void,
+    setFileName: (name: string) => void,
+    setIsUploading: (v: boolean) => void,
+  ) => {
+    const pickFromFiles = async () => {
+      try {
+        const result = await DocumentPicker.getDocumentAsync({ type: "audio/*", copyToCacheDirectory: true });
+        if (result.canceled || !result.assets?.[0]) return;
+        const file = result.assets[0];
+        if (file.size && file.size > 64 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 64 MB"); return; }
+        await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
+      } catch (err: any) {
+        if (err.message !== "User canceled document picker") Alert.alert("Fehler", "Datei konnte nicht ausgew\u00e4hlt werden.");
+      }
+    };
+
+    const pickFromPhotos = async () => {
+      try {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ["videos"],
+          quality: 1,
+        });
+        if (result.canceled || !result.assets?.[0]) return;
+        const asset = result.assets[0];
+        const name = asset.fileName || `aufnahme_${Date.now()}.mp4`;
+        await processAndUploadFile(asset.uri, name, asset.mimeType || "video/mp4", setUrl, setFileName, setIsUploading);
+      } catch (err: any) {
+        Alert.alert("Fehler", "Mediathek konnte nicht ge\u00f6ffnet werden.");
+      }
+    };
+
+    const pickFromCamera = async () => {
+      try {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Berechtigung ben\u00f6tigt", "Bitte erlaube den Kamera-Zugriff in den Einstellungen.");
+          return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ["videos"],
+          quality: 1,
+          videoMaxDuration: 600,
+        });
+        if (result.canceled || !result.assets?.[0]) return;
+        const asset = result.assets[0];
+        const name = asset.fileName || `aufnahme_${Date.now()}.mp4`;
+        await processAndUploadFile(asset.uri, name, asset.mimeType || "video/mp4", setUrl, setFileName, setIsUploading);
+      } catch (err: any) {
+        Alert.alert("Fehler", "Kamera konnte nicht ge\u00f6ffnet werden.");
+      }
+    };
+
+    Alert.alert(
+      "Datei ausw\u00e4hlen",
+      "Woher m\u00f6chtest du die Datei laden?",
+      [
+        { text: "\ud83d\udcc1 Dateien", onPress: pickFromFiles },
+        { text: "\ud83d\uddbc\ufe0f Fotomediathek", onPress: pickFromPhotos },
+        { text: "\ud83d\udcf7 Kamera", onPress: pickFromCamera },
+        { text: "Abbrechen", style: "cancel" },
+      ]
+    );
+  };
+
+  const handlePickMp3 = () => {
+    showUploadPicker(setSongMp3Url, setSongMp3FileName, setUploading);
   };
 
   const handleSaveSong = async () => {
@@ -792,34 +853,7 @@ export default function AdminScreen() {
                   <Text style={s.formLabel}>🎧 MP3-Datei hochladen *</Text>
                   <TouchableOpacity
                     style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, meditUploading && { opacity: 0.6 }]}
-                    onPress={async () => {
-                      try {
-                        const result = await DocumentPicker.getDocumentAsync({ type: "audio/*", copyToCacheDirectory: true });
-                        if (result.canceled || !result.assets?.[0]) return;
-                        const file = result.assets[0];
-                        if (file.size && file.size > 64 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 64 MB"); return; }
-                        setMeditUploading(true); setMeditMp3FileName(file.name);
-                        try {
-                          let base64Data: string;
-                          if (Platform.OS === "web") {
-                            const resp = await fetch(file.uri); const blob = await resp.blob();
-                            base64Data = await new Promise<string>((resolve, reject) => {
-                              const reader = new FileReader();
-                              reader.onloadend = () => { resolve((reader.result as string).split(",")[1] || ""); };
-                              reader.onerror = reject; reader.readAsDataURL(blob);
-                            });
-                          } else {
-                            base64Data = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
-                          }
-                          const uploadResult = await uploadAudioMutation.mutateAsync({ fileName: file.name, base64Data, contentType: file.mimeType || "audio/mpeg" });
-                          if (uploadResult.success) { setMeditMp3Url(uploadResult.url!); Alert.alert("Upload erfolgreich ✓", `"${file.name}" wurde hochgeladen.`); }
-                          else { Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler"); }
-                        } catch (err: any) { Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen"); }
-                        finally { setMeditUploading(false); }
-                      } catch (err: any) {
-                        if (err.message !== "User canceled document picker") Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden.");
-                      }
-                    }}
+                    onPress={() => showUploadPicker(setMeditMp3Url, setMeditMp3FileName, setMeditUploading)}
                     activeOpacity={0.85} disabled={meditUploading}>
                     {meditUploading ? (
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

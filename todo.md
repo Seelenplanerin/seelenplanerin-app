@@ -398,3 +398,8 @@
 - [x] Evergreen Admin-Link: Zugang über geheime Geste (5x tippen auf Version-Text)
 - [x] Community-Moderation: Admin (hallo@seelenplanerin.de) kann Beiträge jederzeit löschen (✕-Button)
 - [x] Upload-Bereiche: Musik und Meditationen klar getrennt + Anleitungen erstellt
+
+## Feature: Upload-Auswahl erweitern (26.02.2026)
+- [x] Beim Hochladen von MP3s Auswahl zwischen Fotos, Kamera und Dateien
+- [x] ActionSheet/Alert mit 3 Optionen: Fotomediathek, Kamera, Dateien
+- [x] Gilt für Musik-Upload und Meditationen-Upload im Admin
