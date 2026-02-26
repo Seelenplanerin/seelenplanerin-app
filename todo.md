@@ -367,3 +367,6 @@
 - [x] Admin Musik-Tab: MP3-Datei auswählen und hochladen (DocumentPicker + Base64 + S3)
 - [x] Musik-Screen: In-App-Player für hochgeladene MP3s (Web: HTML5 Audio, Native: expo-audio)
 - [x] Songs mit MP3-URL statt nur Streaming-Links (MP3-Badge + In-App Abspielen)
+
+## Bug: MP3-Wiedergabe funktioniert nicht (26.02.2026)
+- [x] MP3 wird hochgeladen aber nicht abgespielt im Musik-Screen – Player komplett überarbeitet (robuster Audio-Manager mit CORS, Polling, Fehlerbehandlung, Now-Playing-Bar)
