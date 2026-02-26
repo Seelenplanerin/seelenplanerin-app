@@ -387,3 +387,7 @@
 - [x] Admin: Eigener "Musik"-Tab nur für Musik-Songs
 - [x] Community: Hochgeladene Meditationen korrekt laden und abspielen (Storage-Key korrigiert: lara_meditationen)
 - [x] Musik-Screen: Nur Musik anzeigen, keine Meditationen (meditation-Kategorie ausgefiltert)
+
+## Bug: Upload-Limit zu klein + Mondquiz fehlt (26.02.2026)
+- [x] Upload-Limit von 16 MB auf 64 MB erhöht (Admin + Server body-parser auf 100mb)
+- [x] Mondquiz: Navigation hinzugefügt (Mond-Tab Banner + Startseite Banner)

@@ -522,6 +522,26 @@ export default function MondScreen() {
           })}
         </View>
 
+        {/* ── Dein Mondtyp-Quiz ── */}
+        <TouchableOpacity
+          style={{
+            marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
+            backgroundColor: C.card, borderWidth: 1, borderColor: C.gold,
+            padding: 16, flexDirection: "row", alignItems: "center", gap: 12,
+          }}
+          onPress={() => router.push("/mondtyp-quiz" as any)}
+          activeOpacity={0.8}
+        >
+          <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: C.goldDim, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontSize: 24 }}>🌙</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: C.gold }}>Dein Mondtyp-Quiz</Text>
+            <Text style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
+          </View>
+          <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
+        </TouchableOpacity>
+
         {/* ── Mondphasen-Guide ── */}
         <Text style={st.sectionTitle}>Mondphasen-Guide</Text>
         {MOON_PHASES.map((phase, index) => (

@@ -204,6 +204,26 @@ export default function AktuellesScreen() {
           </View>
         </TouchableOpacity>
 
+        {/* ── MONDTYP-QUIZ ── */}
+        <TouchableOpacity
+          style={{
+            marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
+            backgroundColor: "#1A1F33", borderWidth: 1, borderColor: "rgba(212,168,83,0.4)",
+            padding: 14, flexDirection: "row", alignItems: "center", gap: 12,
+          }}
+          onPress={() => router.push("/mondtyp-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(212,168,83,0.2)", alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontSize: 22 }}>🌙</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: "#D4A853" }}>Dein Mondtyp-Quiz</Text>
+            <Text style={{ fontSize: 11, color: "#8892A8", marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
+          </View>
+          <Text style={{ fontSize: 16, color: "#D4A853" }}>›</Text>
+        </TouchableOpacity>
+
         {/* ── KATEGORIEN ── */}
         <Text style={s.sectionTitle}>Entdecke die Seelenplanerin</Text>
         <View style={s.kategorienGrid}>

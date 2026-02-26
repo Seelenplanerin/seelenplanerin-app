@@ -309,8 +309,8 @@ export default function AdminScreen() {
       });
       if (result.canceled || !result.assets?.[0]) return;
       const file = result.assets[0];
-      if (file.size && file.size > 16 * 1024 * 1024) {
-        Alert.alert("Datei zu groß", "Maximale Dateigröße: 16 MB");
+      if (file.size && file.size > 64 * 1024 * 1024) {
+        Alert.alert("Datei zu groß", "Maximale Dateigröße: 64 MB");
         return;
       }
       setUploading(true);
@@ -663,7 +663,7 @@ export default function AdminScreen() {
                   {songMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {songMp3FileName}</Text>
                   ) : (
-                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 16 MB. Wird in der App direkt abspielbar.</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 64 MB. Wird in der App direkt abspielbar.</Text>
                   )}
 
                   <View style={{ height: 1, backgroundColor: C.border, marginVertical: 8 }} />
@@ -797,7 +797,7 @@ export default function AdminScreen() {
                         const result = await DocumentPicker.getDocumentAsync({ type: "audio/*", copyToCacheDirectory: true });
                         if (result.canceled || !result.assets?.[0]) return;
                         const file = result.assets[0];
-                        if (file.size && file.size > 16 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 16 MB"); return; }
+                        if (file.size && file.size > 64 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 64 MB"); return; }
                         setMeditUploading(true); setMeditMp3FileName(file.name);
                         try {
                           let base64Data: string;
@@ -839,7 +839,7 @@ export default function AdminScreen() {
                   {meditMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {meditMp3FileName}</Text>
                   ) : (
-                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 16 MB. Wird im Community-Bereich direkt abspielbar.</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 64 MB. Wird im Community-Bereich direkt abspielbar.</Text>
                   )}
 
                   <View style={[s.switchRow, { marginVertical: 8 }]}>
