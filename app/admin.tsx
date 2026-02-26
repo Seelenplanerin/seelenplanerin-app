@@ -11,6 +11,7 @@ import { trpc } from "@/lib/trpc";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
+import { getApiBaseUrl } from "@/constants/oauth";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -302,7 +303,7 @@ export default function AdminScreen() {
     setSongFehler(""); setEditSongId(null); setSongMp3Url(""); setSongMp3FileName("");
   };
 
-  // ── Gemeinsame Upload-Logik ──
+  // ── Gemeinsame Upload-Logik (Multipart-FormData) ──
   const processAndUploadFile = async (
     uri: string,
     fileName: string,
@@ -314,34 +315,39 @@ export default function AdminScreen() {
     setIsUploading(true);
     setFileName(fileName);
     try {
-      let base64Data: string;
+      const apiBase = getApiBaseUrl();
+      const uploadUrl = `${apiBase}/api/upload-audio`;
+
       if (Platform.OS === "web") {
+        // Web: fetch blob and send as FormData
         const resp = await fetch(uri);
         const blob = await resp.blob();
-        base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            resolve(dataUrl.split(",")[1] || "");
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
+        const formData = new FormData();
+        formData.append("file", blob, fileName);
+        const uploadResp = await fetch(uploadUrl, { method: "POST", body: formData });
+        const result = await uploadResp.json();
+        if (result.success) {
+          setUrl(result.url);
+          Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
+        } else {
+          Alert.alert("Upload fehlgeschlagen", result.error || "Unbekannter Fehler");
+        }
       } else {
-        base64Data = await FileSystem.readAsStringAsync(uri, {
-          encoding: FileSystem.EncodingType.Base64,
+        // Native: use FileSystem.uploadAsync for direct multipart upload
+        const uploadResult = await FileSystem.uploadAsync(uploadUrl, uri, {
+          httpMethod: "POST",
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+          fieldName: "file",
+          mimeType: mimeType,
+          parameters: { fileName },
         });
-      }
-      const uploadResult = await uploadAudioMutation.mutateAsync({
-        fileName,
-        base64Data,
-        contentType: mimeType,
-      });
-      if (uploadResult.success) {
-        setUrl(uploadResult.url!);
-        Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
-      } else {
-        Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler");
+        const result = JSON.parse(uploadResult.body);
+        if (result.success) {
+          setUrl(result.url);
+          Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
+        } else {
+          Alert.alert("Upload fehlgeschlagen", result.error || "Unbekannter Fehler");
+        }
       }
     } catch (err: any) {
       Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen");

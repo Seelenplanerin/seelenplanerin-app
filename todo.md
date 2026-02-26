@@ -403,3 +403,8 @@
 - [x] Beim Hochladen von MP3s Auswahl zwischen Fotos, Kamera und Dateien
 - [x] ActionSheet/Alert mit 3 Optionen: Fotomediathek, Kamera, Dateien
 - [x] Gilt für Musik-Upload und Meditationen-Upload im Admin
+
+## Bug: Upload fehlgeschlagen - JSON Parse error (26.02.2026)
+- [x] Upload großer Dateien schlägt fehl: "JSON Parse error: Unexpected character: <" – BEHOBEN
+- [x] Ursache: Base64-Encoding verdoppelt die Dateigröße, Server body-parser Limit wird überschritten
+- [x] Lösung: Multipart-Upload (FormData) via /api/upload-audio Route mit multer (bis 100 MB)
