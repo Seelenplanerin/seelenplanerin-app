@@ -432,3 +432,9 @@
 - [x] Ich-Bereich: Komplett neu als persönliche Nutzer-Seite (Name, Stimmung, Intention, Lieblingszitat, Journal/Favoriten-Zähler)
 - [x] Passwort-Reset: Sendet echte E-Mail über hallo@seelenplanerin.de mit temporärem Passwort
 - [x] Upload-Limit: Von 64 MB auf 200 MB erhöht (Server + Admin + Multer)
+
+## KRITISCH: Upload IMMER NOCH kaputt + Meditation manuell hochladen (26.02.2026)
+- [x] MOV-Datei (157 MB, 9:27 min) in komprimierte MP3 (8,7 MB, 128kbps) konvertiert
+- [x] MP3 direkt über Server-API in S3 hochgeladen und in Meditationen-Storage gespeichert
+- [x] Upload-Button ENDGÜLTIG repariert: z-index Fix (Tab-Navigation überlagerte den file input)
+- [x] Upload im Browser getestet und verifiziert: meditation.mp3 erfolgreich hochgeladen mit Häkchen

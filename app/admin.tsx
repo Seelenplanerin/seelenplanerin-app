@@ -526,7 +526,7 @@ export default function AdminScreen() {
 
         {/* Tab-Navigation */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 12, gap: 6, paddingVertical: 10 }}>
+          contentContainerStyle={{ paddingHorizontal: 12, gap: 6, paddingVertical: 6 }} style={{ maxHeight: 50, zIndex: 0 }}>
           {TABS.map(t => (
             <TouchableOpacity key={t.key}
               style={[s.tabBtn, activeTab === t.key && s.tabBtnActive]}
@@ -537,7 +537,7 @@ export default function AdminScreen() {
           ))}
         </ScrollView>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}
+        <ScrollView style={{ flex: 1, zIndex: 1 }} showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 80 }}>
 
           {/* ═══════ MITGLIEDER TAB ═══════ */}
@@ -716,7 +716,7 @@ export default function AdminScreen() {
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setSongMp3Url, setSongMp3FileName, setUploading);
                           }}
-                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" } as any}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 9999 } as any}
                         />
                       )}
                     </View>
@@ -883,7 +883,7 @@ export default function AdminScreen() {
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setMeditMp3Url, setMeditMp3FileName, setMeditUploading);
                           }}
-                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" } as any}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 9999 } as any}
                         />
                       )}
                     </View>
