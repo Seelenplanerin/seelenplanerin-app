@@ -21,6 +21,7 @@ const DEFAULT_PIN = "1234";
 const PIN_KEY = "admin_pin";
 const USERS_KEY = "community_users";
 const SONGS_KEY = "lara_songs";
+const MEDITATIONEN_KEY = "lara_meditationen";
 const IMPULSE_KEY = "admin_tagesimpulse_liste";
 
 interface CommunityUser {
@@ -67,6 +68,14 @@ async function saveSongs(songs: Song[]) {
   await AsyncStorage.setItem(SONGS_KEY, JSON.stringify(songs));
 }
 
+async function getMeditationen(): Promise<Song[]> {
+  const data = await AsyncStorage.getItem(MEDITATIONEN_KEY);
+  return data ? JSON.parse(data) : [];
+}
+async function saveMeditationen(meditationen: Song[]) {
+  await AsyncStorage.setItem(MEDITATIONEN_KEY, JSON.stringify(meditationen));
+}
+
 async function getImpulse(): Promise<Tagesimpuls[]> {
   const data = await AsyncStorage.getItem(IMPULSE_KEY);
   return data ? JSON.parse(data) : [];
@@ -94,7 +103,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "impulse" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "einstellungen";
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -128,6 +137,19 @@ export default function AdminScreen() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [showAddSong, setShowAddSong] = useState(false);
   const [editSongId, setEditSongId] = useState<string | null>(null);
+
+  // Meditationen-Verwaltung (getrennt von Musik)
+  const [meditationen, setMeditationen] = useState<Song[]>([]);
+  const [showAddMedit, setShowAddMedit] = useState(false);
+  const [editMeditId, setEditMeditId] = useState<string | null>(null);
+  const [meditTitel, setMeditTitel] = useState("");
+  const [meditBeschreibung, setMeditBeschreibung] = useState("");
+  const [meditEmoji, setMeditEmoji] = useState("🧘‍♀️");
+  const [meditVerfuegbar, setMeditVerfuegbar] = useState(true);
+  const [meditMp3Url, setMeditMp3Url] = useState("");
+  const [meditMp3FileName, setMeditMp3FileName] = useState("");
+  const [meditFehler, setMeditFehler] = useState("");
+  const [meditUploading, setMeditUploading] = useState(false);
   const [songTitel, setSongTitel] = useState("");
   const [songBeschreibung, setSongBeschreibung] = useState("");
   const [songSpotify, setSongSpotify] = useState("");
@@ -166,6 +188,7 @@ export default function AdminScreen() {
     if (isLoggedIn) {
       getUsers().then(setMembers);
       getSongs().then(setSongs);
+      getMeditationen().then(setMeditationen);
       getImpulse().then(setImpulse);
     }
   }, [isLoggedIn]);
@@ -437,6 +460,7 @@ export default function AdminScreen() {
   const TABS: { key: AdminTab; label: string; emoji: string }[] = [
     { key: "mitglieder", label: "Mitglieder", emoji: "👥" },
     { key: "musik", label: "Musik", emoji: "🎵" },
+    { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
     { key: "impulse", label: "Impulse", emoji: "✨" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
@@ -678,6 +702,185 @@ export default function AdminScreen() {
                   In Spotify: Song → Teilen → Link kopieren{"\n"}
                   In Apple Music: Song → Teilen → Link kopieren{"\n"}
                   In YouTube: Video → Teilen → Link kopieren
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ MEDITATIONEN TAB ═══════ */}
+          {activeTab === "meditationen" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>🧘‍♀️ Meditationen verwalten</Text>
+              <Text style={s.sectionHint}>
+                Lade hier deine Meditationen als MP3 hoch. Sie erscheinen automatisch im Community-Bereich für deine Mitglieder.
+              </Text>
+
+              {meditationen.map(m => (
+                <View key={m.id} style={s.memberRow}>
+                  <View style={[s.memberAvatar, { backgroundColor: m.verfuegbar ? C.rose : C.border }]}>
+                    <Text style={{ fontSize: 14 }}>{m.emoji}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>{m.titel}</Text>
+                    <Text style={s.memberEmail}>{m.beschreibung}</Text>
+                    <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
+                      {m.mp3Url && <Text style={{ fontSize: 10, color: C.rose }}>● MP3 hochgeladen</Text>}
+                      {!m.verfuegbar && <Text style={{ fontSize: 10, color: C.muted }}>● Bald verfügbar</Text>}
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={() => {
+                    setEditMeditId(m.id); setMeditTitel(m.titel); setMeditBeschreibung(m.beschreibung);
+                    setMeditEmoji(m.emoji); setMeditVerfuegbar(m.verfuegbar);
+                    setMeditMp3Url(m.mp3Url || ""); setMeditMp3FileName(m.mp3FileName || "");
+                    setShowAddMedit(true);
+                  }} style={s.memberAction} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 12, color: C.gold }}>✏️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {
+                    Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
+                      { text: "Abbrechen", style: "cancel" },
+                      { text: "Löschen", style: "destructive", onPress: async () => {
+                        const all = (await getMeditationen()).filter(x => x.id !== m.id);
+                        await saveMeditationen(all); setMeditationen(all);
+                      }},
+                    ]);
+                  }} style={s.memberAction} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              <TouchableOpacity style={[s.actionBtn, { borderColor: C.rose }]}
+                onPress={() => {
+                  if (showAddMedit) {
+                    setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
+                    setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
+                  } else {
+                    setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
+                    setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
+                    setShowAddMedit(true);
+                  }
+                }}
+                activeOpacity={0.85}>
+                <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddMedit ? "✕" : "➕"}</Text>
+                <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                  {showAddMedit ? "Schließen" : "Neue Meditation hinzufügen"}
+                </Text>
+              </TouchableOpacity>
+
+              {showAddMedit && (
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Titel *</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. Neumond-Manifestation" placeholderTextColor={C.muted}
+                    value={meditTitel} onChangeText={t => { setMeditTitel(t); setMeditFehler(""); }} returnKeyType="next" />
+
+                  <Text style={s.formLabel}>Beschreibung</Text>
+                  <TextInput style={s.formInput} placeholder="Kurze Beschreibung der Meditation" placeholderTextColor={C.muted}
+                    value={meditBeschreibung} onChangeText={setMeditBeschreibung} returnKeyType="next" />
+
+                  <Text style={s.formLabel}>Emoji</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                    {["🧘‍♀️", "🌙", "🌕", "🌈", "🛡️", "🌸", "💧", "🕯️", "🌿", "✨", "💜", "🌟"].map(e => (
+                      <TouchableOpacity key={e} onPress={() => setMeditEmoji(e)}
+                        style={[s.emojiBtn, meditEmoji === e && s.emojiBtnActive]} activeOpacity={0.8}>
+                        <Text style={{ fontSize: 20 }}>{e}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  {/* MP3-Upload */}
+                  <Text style={s.formLabel}>🎧 MP3-Datei hochladen *</Text>
+                  <TouchableOpacity
+                    style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, meditUploading && { opacity: 0.6 }]}
+                    onPress={async () => {
+                      try {
+                        const result = await DocumentPicker.getDocumentAsync({ type: "audio/*", copyToCacheDirectory: true });
+                        if (result.canceled || !result.assets?.[0]) return;
+                        const file = result.assets[0];
+                        if (file.size && file.size > 16 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 16 MB"); return; }
+                        setMeditUploading(true); setMeditMp3FileName(file.name);
+                        try {
+                          let base64Data: string;
+                          if (Platform.OS === "web") {
+                            const resp = await fetch(file.uri); const blob = await resp.blob();
+                            base64Data = await new Promise<string>((resolve, reject) => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => { resolve((reader.result as string).split(",")[1] || ""); };
+                              reader.onerror = reject; reader.readAsDataURL(blob);
+                            });
+                          } else {
+                            base64Data = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
+                          }
+                          const uploadResult = await uploadAudioMutation.mutateAsync({ fileName: file.name, base64Data, contentType: file.mimeType || "audio/mpeg" });
+                          if (uploadResult.success) { setMeditMp3Url(uploadResult.url!); Alert.alert("Upload erfolgreich ✓", `"${file.name}" wurde hochgeladen.`); }
+                          else { Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler"); }
+                        } catch (err: any) { Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen"); }
+                        finally { setMeditUploading(false); }
+                      } catch (err: any) {
+                        if (err.message !== "User canceled document picker") Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden.");
+                      }
+                    }}
+                    activeOpacity={0.85} disabled={meditUploading}>
+                    {meditUploading ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <ActivityIndicator size="small" color={C.rose} />
+                        <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
+                      </View>
+                    ) : (
+                      <>
+                        <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
+                        <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                          {meditMp3FileName ? meditMp3FileName : "MP3-Datei auswählen"}
+                        </Text>
+                        {meditMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
+                      </>
+                    )}
+                  </TouchableOpacity>
+                  {meditMp3Url ? (
+                    <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {meditMp3FileName}</Text>
+                  ) : (
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 16 MB. Wird im Community-Bereich direkt abspielbar.</Text>
+                  )}
+
+                  <View style={[s.switchRow, { marginVertical: 8 }]}>
+                    <Text style={{ fontSize: 14, color: C.brownMid }}>Sofort verfügbar</Text>
+                    <Switch value={meditVerfuegbar} onValueChange={setMeditVerfuegbar}
+                      trackColor={{ false: C.border, true: C.rose }} thumbColor="#FFF" />
+                  </View>
+
+                  {meditFehler !== "" && <Text style={s.formError}>{meditFehler}</Text>}
+                  <TouchableOpacity style={s.submitBtn} onPress={async () => {
+                    if (!meditTitel.trim()) { setMeditFehler("Bitte gib einen Titel ein."); return; }
+                    if (!meditMp3Url) { setMeditFehler("Bitte lade eine MP3-Datei hoch."); return; }
+                    const all = await getMeditationen();
+                    const meditData: Song = {
+                      id: editMeditId || generateId(),
+                      titel: meditTitel.trim(), beschreibung: meditBeschreibung.trim(),
+                      mp3Url: meditMp3Url, mp3FileName: meditMp3FileName,
+                      emoji: meditEmoji, kategorie: "meditation", verfuegbar: meditVerfuegbar,
+                    };
+                    if (editMeditId) {
+                      const idx = all.findIndex(m => m.id === editMeditId);
+                      if (idx >= 0) all[idx] = meditData;
+                    } else {
+                      all.push(meditData);
+                    }
+                    await saveMeditationen(all); setMeditationen(all);
+                    setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
+                    setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
+                    Alert.alert("Gespeichert ✓", editMeditId ? "Meditation wurde aktualisiert." : "Neue Meditation wurde hinzugefügt.");
+                  }} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{editMeditId ? "✓ Meditation aktualisieren" : "🧘‍♀️ Meditation hinzufügen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0" }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Meditationen werden automatisch im Community-Bereich für eingeloggte Mitglieder angezeigt.{"\n"}
+                  Lade MP3-Dateien hoch (max. 16 MB) – sie können direkt in der App abgespielt werden.
                 </Text>
               </View>
             </View>

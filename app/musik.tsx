@@ -187,7 +187,9 @@ export default function MusikScreen() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setSongs(parsed);
+          // Nur Musik anzeigen, keine Meditationen (die sind im Community-Bereich)
+          const musikOnly = parsed.filter((s: Song) => s.kategorie !== "meditation");
+          if (musikOnly.length > 0) setSongs(musikOnly);
         }
       }
     } catch {}

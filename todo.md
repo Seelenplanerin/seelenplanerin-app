@@ -380,3 +380,10 @@
 - [x] Neumond 17.02.2026 zeigt Fische statt Wassermann – KORRIGIERT (Wassermann)
 - [x] ALLE Mondphasen-Daten (Datum, Uhrzeit, Tierkreiszeichen) auf exakte astronomische Richtigkeit geprüft (37 Tests bestanden)
 - [x] Verifizierte Daten in moon-phase.ts einpflegt (Lookup-Tabelle mit 49 exakten Tierkreiszeichen)
+
+## Bug: Meditationen nicht auffindbar und nicht abspielbar (26.02.2026)
+- [x] Admin: Musik und Meditationen klar getrennt als eigene Tabs/Bereiche
+- [x] Admin: Eigener "Meditationen"-Tab zum Hochladen und Verwalten von Meditationen
+- [x] Admin: Eigener "Musik"-Tab nur für Musik-Songs
+- [x] Community: Hochgeladene Meditationen korrekt laden und abspielen (Storage-Key korrigiert: lara_meditationen)
+- [x] Musik-Screen: Nur Musik anzeigen, keine Meditationen (meditation-Kategorie ausgefiltert)

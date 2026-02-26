@@ -178,11 +178,11 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem("admin_songs").then((data) => {
+    AsyncStorage.getItem("lara_meditationen").then((data) => {
       if (data) {
-        const allSongs: Song[] = JSON.parse(data);
-        const meditationen = allSongs.filter(s => s.kategorie === "meditation" && s.verfuegbar);
-        setSongs(meditationen);
+        const allMeditationen: Song[] = JSON.parse(data);
+        const verfuegbare = allMeditationen.filter(s => s.verfuegbar);
+        setSongs(verfuegbare);
       }
     });
   }, []);
