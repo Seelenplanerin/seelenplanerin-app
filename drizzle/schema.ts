@@ -25,4 +25,17 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Meditationen-Tabelle: Speichert hochgeladene Meditationen (sichtbar für alle Community-Mitglieder)
+export const meditations = mysqlTable("meditations", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  emoji: varchar("emoji", { length: 10 }).default("🧘\u200d\u2640\ufe0f"),
+  audioUrl: text("audioUrl").notNull(),
+  isPremium: int("isPremium").default(1).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Meditation = typeof meditations.$inferSelect;
+export type InsertMeditation = typeof meditations.$inferInsert;

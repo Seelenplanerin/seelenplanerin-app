@@ -438,3 +438,10 @@
 - [x] MP3 direkt über Server-API in S3 hochgeladen und in Meditationen-Storage gespeichert
 - [x] Upload-Button ENDGÜLTIG repariert: z-index Fix (Tab-Navigation überlagerte den file input)
 - [x] Upload im Browser getestet und verifiziert: meditation.mp3 erfolgreich hochgeladen mit Häkchen
+
+## KRITISCH: Meditationen nicht sichtbar auf iPhone (26.02.2026)
+- [x] Meditationen in PostgreSQL-Datenbank gespeichert (sichtbar auf ALLEN Geräten)
+- [x] Community-Screen lädt Meditationen vom Server (nicht mehr aus localStorage)
+- [x] Premium-Screen lädt Meditationen vom Server
+- [x] Admin speichert/löscht Meditationen in DB (tRPC API: meditation.list, meditation.create, meditation.delete)
+- [x] Bestehende Meditation (meditation.mp3) in DB migriert und im Community-Bereich verifiziert

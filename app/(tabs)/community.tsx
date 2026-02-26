@@ -165,24 +165,66 @@ function formatDatum(isoString: string): string {
 
 // Platzhalter-Meditationen entfernt – nur echte hochgeladene Meditationen werden angezeigt
 
+interface ServerMeditation {
+  id: number;
+  title: string;
+  description: string | null;
+  emoji: string | null;
+  audioUrl: string;
+  isPremium: number;
+  isActive: number;
+  createdAt: string;
+}
+
 function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityAudio> }) {
   const [songs, setSongs] = useState<Song[]>([]);
   const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+  const [loadingMeditations, setLoadingMeditations] = useState(true);
 
-  // Bei jedem Tab-Focus Meditationen neu laden (damit neue Uploads sofort sichtbar sind)
+  // Bei jedem Tab-Focus Meditationen vom SERVER laden (sichtbar auf allen Geräten)
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem("lara_meditationen").then((data) => {
-        if (data) {
-          try {
-            const allMeditationen: Song[] = JSON.parse(data);
-            const verfuegbare = allMeditationen.filter(s => s.verfuegbar);
-            setSongs(verfuegbare);
-          } catch (e) {
-            console.error("[MeditationenSektion] JSON parse error:", e);
+      setLoadingMeditations(true);
+      const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+      fetch(`${API_URL}/meditations.list`)
+        .then(res => res.json())
+        .then(data => {
+          const result = data?.result?.data?.json || data?.result?.data;
+          if (Array.isArray(result) && result.length > 0) {
+            const mapped: Song[] = result.map((m: ServerMeditation) => ({
+              id: String(m.id),
+              titel: m.title,
+              beschreibung: m.description || "",
+              mp3Url: m.audioUrl,
+              emoji: m.emoji || "🧘\u200d\u2640\ufe0f",
+              kategorie: "meditation" as const,
+              verfuegbar: true,
+            }));
+            setSongs(mapped);
+          } else {
+            // Fallback: auch AsyncStorage prüfen (für Migration)
+            AsyncStorage.getItem("lara_meditationen").then((localData) => {
+              if (localData) {
+                try {
+                  const allMeditationen: Song[] = JSON.parse(localData);
+                  setSongs(allMeditationen.filter(s => s.verfuegbar));
+                } catch (e) { /* ignore */ }
+              }
+            });
           }
-        }
-      });
+        })
+        .catch(() => {
+          // Fallback auf AsyncStorage bei Netzwerkfehler
+          AsyncStorage.getItem("lara_meditationen").then((localData) => {
+            if (localData) {
+              try {
+                const allMeditationen: Song[] = JSON.parse(localData);
+                setSongs(allMeditationen.filter(s => s.verfuegbar));
+              } catch (e) { /* ignore */ }
+            }
+          });
+        })
+        .finally(() => setLoadingMeditations(false));
     }, [])
   );
 
@@ -259,8 +301,16 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
         </View>
       )}
 
+      {/* Loading-Indicator */}
+      {loadingMeditations && songs.length === 0 && (
+        <View style={{ marginHorizontal: 16, marginBottom: 12, alignItems: "center", padding: 20 }}>
+          <ActivityIndicator size="small" color="#C4956A" />
+          <Text style={{ fontSize: 13, color: "#A08070", marginTop: 8 }}>Meditationen werden geladen...</Text>
+        </View>
+      )}
+
       {/* Hinweis wenn keine Meditationen vorhanden */}
-      {songs.length === 0 && (
+      {!loadingMeditations && songs.length === 0 && (
         <View style={{ marginHorizontal: 16, marginBottom: 12, backgroundColor: "#F9EDE8", borderRadius: 12, padding: 14, alignItems: "center" }}>
           <Text style={{ fontSize: 13, color: "#A08070", textAlign: "center", lineHeight: 18 }}>
             Meditationen werden nach und nach hinzugefügt. Schau bald wieder vorbei!

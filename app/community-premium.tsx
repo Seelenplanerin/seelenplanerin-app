@@ -168,19 +168,47 @@ export default function CommunityPremiumScreen() {
     });
   }, []);
 
-  // Hochgeladene Meditationen aus AsyncStorage laden (bei jedem Screen-Focus)
+  // Hochgeladene Meditationen vom SERVER laden (sichtbar auf allen Geräten)
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem("lara_meditationen").then((data) => {
-        if (data) {
-          try {
-            const all: Song[] = JSON.parse(data);
-            setUploadedMeditationen(all.filter(s => s.verfuegbar));
-          } catch (e) {
-            console.error("[Premium] Meditationen JSON parse error:", e);
+      const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+      fetch(`${API_URL}/meditations.list`)
+        .then(res => res.json())
+        .then(data => {
+          const result = data?.result?.data?.json || data?.result?.data;
+          if (Array.isArray(result) && result.length > 0) {
+            const mapped: Song[] = result.map((m: any) => ({
+              id: String(m.id),
+              titel: m.title,
+              beschreibung: m.description || "",
+              mp3Url: m.audioUrl,
+              emoji: m.emoji || "🧘\u200d\u2640\ufe0f",
+              kategorie: "meditation" as const,
+              verfuegbar: true,
+            }));
+            setUploadedMeditationen(mapped);
+          } else {
+            // Fallback AsyncStorage
+            AsyncStorage.getItem("lara_meditationen").then((localData) => {
+              if (localData) {
+                try {
+                  const all: Song[] = JSON.parse(localData);
+                  setUploadedMeditationen(all.filter(s => s.verfuegbar));
+                } catch (e) { /* ignore */ }
+              }
+            });
           }
-        }
-      });
+        })
+        .catch(() => {
+          AsyncStorage.getItem("lara_meditationen").then((localData) => {
+            if (localData) {
+              try {
+                const all: Song[] = JSON.parse(localData);
+                setUploadedMeditationen(all.filter(s => s.verfuegbar));
+              } catch (e) { /* ignore */ }
+            }
+          });
+        });
     }, [])
   );
 

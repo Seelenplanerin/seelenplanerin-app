@@ -71,10 +71,31 @@ async function saveSongs(songs: Song[]) {
 }
 
 async function getMeditationen(): Promise<Song[]> {
+  try {
+    const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+    const res = await fetch(`${API_URL}/meditations.listAll`);
+    const data = await res.json();
+    const result = data?.result?.data?.json || data?.result?.data;
+    if (Array.isArray(result) && result.length > 0) {
+      return result.map((m: any) => ({
+        id: String(m.id),
+        titel: m.title,
+        beschreibung: m.description || "",
+        mp3Url: m.audioUrl,
+        emoji: m.emoji || "\u{1F9D8}\u200d\u2640\ufe0f",
+        kategorie: "meditation" as Song["kategorie"],
+        verfuegbar: m.isActive === 1,
+      }));
+    }
+  } catch (e) {
+    console.error("[Admin] Fehler beim Laden der Meditationen vom Server:", e);
+  }
+  // Fallback auf AsyncStorage
   const data = await AsyncStorage.getItem(MEDITATIONEN_KEY);
   return data ? JSON.parse(data) : [];
 }
 async function saveMeditationen(meditationen: Song[]) {
+  // Legacy: auch lokal speichern als Backup
   await AsyncStorage.setItem(MEDITATIONEN_KEY, JSON.stringify(meditationen));
 }
 
@@ -820,6 +841,18 @@ export default function AdminScreen() {
                     Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
                       { text: "Abbrechen", style: "cancel" },
                       { text: "Löschen", style: "destructive", onPress: async () => {
+                        // Aus Datenbank löschen
+                        try {
+                          const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+                          const numId = parseInt(m.id);
+                          if (!isNaN(numId)) {
+                            await fetch(`${API_URL}/meditations.delete`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ json: { id: numId } }),
+                            });
+                          }
+                        } catch (e) { console.error("[Admin] DB-Löschen fehlgeschlagen:", e); }
                         const all = (await getMeditationen()).filter(x => x.id !== m.id);
                         await saveMeditationen(all); setMeditationen(all);
                       }},
@@ -940,6 +973,28 @@ export default function AdminScreen() {
                       if (idx >= 0) all[idx] = meditData;
                     } else {
                       all.push(meditData);
+                    }
+                    // In Datenbank speichern (sichtbar auf ALLEN Geräten)
+                    try {
+                      const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+                      if (editMeditId) {
+                        const numId = parseInt(editMeditId);
+                        if (!isNaN(numId)) {
+                          await fetch(`${API_URL}/meditations.update`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ json: { id: numId, title: meditData.titel, description: meditData.beschreibung, emoji: meditData.emoji, isActive: meditData.verfuegbar ? 1 : 0 } }),
+                          });
+                        }
+                      } else {
+                        await fetch(`${API_URL}/meditations.create`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { title: meditData.titel, description: meditData.beschreibung || "", emoji: meditData.emoji, audioUrl: meditData.mp3Url || "", isPremium: 1 } }),
+                        });
+                      }
+                    } catch (e) {
+                      console.error("[Admin] DB-Speichern fehlgeschlagen:", e);
                     }
                     await saveMeditationen(all); setMeditationen(all);
                     setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
