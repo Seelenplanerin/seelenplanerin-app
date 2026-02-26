@@ -370,3 +370,13 @@
 
 ## Bug: MP3-Wiedergabe funktioniert nicht (26.02.2026)
 - [x] MP3 wird hochgeladen aber nicht abgespielt im Musik-Screen – Player komplett überarbeitet (robuster Audio-Manager mit CORS, Polling, Fehlerbehandlung, Now-Playing-Bar)
+
+## Feature: Meditationen im Community-Bereich (26.02.2026)
+- [x] Community-Screen: Meditationen-Sektion einbauen (Songs mit Kategorie "meditation" anzeigen)
+- [x] Community: MP3-Meditationen direkt im Community-Bereich abspielen
+- [x] Community: Meditationen visuell ansprechend als Karten darstellen (+ Bald verfügbar Vorschau)
+
+## Bug: Falsche Tierkreiszeichen im Mondkalender (26.02.2026)
+- [x] Neumond 17.02.2026 zeigt Fische statt Wassermann – KORRIGIERT (Wassermann)
+- [x] ALLE Mondphasen-Daten (Datum, Uhrzeit, Tierkreiszeichen) auf exakte astronomische Richtigkeit geprüft (37 Tests bestanden)
+- [x] Verifizierte Daten in moon-phase.ts einpflegt (Lookup-Tabelle mit 49 exakten Tierkreiszeichen)

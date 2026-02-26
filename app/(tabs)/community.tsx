@@ -1,12 +1,74 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
   TextInput, KeyboardAvoidingView, Platform, Alert, FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+
+// ── Song-Interface (gleich wie in musik.tsx) ──
+interface Song {
+  id: string;
+  titel: string;
+  beschreibung: string;
+  spotifyUrl?: string;
+  appleMusicUrl?: string;
+  youtubeUrl?: string;
+  mp3Url?: string;
+  mp3FileName?: string;
+  emoji: string;
+  kategorie: "musik" | "meditation" | "ritual" | "mantra";
+  verfuegbar: boolean;
+}
+
+// ── Simple Audio Manager for Community ──
+function useCommunityAudio() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState<string | null>(null);
+
+  const cleanup = useCallback(() => {
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; audioRef.current = null; }
+    setIsPlaying(false); setCurrentTime(0); setDuration(0); setLoading(false);
+  }, []);
+
+  const play = useCallback((url: string) => {
+    if (currentUrl === url && audioRef.current) {
+      if (isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+      else { audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {}); }
+      return;
+    }
+    cleanup(); setCurrentUrl(url); setLoading(true);
+    if (Platform.OS === "web") {
+      const audio = new Audio();
+      audioRef.current = audio;
+      audio.crossOrigin = "anonymous";
+      audio.addEventListener("loadedmetadata", () => { setDuration(audio.duration); setLoading(false); });
+      audio.addEventListener("canplaythrough", () => setLoading(false));
+      audio.addEventListener("error", () => { setLoading(false); setIsPlaying(false); });
+      audio.addEventListener("ended", () => { setIsPlaying(false); setCurrentTime(0); });
+      intervalRef.current = setInterval(() => {
+        if (audio && !audio.paused) { setCurrentTime(audio.currentTime); if (audio.duration) setDuration(audio.duration); }
+      }, 250);
+      audio.src = url; audio.load();
+      setTimeout(() => { audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => setLoading(false)); }, 300);
+    }
+  }, [currentUrl, isPlaying, cleanup]);
+
+  const stop = useCallback(() => { cleanup(); setCurrentUrl(null); }, [cleanup]);
+
+  useEffect(() => { return () => cleanup(); }, [cleanup]);
+
+  return { play, stop, isPlaying, currentTime, duration, loading, currentUrl, progress: duration > 0 ? currentTime / duration : 0 };
+}
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -101,6 +163,173 @@ function formatDatum(isoString: string): string {
   return d.toLocaleDateString("de-DE", { day: "numeric", month: "short" });
 }
 
+// ── Meditationen Sektion Komponente ──
+const MEDITATIONEN_VORSCHAU = [
+  { id: "m1", emoji: "🌙", titel: "Neumond-Manifestation", dauer: "15 Min.", beschreibung: "Setze kraftvolle Intentionen unter dem Neumond" },
+  { id: "m2", emoji: "🌕", titel: "Vollmond-Loslassen", dauer: "20 Min.", beschreibung: "Lass los, was dir nicht mehr dient" },
+  { id: "m3", emoji: "🌈", titel: "Chakra-Reinigung", dauer: "25 Min.", beschreibung: "Alle 7 Chakren reinigen und ausbalancieren" },
+  { id: "m4", emoji: "🛡️", titel: "Schutzrune Meditation", dauer: "12 Min.", beschreibung: "Verbinde dich mit deiner persönlichen Schutzrune" },
+  { id: "m5", emoji: "🌸", titel: "Weibliche Kraft", dauer: "18 Min.", beschreibung: "Aktiviere deine weibliche Urkraft und Intuition" },
+  { id: "m6", emoji: "💧", titel: "Mondwasser-Zeremonie", dauer: "10 Min.", beschreibung: "Anleitung zur Herstellung von Mondwasser" },
+];
+
+function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityAudio> }) {
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [playingSongId, setPlayingSongId] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem("admin_songs").then((data) => {
+      if (data) {
+        const allSongs: Song[] = JSON.parse(data);
+        const meditationen = allSongs.filter(s => s.kategorie === "meditation" && s.verfuegbar);
+        setSongs(meditationen);
+      }
+    });
+  }, []);
+
+  const handlePlay = (song: Song) => {
+    if (song.mp3Url) {
+      audio.play(song.mp3Url);
+      setPlayingSongId(audio.currentUrl === song.mp3Url && audio.isPlaying ? null : song.id);
+    } else if (song.spotifyUrl) {
+      Linking.openURL(song.spotifyUrl);
+    } else if (song.appleMusicUrl) {
+      Linking.openURL(song.appleMusicUrl);
+    } else if (song.youtubeUrl) {
+      Linking.openURL(song.youtubeUrl);
+    }
+  };
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <View>
+      <Text style={ms.sec}>🧘‍♀️ Meditationen</Text>
+      
+      {/* Hochgeladene Meditationen mit Player */}
+      {songs.length > 0 && (
+        <View>
+          {songs.map((song) => {
+            const isActive = audio.currentUrl === song.mp3Url;
+            return (
+              <TouchableOpacity
+                key={song.id}
+                style={[ms.meditCard, isActive && ms.meditCardActive]}
+                onPress={() => handlePlay(song)}
+                activeOpacity={0.85}
+              >
+                <View style={ms.meditRow}>
+                  <Text style={{ fontSize: 28 }}>{song.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={ms.meditTitel}>{song.titel}</Text>
+                    <Text style={ms.meditBeschreibung}>{song.beschreibung}</Text>
+                    {song.mp3Url && (
+                      <View style={ms.meditBadgeRow}>
+                        <View style={ms.mp3Badge}>
+                          <Text style={ms.mp3BadgeText}>🎧 In-App</Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                  <View style={[ms.playBtn, isActive && audio.isPlaying && ms.playBtnActive]}>
+                    {audio.loading && isActive ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <Text style={ms.playBtnText}>{isActive && audio.isPlaying ? "⏸" : "▶"}</Text>
+                    )}
+                  </View>
+                </View>
+                {isActive && (audio.isPlaying || audio.currentTime > 0) && (
+                  <View style={ms.progressSection}>
+                    <View style={ms.progressBar}>
+                      <View style={[ms.progressFill, { width: `${audio.progress * 100}%` }]} />
+                    </View>
+                    <View style={ms.timeRow}>
+                      <Text style={ms.timeText}>{formatTime(audio.currentTime)}</Text>
+                      <Text style={ms.timeText}>{formatTime(audio.duration)}</Text>
+                    </View>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Vorschau-Meditationen (Platzhalter) */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
+        {MEDITATIONEN_VORSCHAU.map((m) => (
+          <View key={m.id} style={ms.meditPreviewCard}>
+            <Text style={{ fontSize: 28, marginBottom: 8 }}>{m.emoji}</Text>
+            <Text style={ms.meditPreviewTitel}>{m.titel}</Text>
+            <Text style={ms.meditPreviewDauer}>{m.dauer}</Text>
+            <Text style={ms.meditPreviewBeschreibung}>{m.beschreibung}</Text>
+            <View style={ms.comingSoonBadge}>
+              <Text style={ms.comingSoonText}>Bald verfügbar</Text>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Now Playing Bar */}
+      {audio.isPlaying && (
+        <View style={ms.nowPlayingBar}>
+          <Text style={ms.nowPlayingText}>🎧 Meditation läuft...</Text>
+          <TouchableOpacity onPress={audio.stop} activeOpacity={0.7}>
+            <Text style={ms.stopText}>■ Stop</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const ms = StyleSheet.create({
+  sec: { fontSize: 17, fontWeight: "700", color: "#5C3317", marginHorizontal: 16, marginTop: 20, marginBottom: 12 },
+  meditCard: {
+    marginHorizontal: 16, marginBottom: 10, backgroundColor: "#FFFFFF",
+    borderRadius: 16, padding: 16, borderWidth: 1, borderColor: "#EDD9D0",
+  },
+  meditCardActive: { backgroundColor: "#F9EDE8", borderColor: "#C4826A" },
+  meditRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  meditTitel: { fontSize: 15, fontWeight: "700", color: "#5C3317" },
+  meditBeschreibung: { fontSize: 12, color: "#A08070", marginTop: 2, lineHeight: 17 },
+  meditBadgeRow: { flexDirection: "row", gap: 6, marginTop: 4 },
+  mp3Badge: { backgroundColor: "#F9EDE8", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
+  mp3BadgeText: { fontSize: 10, color: "#C4826A", fontWeight: "700" },
+  playBtn: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "#C4826A",
+    alignItems: "center", justifyContent: "center",
+  },
+  playBtnActive: { backgroundColor: "#5C3317" },
+  playBtnText: { color: "#FFF", fontSize: 16 },
+  progressSection: { marginTop: 10 },
+  progressBar: { height: 3, backgroundColor: "#EDD9D0", borderRadius: 2, overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: "#C4826A", borderRadius: 2 },
+  timeRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
+  timeText: { fontSize: 10, color: "#A08070" },
+  meditPreviewCard: {
+    width: 160, backgroundColor: "#FFFFFF", borderRadius: 16, padding: 14,
+    borderWidth: 1, borderColor: "#EDD9D0", alignItems: "center",
+  },
+  meditPreviewTitel: { fontSize: 13, fontWeight: "700", color: "#5C3317", textAlign: "center", marginBottom: 4 },
+  meditPreviewDauer: { fontSize: 11, color: "#C9A96E", fontWeight: "600", marginBottom: 4 },
+  meditPreviewBeschreibung: { fontSize: 10, color: "#A08070", textAlign: "center", lineHeight: 14, marginBottom: 8 },
+  comingSoonBadge: { backgroundColor: "#F5EEE8", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
+  comingSoonText: { fontSize: 10, color: "#A08070", fontWeight: "600" },
+  nowPlayingBar: {
+    marginHorizontal: 16, marginTop: 8, marginBottom: 4, backgroundColor: "#F9EDE8",
+    borderRadius: 12, padding: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    borderWidth: 1, borderColor: "#C4826A",
+  },
+  nowPlayingText: { fontSize: 13, color: "#5C3317", fontWeight: "600" },
+  stopText: { fontSize: 13, color: "#C4826A", fontWeight: "700" },
+});
+
 export default function CommunityScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -124,6 +353,9 @@ export default function CommunityScreen() {
   const [showChangePw, setShowChangePw] = useState(false);
   const [newPw, setNewPw] = useState("");
   const [newPwConfirm, setNewPwConfirm] = useState("");
+
+  // Audio für Meditationen
+  const audio = useCommunityAudio();
 
   useEffect(() => {
     AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
@@ -524,6 +756,9 @@ export default function CommunityScreen() {
             </View>
             <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
           </TouchableOpacity>
+
+          {/* ── Meditationen Sektion ── */}
+          <MeditationenSektion audio={audio} />
 
           <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>

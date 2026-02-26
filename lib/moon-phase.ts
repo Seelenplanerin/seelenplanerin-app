@@ -149,9 +149,7 @@ const LETZTES_VIERTEL_2026 = [
 ];
 
 /**
- * Tierkreiszeichen des Mondes basierend auf dem Datum.
- * Vereinfachte Berechnung: Der Mond durchläuft alle 12 Zeichen in ~29.5 Tagen,
- * also wechselt er ca. alle 2.46 Tage das Zeichen.
+ * Tierkreiszeichen des Mondes.
  */
 interface ZodiacSign {
   name: string;
@@ -175,17 +173,101 @@ const TIERKREIS: ZodiacSign[] = [
   { name: "Fische", symbol: "♓", element: "Wasser", qualitaet: "Intuition & Mitgefühl" },
 ];
 
+function findTierkreis(name: string): ZodiacSign {
+  return TIERKREIS.find(t => t.name === name) || TIERKREIS[0];
+}
+
 /**
- * Berechnet das ungefähre Tierkreiszeichen des Mondes.
- * Basiert auf dem synodischen Monat und einer Referenz-Position.
- * Referenz: Am 1. Jan 2026 00:00 UTC steht der Mond ungefähr im Krebs.
+ * ============================================================
+ * EXAKTE TIERKREISZEICHEN FÜR ALLE HAUPTPHASEN 2026
+ * Quelle: astro-seek.com + cafeastrology.com (verifiziert 26.02.2026)
+ * Key = UTC ISO-Datum-String der Phase → Tierkreiszeichen-Name
+ * ============================================================
+ */
+const HAUPTPHASEN_TIERKREIS: Record<string, string> = {
+  // ── Vollmonde 2026 ──
+  "2026-01-03T10:02:00Z": "Krebs",
+  "2026-02-01T22:09:00Z": "Löwe",
+  "2026-03-03T11:37:00Z": "Jungfrau",
+  "2026-04-02T02:11:00Z": "Waage",
+  "2026-05-01T17:23:00Z": "Skorpion",
+  "2026-05-31T08:45:00Z": "Schütze",
+  "2026-06-29T23:56:00Z": "Steinbock",
+  "2026-07-29T14:35:00Z": "Wassermann",
+  "2026-08-28T04:18:00Z": "Fische",
+  "2026-09-26T16:49:00Z": "Widder",
+  "2026-10-26T04:11:00Z": "Stier",
+  "2026-11-24T14:53:00Z": "Zwillinge",
+  "2026-12-24T01:28:00Z": "Krebs",
+  // ── Neumonde 2026 ──
+  "2026-01-18T19:51:00Z": "Steinbock",
+  "2026-02-17T12:01:00Z": "Wassermann",  // ← NICHT Fische!
+  "2026-03-19T01:23:00Z": "Fische",
+  "2026-04-17T11:51:00Z": "Widder",
+  "2026-05-16T20:01:00Z": "Stier",
+  "2026-06-15T02:54:00Z": "Zwillinge",
+  "2026-07-14T09:43:00Z": "Krebs",
+  "2026-08-12T17:36:00Z": "Löwe",
+  "2026-09-11T03:26:00Z": "Jungfrau",
+  "2026-10-10T15:50:00Z": "Waage",
+  "2026-11-09T07:02:00Z": "Skorpion",
+  "2026-12-09T00:51:00Z": "Schütze",
+  // ── Erstes Viertel 2026 ──
+  "2026-01-26T04:47:00Z": "Stier",
+  "2026-02-24T12:27:00Z": "Zwillinge",
+  "2026-03-25T19:17:00Z": "Krebs",
+  "2026-04-24T02:31:00Z": "Löwe",
+  "2026-05-23T11:10:00Z": "Jungfrau",
+  "2026-06-21T21:55:00Z": "Waage",
+  "2026-07-21T11:05:00Z": "Waage",
+  "2026-08-20T02:46:00Z": "Skorpion",
+  "2026-09-18T20:43:00Z": "Schütze",
+  "2026-10-18T16:12:00Z": "Steinbock",
+  "2026-11-17T11:47:00Z": "Wassermann",
+  "2026-12-17T05:42:00Z": "Fische",
+  // ── Letztes Viertel 2026 ──
+  "2026-01-10T15:48:00Z": "Waage",
+  "2026-02-09T12:43:00Z": "Skorpion",
+  "2026-03-11T09:38:00Z": "Schütze",
+  "2026-04-10T04:51:00Z": "Steinbock",
+  "2026-05-09T21:10:00Z": "Wassermann",
+  "2026-06-08T10:00:00Z": "Fische",
+  "2026-07-07T19:29:00Z": "Widder",
+  "2026-08-06T02:21:00Z": "Stier",
+  "2026-09-04T07:51:00Z": "Zwillinge",
+  "2026-10-03T13:25:00Z": "Krebs",
+  "2026-11-01T20:28:00Z": "Löwe",
+  "2026-12-01T06:08:00Z": "Jungfrau",
+  "2026-12-30T18:59:00Z": "Waage",
+};
+
+/**
+ * Gibt das exakte Tierkreiszeichen für eine Hauptphase zurück.
+ * Für Hauptphasen-Daten wird die verifizierte Lookup-Tabelle verwendet.
+ * Für andere Daten wird eine Interpolation basierend auf den nächsten Hauptphasen berechnet.
  */
 export function getMoonZodiac(date: Date): ZodiacSign {
+  // Exakte Lookup für Hauptphasen
+  const isoKey = date.toISOString().replace(".000Z", "Z");
+  const exakt = HAUPTPHASEN_TIERKREIS[isoKey];
+  if (exakt) return findTierkreis(exakt);
+
+  // Für andere Daten: finde die nächstgelegene Hauptphase
+  const allKeys = Object.keys(HAUPTPHASEN_TIERKREIS);
+  let closest = allKeys[0];
+  let closestDiff = Math.abs(date.getTime() - new Date(allKeys[0]).getTime());
+  for (const key of allKeys) {
+    const diff = Math.abs(date.getTime() - new Date(key).getTime());
+    if (diff < closestDiff) { closestDiff = diff; closest = key; }
+  }
+  // Wenn innerhalb 2 Tage einer Hauptphase, verwende deren Zeichen
+  if (closestDiff < 2 * 24 * 60 * 60 * 1000) {
+    return findTierkreis(HAUPTPHASEN_TIERKREIS[closest]);
+  }
+  // Fallback: Interpolation basierend auf siderischem Monat
   const ref = new Date("2026-01-01T00:00:00Z");
   const daysSinceRef = (date.getTime() - ref.getTime()) / (24 * 60 * 60 * 1000);
-  // Mond durchläuft alle 12 Zeichen in ~27.32 Tagen (siderischer Monat)
-  const daysPerSign = 27.32 / 12; // ~2.28 Tage pro Zeichen
-  // Referenz: 1. Jan 2026, Mond im Krebs (Index 3)
+  const daysPerSign = 27.32 / 12;
   const signIndex = Math.floor(((daysSinceRef / daysPerSign) + 3) % 12);
   return TIERKREIS[signIndex >= 0 ? signIndex : signIndex + 12];
 }
