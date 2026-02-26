@@ -446,3 +446,13 @@
 - [x] Admin speichert/löscht Meditationen in DB (tRPC API: meditations.list, meditations.create, meditations.delete)
 - [x] Bestehende Meditation (meditation.mp3) in DB migriert und im Community-Bereich verifiziert
 - [x] API-URL-Fix: getApiBaseUrl() statt Platform.OS check – /api/trpc wurde nicht proxied, jetzt korrekt über Port 3000
+
+## PRE-PUBLISH AUDIT (26.02.2026) – ABGESCHLOSSEN
+- [x] Mondphasen-Berechnung: Alle 13 Vollmonde + 12 Neumonde + Viertel gegen timeanddate.de verifiziert – KORREKT
+- [x] Weibliche Zyklen: 4 Phasen, Mond-Synchronisation, Energielevel – KORREKT
+- [x] Rituale: 5 Rituale, 4 Text-Meditationen, 5 Gedichte, 6 Impulse, Rauhnächte – KORREKT
+- [x] Quiz-Daten: Runen-Quiz (9 Fragen), Mond-Quiz (10 Fragen), Schutzrunen (24 Runen) – KORREKT
+- [x] Shop-Daten: 13 Produkte, Preise, Ritual-Zuordnungen – KORREKT
+- [x] Runen-Sets: 40 Sets in 8 Kategorien – KORREKT
+- [x] Tages-Tipps: Haare, Garten, Körper, Ernährung, Rituale, Haushalt – KORREKT
+- [x] Keine Fehler gefunden – BEREIT ZUR VERÖFFENTLICHUNG
