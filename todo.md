@@ -292,3 +292,11 @@
 - [x] Musik: Nur 3 Songs, Rest "Bald verfügbar"
 - [ ] Ich-Seite: Für Nutzer anpassen (nicht nur Admin-Sicht)
 - [ ] Apple Music + YouTube Links: kommen noch von Nutzerin
+
+## Feature: Zyklustracking im Premium-Mondkalender (26.02.2026)
+- [x] Zyklustracking-Datenmodell erstellt (ZyklusEinstellungen, ZyklusTag, ZyklusUebersicht)
+- [x] Zyklustracking-UI: Eingabe letzte Periode + Zykluslänge + Periodendauer
+- [x] Zyklusphasen berechnen (Menstruation, Follikelphase, Eisprung, Lutealphase)
+- [x] Zyklusphasen mit Mondphasen synchronisieren und visualisieren (30-Tage-Kalender)
+- [x] Zyklusdaten lokal speichern (AsyncStorage)
+- [x] Mond-Zyklus-Synchronisation: Tipps basierend auf Kombination (harmonisch/neutral/gegenläufig)

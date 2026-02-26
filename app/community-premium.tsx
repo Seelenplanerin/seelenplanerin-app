@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput,
+  Alert, Platform,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
@@ -14,57 +15,29 @@ import {
   getNextNeumond,
   MOON_PHASES,
 } from "@/lib/moon-phase";
+import {
+  ZyklusEinstellungen,
+  ZyklusTag,
+  ZyklusUebersicht,
+  berechneZyklusTag,
+  berechneZyklusUebersicht,
+  berechneZyklusKalender,
+  speichereZyklusEinstellungen,
+  ladeZyklusEinstellungen,
+  getDefaultEinstellungen,
+} from "@/lib/zyklus-tracker";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
   gold: "#C9A96E", goldLight: "#FAF3E7", brown: "#5C3317", brownMid: "#8B5E3C",
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
-  purple: "#9B7CB8", purpleLight: "#F3EDF8", purpleDim: "rgba(155,124,184,0.15)",
+  purple: "#9B7CB8", purpleLight: "#F3EDF8",
+  red: "#E74C3C", green: "#27AE60", orange: "#F39C12", violet: "#8E44AD",
 };
 
-const MONATE = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+const WOCHENTAGE_KURZ = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
-// ── Mondphase & Weiblicher Zyklus ──
-const ZYKLUS_PHASEN = [
-  {
-    mondphase: "Neumond",
-    zyklusphase: "Menstruation",
-    emoji: "🌑",
-    beschreibung: "Rückzug und Erneuerung",
-    details: "Wie der Neumond ist die Menstruation eine Zeit des Rückzugs und der inneren Einkehr. Dein Körper reinigt sich und bereitet sich auf einen neuen Zyklus vor. Gönne dir Ruhe, warme Tees und sanfte Bewegung.",
-    tipps: ["Wärmflasche auf den Bauch", "Tagebuch schreiben", "Leichte Yoga-Übungen", "Kräutertee (Frauenmantel, Schafgarbe)"],
-    farbe: "#6B7280",
-  },
-  {
-    mondphase: "Zunehmender Mond",
-    zyklusphase: "Follikelphase",
-    emoji: "🌒",
-    beschreibung: "Aufbruch und neue Energie",
-    details: "Wie der zunehmende Mond wächst deine Energie in der Follikelphase. Östrogen steigt, du fühlst dich kreativer und offener. Nutze diese Phase für neue Projekte und soziale Aktivitäten.",
-    tipps: ["Neue Projekte starten", "Sport und Bewegung intensivieren", "Kreative Arbeit", "Soziale Kontakte pflegen"],
-    farbe: "#10B981",
-  },
-  {
-    mondphase: "Vollmond",
-    zyklusphase: "Eisprung",
-    emoji: "🌕",
-    beschreibung: "Höhepunkt und Ausstrahlung",
-    details: "Der Vollmond spiegelt den Eisprung wider – deine Energie ist auf dem Höhepunkt. Du strahlst, bist kommunikativ und magnetisch. Nutze diese kraftvolle Zeit für wichtige Gespräche und Manifestation.",
-    tipps: ["Wichtige Gespräche führen", "Manifestations-Rituale", "Vollmond-Bad mit Rosenblüten", "Dankbarkeits-Meditation"],
-    farbe: "#F59E0B",
-  },
-  {
-    mondphase: "Abnehmender Mond",
-    zyklusphase: "Lutealphase",
-    emoji: "🌘",
-    beschreibung: "Reflexion und Loslassen",
-    details: "Wie der abnehmende Mond zieht sich deine Energie in der Lutealphase zurück. Progesteron steigt, du wirst nachdenklicher und sensibler. Höre auf deinen Körper und lass los, was nicht mehr dient.",
-    tipps: ["Räuchern und Reinigen", "Grenzen setzen", "Nährende Ernährung", "Abend-Meditation"],
-    farbe: "#8B5CF6",
-  },
-];
-
-// ── Exklusive Meditationen (Platzhalter – werden von der Seelenplanerin hochgeladen) ──
+// ── Exklusive Meditationen (Platzhalter) ──
 const PREMIUM_MEDITATIONEN = [
   { id: "pm1", titel: "Neumond-Manifestation", dauer: "15 Min.", emoji: "🌑", beschreibung: "Geführte Meditation für deine Neumond-Intentionen", verfuegbar: false },
   { id: "pm2", titel: "Vollmond-Loslassen", dauer: "20 Min.", emoji: "🌕", beschreibung: "Loslassen und Dankbarkeit unter dem Vollmond", verfuegbar: false },
@@ -74,26 +47,20 @@ const PREMIUM_MEDITATIONEN = [
   { id: "pm6", titel: "Mondwasser-Zeremonie", dauer: "10 Min.", emoji: "💧", beschreibung: "Anleitung zur Herstellung von Mondwasser", verfuegbar: false },
 ];
 
-// ── Premium Mondkalender: Exakte Daten ──
-function getPremiumMondkalender(): { datum: string; phase: string; uhrzeit: string; tierkreis: string; besonderheit: string }[] {
-  const events: { datum: string; phase: string; uhrzeit: string; tierkreis: string; besonderheit: string }[] = [];
-  
-  // Nächste 3 Monate Hauptphasen
+// ── Premium Mondkalender ──
+function getPremiumMondkalender() {
+  const events: { datum: string; phase: string; tierkreis: string; besonderheit: string }[] = [];
   const now = new Date();
   for (let monat = 0; monat < 3; monat++) {
     const startDate = new Date(now);
     startDate.setMonth(now.getMonth() + monat, 1);
     const endDate = new Date(startDate);
     endDate.setMonth(startDate.getMonth() + 1, 0);
-    
-    // Jeden Tag prüfen
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const phase = getMoonPhaseForDate(d);
       const prevDay = new Date(d);
       prevDay.setDate(d.getDate() - 1);
       const prevPhase = getMoonPhaseForDate(prevDay);
-      
-      // Nur Phasenwechsel anzeigen
       if (phase.name !== prevPhase.name) {
         const zodiac = getMoonZodiac(d);
         let besonderheit = "";
@@ -101,24 +68,73 @@ function getPremiumMondkalender(): { datum: string; phase: string; uhrzeit: stri
         else if (phase.name === "Neumond") besonderheit = "Intentionen setzen";
         else if (phase.name === "Erstes Viertel") besonderheit = "Entscheidungen treffen";
         else if (phase.name === "Letztes Viertel") besonderheit = "Reinigung & Aufräumen";
-        
         events.push({
           datum: d.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "long", timeZone: "Europe/Berlin" }),
           phase: phase.name,
-          uhrzeit: "",
           tierkreis: `${zodiac.symbol} ${zodiac.name}`,
           besonderheit,
         });
       }
     }
   }
-  
   return events;
+}
+
+// ── Synchronisations-Farbe ──
+function getSyncFarbe(typ: string): string {
+  if (typ === "harmonisch") return C.green;
+  if (typ === "gegenläufig") return C.orange;
+  return C.muted;
+}
+
+function getSyncLabel(typ: string): string {
+  if (typ === "harmonisch") return "Im Einklang";
+  if (typ === "gegenläufig") return "Gegenläufig";
+  return "Neutral";
 }
 
 export default function CommunityPremiumScreen() {
   const [tab, setTab] = useState<"kalender" | "zyklus" | "meditation">("kalender");
+  const [zyklusEinstellungen, setZyklusEinstellungen] = useState<ZyklusEinstellungen | null>(null);
+  const [showSetup, setShowSetup] = useState(false);
+  const [setupDatum, setSetupDatum] = useState("");
+  const [setupLaenge, setSetupLaenge] = useState("28");
+  const [setupDauer, setSetupDauer] = useState("5");
   const mondkalender = getPremiumMondkalender();
+
+  // Zyklusdaten laden
+  useEffect(() => {
+    ladeZyklusEinstellungen().then((data) => {
+      if (data) {
+        setZyklusEinstellungen(data);
+      }
+    });
+  }, []);
+
+  const speichern = useCallback(async () => {
+    if (!setupDatum || !setupDatum.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (Platform.OS === "web") {
+        alert("Bitte gib ein gültiges Datum ein (JJJJ-MM-TT)");
+      } else {
+        Alert.alert("Ungültiges Datum", "Bitte gib ein gültiges Datum ein (JJJJ-MM-TT)");
+      }
+      return;
+    }
+    const einstellungen: ZyklusEinstellungen = {
+      letztePeriodenStart: setupDatum,
+      zyklusLaenge: parseInt(setupLaenge) || 28,
+      periodenDauer: parseInt(setupDauer) || 5,
+    };
+    await speichereZyklusEinstellungen(einstellungen);
+    setZyklusEinstellungen(einstellungen);
+    setShowSetup(false);
+  }, [setupDatum, setupLaenge, setupDauer]);
+
+  // Zyklus-Daten berechnen
+  const heute = new Date();
+  const heuteTag = zyklusEinstellungen ? berechneZyklusTag(heute, zyklusEinstellungen) : null;
+  const uebersicht = zyklusEinstellungen ? berechneZyklusUebersicht(heute, zyklusEinstellungen) : null;
+  const kalenderTage = zyklusEinstellungen ? berechneZyklusKalender(heute, 30, zyklusEinstellungen) : [];
 
   return (
     <ScreenContainer containerClassName="bg-background">
@@ -160,11 +176,13 @@ export default function CommunityPremiumScreen() {
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {/* ══════════════════════════════════════════════ */}
           {/* ── MONDKALENDER PREMIUM ── */}
+          {/* ══════════════════════════════════════════════ */}
           {tab === "kalender" && (
             <View style={s.content}>
               <Text style={s.sectionTitle}>Mondphasen-Kalender</Text>
-              <Text style={s.sectionSub}>Alle Phasenwechsel der nächsten 3 Monate mit exakten Daten</Text>
+              <Text style={s.sectionSub}>Alle Phasenwechsel der nächsten 3 Monate</Text>
 
               {mondkalender.map((event, i) => {
                 const isVollmond = event.phase === "Vollmond";
@@ -187,7 +205,6 @@ export default function CommunityPremiumScreen() {
                 );
               })}
 
-              {/* Vollmond/Neumond Highlights */}
               <View style={s.highlightCard}>
                 <Text style={s.highlightTitle}>Nächster Vollmond</Text>
                 <Text style={s.highlightDate}>
@@ -195,13 +212,7 @@ export default function CommunityPremiumScreen() {
                     weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Berlin",
                   })}
                 </Text>
-                <Text style={s.highlightTime}>
-                  {getNextVollmond().toLocaleTimeString("de-DE", {
-                    hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
-                  })} Uhr (MEZ)
-                </Text>
               </View>
-
               <View style={s.highlightCard}>
                 <Text style={s.highlightTitle}>Nächster Neumond</Text>
                 <Text style={s.highlightDate}>
@@ -209,56 +220,253 @@ export default function CommunityPremiumScreen() {
                     weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Berlin",
                   })}
                 </Text>
-                <Text style={s.highlightTime}>
-                  {getNextNeumond().toLocaleTimeString("de-DE", {
-                    hour: "2-digit", minute: "2-digit", timeZone: "Europe/Berlin",
-                  })} Uhr (MEZ)
-                </Text>
               </View>
             </View>
           )}
 
-          {/* ── MONDPHASE & WEIBLICHER ZYKLUS ── */}
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── MOND & ZYKLUS TRACKING ── */}
+          {/* ══════════════════════════════════════════════ */}
           {tab === "zyklus" && (
             <View style={s.content}>
               <Text style={s.sectionTitle}>Mond & Weiblicher Zyklus</Text>
               <Text style={s.sectionSub}>
-                Der weibliche Zyklus und der Mondzyklus sind tief miteinander verbunden. Beide dauern ca. 29,5 Tage und durchlaufen 4 Phasen.
+                Verfolge deinen Zyklus und entdecke, wie er mit den Mondphasen zusammenwirkt.
               </Text>
 
-              {ZYKLUS_PHASEN.map((z, i) => (
-                <View key={i} style={s.zyklusCard}>
-                  <View style={[s.zyklusHeader, { borderLeftColor: z.farbe }]}>
-                    <Text style={{ fontSize: 28 }}>{z.emoji}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.zyklusMondphase}>{z.mondphase}</Text>
-                      <Text style={s.zyklusPhase}>{z.zyklusphase}</Text>
-                      <Text style={s.zyklusBeschreibung}>{z.beschreibung}</Text>
+              {/* ── Setup / Einstellungen ── */}
+              {(!zyklusEinstellungen || showSetup) ? (
+                <View style={s.setupCard}>
+                  <Text style={s.setupTitle}>
+                    {zyklusEinstellungen ? "Zyklusdaten anpassen" : "Zyklustracking einrichten"}
+                  </Text>
+                  <Text style={s.setupSub}>
+                    Gib deine Daten ein, um deinen Zyklus mit den Mondphasen zu synchronisieren.
+                  </Text>
+
+                  <View style={s.inputGroup}>
+                    <Text style={s.inputLabel}>Letzter Periodenstart</Text>
+                    <TextInput
+                      style={s.input}
+                      placeholder="JJJJ-MM-TT (z.B. 2026-02-15)"
+                      placeholderTextColor={C.muted}
+                      value={setupDatum}
+                      onChangeText={setSetupDatum}
+                      returnKeyType="done"
+                    />
+                  </View>
+
+                  <View style={{ flexDirection: "row", gap: 12 }}>
+                    <View style={[s.inputGroup, { flex: 1 }]}>
+                      <Text style={s.inputLabel}>Zykluslänge (Tage)</Text>
+                      <TextInput
+                        style={s.input}
+                        placeholder="28"
+                        placeholderTextColor={C.muted}
+                        value={setupLaenge}
+                        onChangeText={setSetupLaenge}
+                        keyboardType="number-pad"
+                        returnKeyType="done"
+                      />
+                    </View>
+                    <View style={[s.inputGroup, { flex: 1 }]}>
+                      <Text style={s.inputLabel}>Periodendauer (Tage)</Text>
+                      <TextInput
+                        style={s.input}
+                        placeholder="5"
+                        placeholderTextColor={C.muted}
+                        value={setupDauer}
+                        onChangeText={setSetupDauer}
+                        keyboardType="number-pad"
+                        returnKeyType="done"
+                      />
                     </View>
                   </View>
-                  <Text style={s.zyklusDetails}>{z.details}</Text>
-                  <View style={s.zyklusTipps}>
-                    {z.tipps.map((tipp, j) => (
-                      <View key={j} style={s.zyklusTippItem}>
-                        <Text style={s.zyklusTippDot}>•</Text>
-                        <Text style={s.zyklusTippText}>{tipp}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              ))}
 
-              <View style={s.infoBox}>
-                <Text style={{ fontSize: 18, marginBottom: 8 }}>🌸</Text>
-                <Text style={s.infoBoxTitle}>Dein Zyklus ist einzigartig</Text>
-                <Text style={s.infoBoxText}>
-                  Nicht jede Frau menstruiert zum Neumond. Das ist völlig normal. Beobachte deinen eigenen Rhythmus und nutze die Mondenergie als zusätzliche Unterstützung für dein Wohlbefinden.
-                </Text>
-              </View>
+                  <TouchableOpacity style={s.saveBtn} onPress={speichern} activeOpacity={0.85}>
+                    <Text style={s.saveBtnText}>Speichern & Synchronisieren</Text>
+                  </TouchableOpacity>
+
+                  {zyklusEinstellungen && (
+                    <TouchableOpacity
+                      style={s.cancelBtn}
+                      onPress={() => setShowSetup(false)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={s.cancelBtnText}>Abbrechen</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                <>
+                  {/* ── Aktuelle Übersicht ── */}
+                  {uebersicht && heuteTag && (
+                    <>
+                      {/* Hauptkarte: Aktueller Status */}
+                      <View style={[s.statusCard, { borderLeftColor: heuteTag.phase.farbe }]}>
+                        <View style={s.statusHeader}>
+                          <View style={[s.phaseCircle, { backgroundColor: heuteTag.phase.farbe + "20" }]}>
+                            <Text style={{ fontSize: 28 }}>{heuteTag.phase.emoji}</Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={s.statusPhase}>{heuteTag.phase.label}</Text>
+                            <Text style={s.statusTag}>Zyklustag {uebersicht.aktuellerTag}</Text>
+                            <Text style={s.statusBeschreibung}>{heuteTag.phase.beschreibung}</Text>
+                          </View>
+                        </View>
+
+                        {/* Zyklusfortschritt */}
+                        <View style={s.progressContainer}>
+                          <View style={s.progressBar}>
+                            <View
+                              style={[
+                                s.progressFill,
+                                {
+                                  width: `${(uebersicht.aktuellerTag / zyklusEinstellungen.zyklusLaenge) * 100}%`,
+                                  backgroundColor: heuteTag.phase.farbe,
+                                },
+                              ]}
+                            />
+                          </View>
+                          <Text style={s.progressText}>
+                            Tag {uebersicht.aktuellerTag} von {zyklusEinstellungen.zyklusLaenge}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Synchronisation Mond & Zyklus */}
+                      <View style={[s.syncCard, { borderColor: getSyncFarbe(heuteTag.synchronisation) + "40" }]}>
+                        <View style={s.syncHeader}>
+                          <View style={s.syncIcons}>
+                            <Text style={{ fontSize: 22 }}>{heuteTag.phase.emoji}</Text>
+                            <Text style={{ fontSize: 14, color: C.muted }}>⟷</Text>
+                            <Text style={{ fontSize: 22 }}>{heuteTag.mondEmoji}</Text>
+                          </View>
+                          <View style={[s.syncBadge, { backgroundColor: getSyncFarbe(heuteTag.synchronisation) + "20" }]}>
+                            <View style={[s.syncDot, { backgroundColor: getSyncFarbe(heuteTag.synchronisation) }]} />
+                            <Text style={[s.syncBadgeText, { color: getSyncFarbe(heuteTag.synchronisation) }]}>
+                              {getSyncLabel(heuteTag.synchronisation)}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={s.syncTitle}>
+                          {heuteTag.phase.label} + {heuteTag.mondphase}
+                        </Text>
+                        <Text style={s.syncTipp}>{heuteTag.synchronisationTipp}</Text>
+                      </View>
+
+                      {/* Schnellinfo-Karten */}
+                      <View style={s.quickInfoRow}>
+                        <View style={s.quickInfoCard}>
+                          <Text style={s.quickInfoEmoji}>🩸</Text>
+                          <Text style={s.quickInfoLabel}>Nächste Periode</Text>
+                          <Text style={s.quickInfoValue}>in {uebersicht.tageZurNaechstenPeriode} Tagen</Text>
+                        </View>
+                        <View style={s.quickInfoCard}>
+                          <Text style={s.quickInfoEmoji}>→</Text>
+                          <Text style={s.quickInfoLabel}>Nächste Phase</Text>
+                          <Text style={s.quickInfoValue}>
+                            {uebersicht.naechstePhase.label}{"\n"}
+                            <Text style={{ fontSize: 11, color: C.muted }}>in {uebersicht.tageZurNaechstenPhase} Tagen</Text>
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* 30-Tage Mond-Zyklus-Kalender */}
+                      <Text style={[s.sectionTitle, { marginTop: 20 }]}>Nächste 30 Tage</Text>
+                      <Text style={s.sectionSub}>Dein Zyklus synchronisiert mit dem Mond</Text>
+
+                      {kalenderTage.map((tag, i) => {
+                        const isHeute = tag.datum.toDateString() === heute.toDateString();
+                        return (
+                          <View
+                            key={i}
+                            style={[
+                              s.kalenderRow,
+                              isHeute && s.kalenderRowHeute,
+                            ]}
+                          >
+                            {/* Datum */}
+                            <View style={s.kalenderDatum}>
+                              <Text style={[s.kalenderWochentag, isHeute && { color: C.rose, fontWeight: "700" }]}>
+                                {WOCHENTAGE_KURZ[tag.datum.getDay()]}
+                              </Text>
+                              <Text style={[s.kalenderTag, isHeute && { color: C.rose }]}>
+                                {tag.datum.getDate()}.{tag.datum.getMonth() + 1}.
+                              </Text>
+                            </View>
+
+                            {/* Zyklusphase */}
+                            <View style={[s.kalenderPhase, { backgroundColor: tag.phase.farbe + "15" }]}>
+                              <Text style={{ fontSize: 14 }}>{tag.phase.emoji}</Text>
+                              <Text style={[s.kalenderPhaseText, { color: tag.phase.farbe }]}>
+                                Tag {tag.zyklusTag}
+                              </Text>
+                            </View>
+
+                            {/* Mondphase */}
+                            <View style={s.kalenderMond}>
+                              <Text style={{ fontSize: 14 }}>{tag.mondEmoji}</Text>
+                              <Text style={s.kalenderMondText}>{tag.mondBeleuchtung}%</Text>
+                            </View>
+
+                            {/* Sync-Indikator */}
+                            <View style={[s.kalenderSync, { backgroundColor: getSyncFarbe(tag.synchronisation) + "20" }]}>
+                              <View style={[s.kalenderSyncDot, { backgroundColor: getSyncFarbe(tag.synchronisation) }]} />
+                            </View>
+                          </View>
+                        );
+                      })}
+
+                      {/* Legende */}
+                      <View style={s.legendeCard}>
+                        <Text style={s.legendeTitle}>Legende</Text>
+                        <View style={s.legendeRow}>
+                          <View style={[s.legendeDot, { backgroundColor: C.green }]} />
+                          <Text style={s.legendeText}>Im Einklang – Mond und Zyklus harmonieren</Text>
+                        </View>
+                        <View style={s.legendeRow}>
+                          <View style={[s.legendeDot, { backgroundColor: C.muted }]} />
+                          <Text style={s.legendeText}>Neutral – keine besondere Wechselwirkung</Text>
+                        </View>
+                        <View style={s.legendeRow}>
+                          <View style={[s.legendeDot, { backgroundColor: C.orange }]} />
+                          <Text style={s.legendeText}>Gegenläufig – bewusste Balance finden</Text>
+                        </View>
+                      </View>
+
+                      {/* Einstellungen ändern */}
+                      <TouchableOpacity
+                        style={s.editBtn}
+                        onPress={() => {
+                          setSetupDatum(zyklusEinstellungen.letztePeriodenStart);
+                          setSetupLaenge(String(zyklusEinstellungen.zyklusLaenge));
+                          setSetupDauer(String(zyklusEinstellungen.periodenDauer));
+                          setShowSetup(true);
+                        }}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={s.editBtnText}>Zyklusdaten anpassen</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+
+                  {/* Allgemeine Zyklus-Mond-Info */}
+                  <View style={s.infoBox}>
+                    <Text style={{ fontSize: 18, marginBottom: 8 }}>🌸</Text>
+                    <Text style={s.infoBoxTitle}>Dein Zyklus ist einzigartig</Text>
+                    <Text style={s.infoBoxText}>
+                      Nicht jede Frau menstruiert zum Neumond. Das ist völlig normal. Beobachte deinen eigenen Rhythmus und nutze die Mondenergie als zusätzliche Unterstützung.
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
           )}
 
+          {/* ══════════════════════════════════════════════ */}
           {/* ── EXKLUSIVE MEDITATIONEN ── */}
+          {/* ══════════════════════════════════════════════ */}
           {tab === "meditation" && (
             <View style={s.content}>
               <Text style={s.sectionTitle}>Exklusive Meditationen</Text>
@@ -295,7 +503,7 @@ export default function CommunityPremiumScreen() {
                 <Text style={{ fontSize: 18, marginBottom: 8 }}>🎧</Text>
                 <Text style={s.infoBoxTitle}>Meditationen werden ergänzt</Text>
                 <Text style={s.infoBoxText}>
-                  Die Seelenplanerin arbeitet gerade an exklusiven geführten Meditationen für dich. Sie werden nach und nach freigeschaltet. Bleib dran!
+                  Die Seelenplanerin arbeitet gerade an exklusiven geführten Meditationen für dich. Sie werden nach und nach freigeschaltet.
                 </Text>
               </View>
             </View>
@@ -362,35 +570,125 @@ const s = StyleSheet.create({
   },
   highlightTitle: { fontSize: 13, fontWeight: "700", color: C.gold, letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" },
   highlightDate: { fontSize: 17, fontWeight: "700", color: C.brown, textAlign: "center" },
-  highlightTime: { fontSize: 14, color: C.brownMid, marginTop: 4 },
 
-  // Zyklus
-  zyklusCard: {
-    backgroundColor: C.card, borderRadius: 16, padding: 16, marginBottom: 12,
+  // ── Zyklustracking Setup ──
+  setupCard: {
+    backgroundColor: C.card, borderRadius: 20, padding: 20, marginBottom: 16,
     borderWidth: 1, borderColor: C.border,
   },
-  zyklusHeader: {
-    flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12,
-    borderLeftWidth: 3, paddingLeft: 12,
+  setupTitle: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 6 },
+  setupSub: { fontSize: 14, color: C.muted, lineHeight: 21, marginBottom: 20 },
+  inputGroup: { marginBottom: 16 },
+  inputLabel: { fontSize: 13, fontWeight: "700", color: C.brownMid, marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  input: {
+    backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 16,
+    color: C.brown, borderWidth: 1, borderColor: C.border,
   },
-  zyklusMondphase: { fontSize: 12, fontWeight: "700", color: C.muted, textTransform: "uppercase", letterSpacing: 0.5 },
-  zyklusPhase: { fontSize: 17, fontWeight: "700", color: C.brown, marginBottom: 2 },
-  zyklusBeschreibung: { fontSize: 13, color: C.rose, fontWeight: "600" },
-  zyklusDetails: { fontSize: 14, color: C.brownMid, lineHeight: 21, marginBottom: 12 },
-  zyklusTipps: { gap: 6 },
-  zyklusTippItem: { flexDirection: "row", gap: 8 },
-  zyklusTippDot: { color: C.rose, fontSize: 14, fontWeight: "700" },
-  zyklusTippText: { fontSize: 13, color: C.brownMid, lineHeight: 19, flex: 1 },
+  saveBtn: {
+    backgroundColor: C.rose, borderRadius: 14, paddingVertical: 16, alignItems: "center",
+    marginTop: 4,
+  },
+  saveBtnText: { color: "#FFF", fontSize: 16, fontWeight: "700" },
+  cancelBtn: {
+    borderRadius: 14, paddingVertical: 12, alignItems: "center", marginTop: 8,
+  },
+  cancelBtnText: { color: C.muted, fontSize: 14, fontWeight: "600" },
 
-  // Info Box
+  // ── Status-Karte ──
+  statusCard: {
+    backgroundColor: C.card, borderRadius: 20, padding: 18, marginBottom: 12,
+    borderWidth: 1, borderColor: C.border, borderLeftWidth: 4,
+  },
+  statusHeader: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 },
+  phaseCircle: {
+    width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center",
+  },
+  statusPhase: { fontSize: 18, fontWeight: "700", color: C.brown },
+  statusTag: { fontSize: 14, color: C.rose, fontWeight: "600", marginTop: 2 },
+  statusBeschreibung: { fontSize: 13, color: C.muted, marginTop: 2 },
+  progressContainer: { marginTop: 4 },
+  progressBar: {
+    height: 8, backgroundColor: C.surface, borderRadius: 4, overflow: "hidden",
+  },
+  progressFill: { height: 8, borderRadius: 4 },
+  progressText: { fontSize: 12, color: C.muted, marginTop: 6, textAlign: "center" },
+
+  // ── Sync-Karte ──
+  syncCard: {
+    backgroundColor: C.card, borderRadius: 20, padding: 18, marginBottom: 12,
+    borderWidth: 1.5,
+  },
+  syncHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  syncIcons: { flexDirection: "row", alignItems: "center", gap: 8 },
+  syncBadge: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  syncDot: { width: 8, height: 8, borderRadius: 4 },
+  syncBadgeText: { fontSize: 12, fontWeight: "700" },
+  syncTitle: { fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 6 },
+  syncTipp: { fontSize: 14, color: C.brownMid, lineHeight: 21 },
+
+  // ── Schnellinfo ──
+  quickInfoRow: { flexDirection: "row", gap: 10, marginBottom: 4 },
+  quickInfoCard: {
+    flex: 1, backgroundColor: C.card, borderRadius: 16, padding: 14,
+    borderWidth: 1, borderColor: C.border, alignItems: "center",
+  },
+  quickInfoEmoji: { fontSize: 22, marginBottom: 6 },
+  quickInfoLabel: { fontSize: 11, color: C.muted, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
+  quickInfoValue: { fontSize: 14, fontWeight: "700", color: C.brown, textAlign: "center" },
+
+  // ── Kalender ──
+  kalenderRow: {
+    flexDirection: "row", alignItems: "center", paddingVertical: 10, paddingHorizontal: 12,
+    marginBottom: 2, borderRadius: 10, gap: 8,
+  },
+  kalenderRowHeute: {
+    backgroundColor: C.roseLight, borderWidth: 1, borderColor: C.rose + "30",
+  },
+  kalenderDatum: { width: 52 },
+  kalenderWochentag: { fontSize: 11, color: C.muted, fontWeight: "600" },
+  kalenderTag: { fontSize: 13, fontWeight: "700", color: C.brown },
+  kalenderPhase: {
+    flex: 1, flexDirection: "row", alignItems: "center", gap: 6,
+    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
+  },
+  kalenderPhaseText: { fontSize: 12, fontWeight: "700" },
+  kalenderMond: {
+    flexDirection: "row", alignItems: "center", gap: 4, width: 52,
+  },
+  kalenderMondText: { fontSize: 11, color: C.muted },
+  kalenderSync: {
+    width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center",
+  },
+  kalenderSyncDot: { width: 8, height: 8, borderRadius: 4 },
+
+  // ── Legende ──
+  legendeCard: {
+    backgroundColor: C.surface, borderRadius: 14, padding: 14, marginTop: 12, marginBottom: 8,
+  },
+  legendeTitle: { fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 8 },
+  legendeRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 },
+  legendeDot: { width: 10, height: 10, borderRadius: 5 },
+  legendeText: { fontSize: 12, color: C.brownMid, flex: 1 },
+
+  // ── Edit Button ──
+  editBtn: {
+    borderRadius: 14, paddingVertical: 14, alignItems: "center",
+    borderWidth: 1, borderColor: C.border, marginTop: 8, marginBottom: 8,
+  },
+  editBtnText: { color: C.rose, fontSize: 14, fontWeight: "700" },
+
+  // ── Info Box ──
   infoBox: {
-    backgroundColor: C.roseLight, borderRadius: 16, padding: 18, marginTop: 8,
+    backgroundColor: C.roseLight, borderRadius: 16, padding: 18, marginTop: 12,
     borderWidth: 1, borderColor: C.rose + "30", alignItems: "center",
   },
   infoBoxTitle: { fontSize: 15, fontWeight: "700", color: C.brown, marginBottom: 6, textAlign: "center" },
   infoBoxText: { fontSize: 13, color: C.brownMid, lineHeight: 20, textAlign: "center" },
 
-  // Meditationen
+  // ── Meditationen ──
   meditationCard: {
     flexDirection: "row", alignItems: "center", backgroundColor: C.card,
     borderRadius: 16, padding: 14, marginBottom: 10,
