@@ -124,7 +124,7 @@ export default function AktuellesScreen() {
         <View style={s.greetingBox}>
           <Text style={s.greetingTitle}>Schön, dass du da bist. 🌸</Text>
           <Text style={s.greetingText}>
-            Ich bin Lara – die Seelenplanerin. Hier findest du Rituale, Mondenergie, Runen und Impulse für deine Seele. Dieser Raum gehört dir.
+            Ich bin die Seelenplanerin. Hier findest du Rituale, Mondenergie, Runen und Impulse für deine Seele. Dieser Raum gehört dir.
           </Text>
         </View>
 
@@ -230,7 +230,7 @@ export default function AktuellesScreen() {
           <Text style={s.premiumCrown}>👑</Text>
           <Text style={s.premiumTitle}>Seelenimpuls</Text>
           <Text style={s.premiumDesc}>
-            Exklusive Meditationen, tiefe Rituale, persönliche Impulse von Lara – nur für dich.
+            Exklusive Meditationen, tiefe Rituale, persönliche Impulse von der Seelenplanerin – nur für dich.
           </Text>
           <View style={s.premiumBadge}>
             <Text style={s.premiumBadgeText}>17 € / Monat · Jetzt entdecken →</Text>

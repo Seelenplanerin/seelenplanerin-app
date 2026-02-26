@@ -139,7 +139,7 @@ export default function RunenScreen() {
         <View style={s.sectionTabs}>
           {[
             { id: "schutz", label: "Schutzrune" },
-            { id: "thema", label: "Thema-Armband" },
+            { id: "thema", label: "Themen-Armband" },
             { id: "uebersicht", label: "Alle Runen" },
           ].map(tab => (
             <TouchableOpacity
@@ -247,7 +247,7 @@ export default function RunenScreen() {
                 </View>
                 <View style={s.armbandInfo}>
                   <Text style={s.armbandInfoText}>
-                    🪨 Jedes Plättchen ist handgraviert von Lara{"\n"}
+                    🪨 Jedes Plättchen ist handgraviert von der Seelenplanerin{"\n"}
                     ✨ Mit kraftvollem Heilstein-Pulver befüllt{"\n"}
                     💫 Ein Unikat – nur für dich gemacht
                   </Text>

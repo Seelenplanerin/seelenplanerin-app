@@ -12,18 +12,18 @@ const C = {
 };
 
 const FEATURES = [
-  { emoji: "🎧", titel: "Exklusive Meditationen", beschreibung: "Geführte Meditationen von Lara – nur für Mitglieder" },
+  { emoji: "🎧", titel: "Exklusive Meditationen", beschreibung: "Geführte Meditationen von der Seelenplanerin – nur für Mitglieder" },
   { emoji: "🕯️", titel: "Tiefe Rituale", beschreibung: "Ausführliche Mondphasen- und Seelenrituale" },
-  { emoji: "✨", titel: "Persönliche Impulse", beschreibung: "Wöchentliche Botschaften direkt von Lara an dich" },
+  { emoji: "✨", titel: "Persönliche Impulse", beschreibung: "Wöchentliche Botschaften direkt von der Seelenplanerin an dich" },
   { emoji: "🌙", titel: "Mondkalender Premium", beschreibung: "Detaillierte Mondenergie-Vorhersagen für jeden Tag" },
-  { emoji: "📞", titel: "Monatlicher Community-Call", beschreibung: "Live-Call mit Lara und allen Mitgliedern – gemeinsam wachsen" },
+  { emoji: "📞", titel: "Monatlicher Community-Call", beschreibung: "Live-Call mit der Seelenplanerin und allen Mitgliedern – gemeinsam wachsen" },
   { emoji: "💌", titel: "Community-Zugang", beschreibung: "Exklusiver Zugang zur Seelenplanerin-Community" },
   { emoji: "🎁", titel: "Frühzugang zu Produkten", beschreibung: "Neue Armbänder und Angebote zuerst für Mitglieder" },
 ];
 
 const TESTIMONIALS = [
   { name: "Sarah M.", text: "Der Seelenimpuls hat mein Leben verändert. Laras Meditationen helfen mir jeden Morgen, zentriert in den Tag zu starten.", emoji: "🌸" },
-  { name: "Julia K.", text: "Endlich eine spirituelle Begleitung die sich wirklich persönlich anfühlt. Lara ist so authentisch und herzlich.", emoji: "✨" },
+  { name: "Julia K.", text: "Endlich eine spirituelle Begleitung die sich wirklich persönlich anfühlt. Die Seelenplanerin ist so authentisch und herzlich.", emoji: "✨" },
   { name: "Marie L.", text: "Die Mondphasen-Rituale haben mir geholfen, meinen eigenen Rhythmus zu finden. Ich bin so dankbar für diesen Raum.", emoji: "🌙" },
 ];
 
@@ -90,7 +90,7 @@ export default function SeelenimpulsScreen() {
           <Text style={s.preis}>17 €</Text>
           <Text style={s.preisUnit}>pro Monat - jederzeit kündbar</Text>
           <View style={s.preisFeatures}>
-            {["Alle exklusiven Inhalte", "Persönliche Impulse von Lara", "Monatlicher Community-Call mit Lara", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
+            {["Alle exklusiven Inhalte", "Persönliche Impulse von der Seelenplanerin", "Monatlicher Community-Call mit der Seelenplanerin", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
               <View key={i} style={s.preisFeatureRow}>
                 <Text style={{ color: C.gold, fontSize: 16, marginRight: 8 }}>✓</Text>
                 <Text style={{ fontSize: 14, color: C.brownMid }}>{f}</Text>
@@ -113,7 +113,7 @@ export default function SeelenimpulsScreen() {
           {[
             { frage: "Wie kann ich kündigen?", antwort: "Du kannst jederzeit über Tentary kündigen. Keine Mindestlaufzeit." },
             { frage: "Wie erhalte ich die Inhalte?", antwort: "Nach der Buchung erhältst du Zugang zu allen exklusiven Inhalten direkt in der App." },
-            { frage: "Gibt es eine Testphase?", antwort: "Schreibe Lara direkt auf Instagram an – sie freut sich über jede Nachricht." },
+            { frage: "Gibt es eine Testphase?", antwort: "Schreibe der Seelenplanerin direkt auf Instagram an – sie freut sich über jede Nachricht." },
           ].map((item, i) => (
             <View key={i} style={[s.faqItem, i > 0 && { borderTopWidth: 1, borderTopColor: C.border }]}>
               <Text style={s.faqFrage}>{item.frage}</Text>

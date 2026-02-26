@@ -100,7 +100,7 @@ export default function RunenSetDetailScreen() {
         {/* Handgraviert */}
         <View style={s.highlightBox}>
           <Text style={s.highlightText}>
-            ✦ Jedes Plättchen wird von Lara persönlich handgraviert und mit kraftvollem Heilstein-Pulver befüllt – ein echtes Unikat für dich.
+            ✦ Jedes Plättchen wird von der Seelenplanerin persönlich handgraviert und mit kraftvollem Heilstein-Pulver befüllt – ein echtes Unikat für dich.
           </Text>
         </View>
 

@@ -25,7 +25,7 @@ const SESSIONS: Session[] = [
     name: "Soul Talk",
     dauer: "30 Min",
     preis: "Kostenlos",
-    beschreibung: "Dein erster Schritt in die Welt der Seelenplanerin. Lara hört dir zu und gibt dir erste Impulse.",
+    beschreibung: "Dein erster Schritt in die Welt der Seelenplanerin. Die Seelenplanerin hört dir zu und gibt dir erste Impulse.",
     details: [
       "Kostenloses Kennenlerngespräch",
       "30 Minuten via Zoom",
@@ -41,9 +41,9 @@ const SESSIONS: Session[] = [
     name: "Aura Reading",
     dauer: "Online",
     preis: "77,00 €",
-    beschreibung: "Lara liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
+    beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     details: [
-      "Persönliches Aura-Reading mit Lara",
+      "Persönliches Aura-Reading",
       "Analyse deiner Energiefelder",
       "Aufdeckung von Blockaden",
       "Konkrete Handlungsempfehlungen",
@@ -58,9 +58,9 @@ const SESSIONS: Session[] = [
     name: "Deep Talk",
     dauer: "90 Min",
     preis: "111,00 €",
-    beschreibung: "Ein tiefes 1:1 Gespräch mit Lara. Energiearbeit, Seelenplanung und persönliche Transformation.",
+    beschreibung: "Ein tiefes 1:1 Gespräch. Energiearbeit, Seelenplanung und persönliche Transformation.",
     details: [
-      "Intensives 1:1 mit Lara",
+      "Intensives 1:1",
       "Energiearbeit & Seelenplanung",
       "Tiefe Transformation",
       "Persönlicher Aktionsplan",
@@ -78,7 +78,7 @@ const SESSIONS: Session[] = [
     beschreibung: "Das intensive Transformationsprogramm für Frauen, die bereit sind, ihr Leben von Grund auf neu auszurichten.",
     details: [
       "Mehrwöchiges Intensiv-Programm",
-      "Wöchentliche 1:1 Sessions mit Lara",
+      "Wöchentliche 1:1 Sessions",
       "Runen-Armband inklusive",
       "Persönlicher Ritualplan",
       "Community-Zugang",
@@ -197,7 +197,7 @@ export default function BuchenScreen() {
         {/* Lara-Notiz */}
         <View style={s.laraNote}>
           <Text style={s.laraNoteText}>
-            "Ich freue mich darauf, dich auf deinem Weg zu begleiten. Jede Session ist einzigartig und wird von Herzen für dich gestaltet." – Lara 🌙
+            "Ich freue mich darauf, dich auf deinem Weg zu begleiten. Jede Session ist einzigartig und wird von Herzen für dich gestaltet." – Die Seelenplanerin 🌙
           </Text>
         </View>
 

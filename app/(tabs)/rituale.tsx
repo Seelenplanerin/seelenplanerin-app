@@ -250,7 +250,7 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
 
         {/* Produkt-CTA */}
         <View style={s.ctaCard}>
-          <Text style={s.ctaTitle}>✨ Passende Produkte von Lara</Text>
+          <Text style={s.ctaTitle}>✨ Passende Produkte von der Seelenplanerin</Text>
           <Text style={s.ctaText}>
             Alle Materialien für dieses Ritual findest du in Laras Shop – handgravierte Runen-Armbänder, Schutzarmbänder mit schwarzem Turmalin, Räucherwerk und mehr. Mit Laras Energie und Liebe gefertigt.
           </Text>
@@ -275,7 +275,7 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
           <Text style={{ fontSize: 18, marginBottom: 6 }}>👑</Text>
           <Text style={s.premiumCtaTitle}>Seelenimpuls Premium</Text>
           <Text style={s.premiumCtaText}>
-            Exklusive Meditationen, tiefe Rituale und persönliche Impulse von Lara – nur für dich.
+            Exklusive Meditationen, tiefe Rituale und persönliche Impulse von der Seelenplanerin – nur für dich.
           </Text>
           <TouchableOpacity
             style={s.premiumCtaBtn}

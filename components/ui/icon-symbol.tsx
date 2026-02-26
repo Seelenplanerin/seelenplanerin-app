@@ -51,6 +51,7 @@ const MAPPING: IconMapping = {
   "info.circle": "info",
   "crown.fill": "workspace-premium",
   "sparkle": "auto-awesome",
+  "storefront.fill": "storefront",
 };
 
 export function IconSymbol({

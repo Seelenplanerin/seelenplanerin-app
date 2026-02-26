@@ -453,7 +453,7 @@ export default function KerzenQuizScreen() {
             />
             <Text style={st.ctaTitel}>Deine individuelle Meditationskerze 🕯️</Text>
             <Text style={st.ctaText}>
-              Jede Kerze wird von Lara handgefertigt – mit deinem persönlichen Heilstein {ergebnis.name}. 
+              Jede Kerze wird von der Seelenplanerin handgefertigt – mit deinem persönlichen Heilstein {ergebnis.name}. 
               Ein Unikat, nur für dich und deine spirituelle Praxis.
             </Text>
             <TouchableOpacity
@@ -464,7 +464,7 @@ export default function KerzenQuizScreen() {
               }}
               activeOpacity={0.85}
             >
-              <Text style={st.ctaBtnText}>🕯️ Kerze bei Lara bestellen →</Text>
+              <Text style={st.ctaBtnText}>🕯️ Kerze bestellen →</Text>
             </TouchableOpacity>
           </View>
 

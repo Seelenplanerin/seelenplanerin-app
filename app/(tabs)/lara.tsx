@@ -105,7 +105,7 @@ export default function LaraScreen() {
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* Hero mit Laras echtem Foto */}
+        {/* Hero mit der Seelenplanerins echtem Foto */}
         <ImageBackground
           source={require("../../assets/images/lara-profile.jpg")}
           style={s.hero}
@@ -120,7 +120,7 @@ export default function LaraScreen() {
 
         <View style={s.body}>
 
-          {/* Persönliche Begrüßung von Lara */}
+          {/* Persönliche Begrüßung von der Seelenplanerin */}
           <View style={s.welcomeCard}>
             <Text style={s.welcomeText}>
               "Ich freue mich, dass du hier bist.{"\n\n"}
@@ -132,7 +132,7 @@ export default function LaraScreen() {
               style={s.divider}
               resizeMode="contain"
             />
-            <Text style={s.welcomeSig}>– Lara 🌸</Text>
+            <Text style={s.welcomeSig}>– Die Seelenplanerin 🌸</Text>
           </View>
 
           {/* Was ich anbiete */}
@@ -142,7 +142,7 @@ export default function LaraScreen() {
               { emoji: "ᚱ", title: "Runen-Armbänder", sub: "Handgraviert & einzigartig" },
               { emoji: "🌈", title: "Aura Reading", sub: "Deine Energiefelder" },
               { emoji: "🌙", title: "Mondrituale", sub: "Im Rhythmus der Natur" },
-              { emoji: "💫", title: "Deep Talk", sub: "1:1 mit Lara" },
+              { emoji: "💫", title: "Deep Talk", sub: "1:1 mit der Seelenplanerin" },
               { emoji: "🔮", title: "Seelenreset", sub: "Neu beginnen" },
               { emoji: "✨", title: "Seelenimpulse", sub: "Tägliche Weisheit" },
             ].map((item) => (

@@ -265,3 +265,30 @@
 - [x] Mond-Emojis konsistent: SVG zeigt exakte Beleuchtung + korrekte Seite (zu-/abnehmend)
 - [x] Shop-Buttons: Kategorie-Buttons mit mehr Padding, größere Touch-Targets, overflow visible
 - [x] Rituale-Sets: Komplette Liste erstellt (ritual-sets-liste.md) mit 50 Ritualen + Materialien
+
+## Feedback Runde 15 (26.02.2026 Morgen) - KRITISCH
+- [x] Mond-SVG-Icons: Beleuchtungsseite korrigiert (MoonIcon mit isWaxing Parameter)
+- [x] Mond-Kalender: Tage-Leiste OBEN scrollbar (FlatList horizontal, oben im Screen)
+- [x] Mond-Kalender: Unendlich scrollbar in beide Richtungen (±365 Tage)
+- [x] Runen: "Thema-Armband" → "Themen-Armband" in runen.tsx + runen-screen.tsx
+- [x] Überall: "Lara" → "Die Seelenplanerin" in allen Dateien (sed-Batch)
+- [x] Community: Passwort-vergessen-Funktion eingebaut
+- [x] Mond: Eigener Tab-Button in Navigation (statt versteckt)
+- [x] Musik: Nur 3 Songs, Meditationen entfernt, "Bald mehr Inhalte" Hinweis
+- [ ] Ich-Seite: Prüfen wie sie für den Nutzer aussieht (nicht nur Admin)
+
+## Feedback Runde 15 FINAL (26.02.2026 Morgen) - ALLE PUNKTE
+- [x] Mond-Tab: EXAKT wie MoonWorx – unendlich scrollbarer Kalender oben, korrekte Mond-Darstellung
+- [x] Mond-Tab: Kalender-Tage OBEN scrollbar (FlatList horizontal)
+- [x] Mond-Tab: Kalender geht ±365 Tage in beide Richtungen
+- [x] Mond-SVG: Beleuchtungsseite korrekt (isWaxing Parameter)
+- [x] Community Premium: Mondkalender Premium Bereich erstellt
+- [x] Community Premium: Exklusive Meditationen (hochladbar über Admin)
+- [x] Community Premium: Mondphase & weiblicher Zyklus – detaillierter Screen
+- [x] Community: Passwort-vergessen-Funktion eingebaut
+- [x] Runen: "Thema-Armband" → "Themen-Armband" ÜBERALL
+- [x] Überall: "Lara" → "Die Seelenplanerin"
+- [x] Mond: Eigener Tab-Button in Navigation
+- [x] Musik: Nur 3 Songs, Rest "Bald verfügbar"
+- [ ] Ich-Seite: Für Nutzer anpassen (nicht nur Admin-Sicht)
+- [ ] Apple Music + YouTube Links: kommen noch von Nutzerin

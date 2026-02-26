@@ -57,30 +57,7 @@ const DEFAULT_SONGS: Song[] = [
     kategorie: "mantra",
     verfuegbar: true,
   },
-  {
-    id: "s4",
-    titel: "Mondmeditation",
-    beschreibung: "Geführte Meditation für Neumond-Rituale",
-    emoji: "🌙",
-    kategorie: "meditation",
-    verfuegbar: false,
-  },
-  {
-    id: "s5",
-    titel: "Chakra Balance",
-    beschreibung: "Klangschalen für die Chakra-Harmonisierung",
-    emoji: "🧘‍♀️",
-    kategorie: "meditation",
-    verfuegbar: false,
-  },
-  {
-    id: "s6",
-    titel: "Schutzrune Meditation",
-    beschreibung: "Geführte Meditation mit deiner Schutzrune",
-    emoji: "🛡️",
-    kategorie: "meditation",
-    verfuegbar: false,
-  },
+
 ];
 
 const KAT_LABELS: Record<string, string> = {
@@ -88,7 +65,6 @@ const KAT_LABELS: Record<string, string> = {
   musik: "Musik",
   ritual: "Ritual",
   mantra: "Mantra",
-  meditation: "Meditation",
 };
 
 export default function MusikScreen() {
@@ -159,7 +135,7 @@ export default function MusikScreen() {
             <View style={{ flex: 1 }}>
               <Text style={s.spotifyTitle}>Die Seelenplanerin</Text>
               <Text style={s.spotifySubtitle}>Auf Spotify anhören</Text>
-              <Text style={s.spotifyDesc}>Musik von Lara – Die Seelenplanerin</Text>
+              <Text style={s.spotifyDesc}>Musik von der Seelenplanerin – Die Seelenplanerin</Text>
             </View>
             <View style={s.spotifyBadge}>
               <Text style={s.spotifyBadgeText}>Öffnen</Text>
@@ -172,7 +148,7 @@ export default function MusikScreen() {
             <View style={{ flex: 1 }}>
               <Text style={s.infoTitle}>Musik von der Seelenplanerin</Text>
               <Text style={s.infoText}>
-                Die Musik ist von Lara und auf Spotify verfügbar. Geführte Meditationen und weitere Inhalte werden nach und nach ergänzt.
+                Die Musik ist von der Seelenplanerin und auf Spotify verfügbar. Geführte Meditationen und weitere Inhalte werden nach und nach ergänzt.
               </Text>
             </View>
           </View>
@@ -254,12 +230,12 @@ export default function MusikScreen() {
             </TouchableOpacity>
           ))}
 
-          {/* Admin-Hinweis */}
-          <View style={s.adminHint}>
-            <Text style={{ fontSize: 14, marginBottom: 6 }}>💡</Text>
-            <Text style={{ fontSize: 12, color: C.muted, lineHeight: 18 }}>
-              Neue Songs und Meditationen können über den Admin-Bereich hinzugefügt werden.{"\n"}
-              Gehe zu: Ich → Admin-Bereich → Musik verwalten
+          {/* Bald verfügbar Hinweis */}
+          <View style={s.comingSoonCard}>
+            <Text style={{ fontSize: 28, marginBottom: 8 }}>🎶</Text>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown, marginBottom: 6 }}>Bald mehr Inhalte</Text>
+            <Text style={{ fontSize: 13, color: C.muted, lineHeight: 20, textAlign: "center" }}>
+              Geführte Meditationen, Klangfrequenzen und weitere Inhalte werden nach und nach ergänzt.
             </Text>
           </View>
 
@@ -377,10 +353,10 @@ const s = StyleSheet.create({
     color: C.gold,
   },
 
-  // Admin
-  adminHint: {
+  // Coming Soon
+  comingSoonCard: {
     marginHorizontal: 16, marginTop: 16, backgroundColor: C.goldLight,
-    borderRadius: 12, padding: 14, flexDirection: "row", alignItems: "flex-start",
+    borderRadius: 16, padding: 24, alignItems: "center",
     borderWidth: 1, borderColor: "#E8D5B0",
   },
 });

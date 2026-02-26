@@ -4,6 +4,7 @@ import {
   TextInput, KeyboardAvoidingView, Platform, Alert,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
+import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const C = {
@@ -16,16 +17,16 @@ const POSTS = [
   {
     id: "1", emoji: "🌙", titel: "Willkommen in unserem Seelenraum",
     text: "Ich bin so froh, dass du hier bist. Dieser Raum gehört uns – ein sicherer Ort für alle Frauen, die ihren spirituellen Weg gehen. Hier teilen wir Erfahrungen, unterstützen uns gegenseitig und wachsen gemeinsam.",
-    datum: "Heute", von: "Lara", istLara: true,
+    datum: "Heute", von: "Die Seelenplanerin", istLara: true,
   },
   {
     id: "2", emoji: "✨", titel: "Nächster Community-Call",
     text: "Unser monatlicher Community-Call findet bald statt! Ich freue mich so sehr auf euch. Wir sprechen über die aktuelle Mondenergie, eure Fragen und ich führe euch durch eine kurze Meditation. Alle Seelenimpuls-Mitglieder sind dabei.",
-    datum: "Gestern", von: "Lara", istLara: true,
+    datum: "Gestern", von: "Die Seelenplanerin", istLara: true,
   },
   {
     id: "3", emoji: "🌸", titel: "Meine Erfahrung mit dem Neumond-Ritual",
-    text: "Ich habe gestern das Neumond-Ritual gemacht und es war so kraftvoll. Ich habe drei Intentionen gesetzt und konnte wirklich spüren wie die Energie sich verändert hat. Danke Lara für diese wunderschöne Anleitung!",
+    text: "Ich habe gestern das Neumond-Ritual gemacht und es war so kraftvoll. Ich habe drei Intentionen gesetzt und konnte wirklich spüren wie die Energie sich verändert hat. Danke für diese wunderschöne Anleitung!",
     datum: "Vor 2 Tagen", von: "Sarah M.", istLara: false,
   },
   {
@@ -36,9 +37,9 @@ const POSTS = [
 ];
 
 const ANGEBOTE = [
-  { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch mit Lara", url: "https://calendly.com/hallo-seelenplanerin/30min" },
+  { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { emoji: "🔮", titel: "Aura Reading", preis: "77 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
-  { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch mit Lara", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
+  { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
 ];
 
 // Speichert registrierte Benutzer als JSON-Array in AsyncStorage
@@ -250,6 +251,32 @@ export default function CommunityScreen() {
                   {mode === "login" ? "Anmelden →" : "Konto erstellen →"}
                 </Text>
               </TouchableOpacity>
+
+              {mode === "login" && (
+                <TouchableOpacity
+                  style={s.forgotBtn}
+                  onPress={() => {
+                    if (!email.trim() || !validateEmail(email.trim())) {
+                      setFehler("Bitte gib zuerst deine E-Mail-Adresse ein.");
+                      return;
+                    }
+                    Alert.alert(
+                      "Passwort zurücksetzen",
+                      `Eine E-Mail zum Zurücksetzen deines Passworts wird an ${email.trim()} gesendet.`,
+                      [
+                        { text: "Abbrechen", style: "cancel" },
+                        { text: "Senden", onPress: () => {
+                          setFehler("");
+                          Alert.alert("Gesendet", "Bitte prüfe dein E-Mail-Postfach.");
+                        }},
+                      ]
+                    );
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={s.forgotText}>Passwort vergessen?</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <TouchableOpacity
@@ -282,7 +309,21 @@ export default function CommunityScreen() {
           </View>
         </View>
 
-        <Text style={s.sec}>📅 Buche Zeit mit Lara</Text>
+        {/* Premium-Inhalte Banner */}
+        <TouchableOpacity
+          style={s.premiumBanner}
+          onPress={() => router.push("/community-premium" as any)}
+          activeOpacity={0.85}
+        >
+          <Text style={{ fontSize: 22 }}>👑</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={s.premiumBannerTitle}>Premium Inhalte</Text>
+            <Text style={s.premiumBannerSub}>Mondkalender · Meditationen · Mond & Zyklus</Text>
+          </View>
+          <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
+        </TouchableOpacity>
+
+        <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
           {ANGEBOTE.map((a, i) => (
             <TouchableOpacity key={i} style={s.angebotCard} onPress={() => Linking.openURL(a.url)} activeOpacity={0.85}>
@@ -305,7 +346,7 @@ export default function CommunityScreen() {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                   <Text style={s.postVon}>{post.von}</Text>
-                  {post.istLara && <View style={s.laraTag}><Text style={s.laraTagText}>Lara</Text></View>}
+                  {post.istLara && <View style={s.laraTag}><Text style={s.laraTagText}>Seelenplanerin</Text></View>}
                 </View>
                 <Text style={s.postDatum}>{post.datum}</Text>
               </View>
@@ -349,6 +390,8 @@ const s = StyleSheet.create({
   loginInput: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 15, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
   loginFehler: { fontSize: 13, color: "#C87C82", marginBottom: 10, textAlign: "center" },
   loginBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 4 },
+  forgotBtn: { alignItems: "center", marginTop: 12 },
+  forgotText: { fontSize: 13, color: C.rose, fontWeight: "600" },
   loginBtnText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
   seelenimpulsBtn: { backgroundColor: C.goldLight, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20, borderWidth: 1, borderColor: "#E8D5B0", width: "100%" },
   seelenimpulsBtnText: { fontSize: 14, color: C.brown, fontWeight: "700", textAlign: "center" },
@@ -378,4 +421,11 @@ const s = StyleSheet.create({
   instagramCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: C.card, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: C.border },
   instagramTitel: { fontSize: 14, fontWeight: "700", color: C.brown },
   instagramHandle: { fontSize: 13, color: C.rose },
+  premiumBanner: {
+    marginHorizontal: 16, marginTop: 16, backgroundColor: C.goldLight,
+    borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center",
+    gap: 12, borderWidth: 1, borderColor: "#E8D5B0",
+  },
+  premiumBannerTitle: { fontSize: 15, fontWeight: "700", color: C.brown },
+  premiumBannerSub: { fontSize: 12, color: C.muted },
 });

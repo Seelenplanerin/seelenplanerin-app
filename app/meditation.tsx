@@ -191,7 +191,7 @@ export default function MeditationScreen() {
           <View style={s.adminHint}>
             <Text style={{ fontSize: 14, marginBottom: 6 }}>🧘‍♀️</Text>
             <Text style={{ fontSize: 12, color: C.muted, lineHeight: 18 }}>
-              Lara fügt regelmäßig neue Meditationen hinzu.{"\n"}
+              Die Seelenplanerin fügt regelmäßig neue Meditationen hinzu.{"\n"}
               Über den Admin-Bereich können neue Meditationen mit Spotify- oder Apple Music-Links verknüpft werden.
             </Text>
           </View>

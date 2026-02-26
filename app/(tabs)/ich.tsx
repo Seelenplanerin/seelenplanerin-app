@@ -53,7 +53,7 @@ const MENU_ITEMS = [
 const PRODUKTE = [
   { id: "schutz", name: "Schutzarmband", beschreibung: "Schwarzer Turmalin + handgravierter Runen-Charm", preis: "", emoji: "🖤", url: "https://dieseelenplanerin.tentary.com/p/gGmtFy" },
   { id: "runen", name: "Themen-Armband", beschreibung: "3 handgravierte Charms auf Silberkette mit Heilsteinpulver", preis: "", emoji: "✨", url: "https://dieseelenplanerin.tentary.com/p/qnl3vN" },
-  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit Lara – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://calendly.com/hallo-seelenplanerin/30min" },
+  { id: "soul-talk", name: "Soul Talk", beschreibung: "Persönliches Gespräch mit der Seelenplanerin – kostenlos", preis: "Kostenlos", emoji: "☕", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { id: "aura", name: "Aura Reading", beschreibung: "Tiefe Aura-Analyse und Energiearbeit", preis: "", emoji: "🔮", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
   { id: "kerze", name: "Meditationskerze", beschreibung: "Handgefertigt mit deinem Heilstein – ein Unikat", preis: "", emoji: "🕯️", url: "" },
 ];
@@ -90,7 +90,7 @@ export default function IchScreen() {
           <Text style={{ fontSize: 22, marginRight: 12 }}>👑</Text>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFF" }}>Seelenimpuls Premium</Text>
-            <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>Exklusive Inhalte von Lara · 17 € / Monat</Text>
+            <Text style={{ fontSize: 12, color: "rgba(255,255,255,0.8)" }}>Exklusive Inhalte von der Seelenplanerin · 17 € / Monat</Text>
           </View>
           <Text style={{ color: C.gold, fontSize: 16, fontWeight: "700" }}>Starten →</Text>
         </TouchableOpacity>
@@ -152,7 +152,7 @@ export default function IchScreen() {
         <View style={s.aboutCard}>
           <Text style={s.aboutTitle}>Über Die Seelenplanerin</Text>
           <Text style={s.aboutText}>
-            Diese App ist mit Liebe von Lara für alle Frauen geschaffen, die auf ihrer spirituellen Reise Begleitung suchen. Hier findest du Rituale, Mondenergie, Runen und persönliche Impulse – alles handgemacht und von Herzen.
+            Diese App ist mit Liebe von der Seelenplanerin für alle Frauen geschaffen, die auf ihrer spirituellen Reise Begleitung suchen. Hier findest du Rituale, Mondenergie, Runen und persönliche Impulse – alles handgemacht und von Herzen.
           </Text>
           <Text style={s.aboutVersion}>Version 1.0 · Made with 🌸 by Lara</Text>
         </View>

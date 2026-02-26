@@ -44,17 +44,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="mond"
+        options={{
+          title: "Mond",
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="moon.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="rituale"
         options={{
           title: "Rituale",
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="leaf.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="journal"
-        options={{
-          title: "Journal",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="pencil.and.outline" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -74,8 +74,8 @@ export default function TabLayout() {
       {/* Versteckte Screens – nicht in Tab-Bar */}
       <Tabs.Screen name="entdecken" options={{ href: null }} />
       <Tabs.Screen name="favoriten" options={{ href: null }} />
+      <Tabs.Screen name="journal" options={{ href: null }} />
       <Tabs.Screen name="lara" options={{ href: null }} />
-      <Tabs.Screen name="mond" options={{ href: null }} />
       <Tabs.Screen name="runen" options={{ href: null }} />
     </Tabs>
   );
