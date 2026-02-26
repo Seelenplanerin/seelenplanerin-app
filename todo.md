@@ -443,5 +443,6 @@
 - [x] Meditationen in PostgreSQL-Datenbank gespeichert (sichtbar auf ALLEN Geräten)
 - [x] Community-Screen lädt Meditationen vom Server (nicht mehr aus localStorage)
 - [x] Premium-Screen lädt Meditationen vom Server
-- [x] Admin speichert/löscht Meditationen in DB (tRPC API: meditation.list, meditation.create, meditation.delete)
+- [x] Admin speichert/löscht Meditationen in DB (tRPC API: meditations.list, meditations.create, meditations.delete)
 - [x] Bestehende Meditation (meditation.mp3) in DB migriert und im Community-Bereich verifiziert
+- [x] API-URL-Fix: getApiBaseUrl() statt Platform.OS check – /api/trpc wurde nicht proxied, jetzt korrekt über Port 3000

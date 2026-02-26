@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { getApiBaseUrl } from "@/constants/oauth";
 import {
   getMoonPhaseForDate,
   getMoonZodiac,
@@ -171,7 +172,7 @@ export default function CommunityPremiumScreen() {
   // Hochgeladene Meditationen vom SERVER laden (sichtbar auf allen Geräten)
   useFocusEffect(
     useCallback(() => {
-      const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+      const API_URL = `${getApiBaseUrl()}/api/trpc`;
       fetch(`${API_URL}/meditations.list`)
         .then(res => res.json())
         .then(data => {

@@ -72,7 +72,7 @@ async function saveSongs(songs: Song[]) {
 
 async function getMeditationen(): Promise<Song[]> {
   try {
-    const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+    const API_URL = `${getApiBaseUrl()}/api/trpc`;
     const res = await fetch(`${API_URL}/meditations.listAll`);
     const data = await res.json();
     const result = data?.result?.data?.json || data?.result?.data;
@@ -843,7 +843,7 @@ export default function AdminScreen() {
                       { text: "Löschen", style: "destructive", onPress: async () => {
                         // Aus Datenbank löschen
                         try {
-                          const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+                          const API_URL = `${getApiBaseUrl()}/api/trpc`;
                           const numId = parseInt(m.id);
                           if (!isNaN(numId)) {
                             await fetch(`${API_URL}/meditations.delete`, {
@@ -976,7 +976,7 @@ export default function AdminScreen() {
                     }
                     // In Datenbank speichern (sichtbar auf ALLEN Geräten)
                     try {
-                      const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+                      const API_URL = `${getApiBaseUrl()}/api/trpc`;
                       if (editMeditId) {
                         const numId = parseInt(editMeditId);
                         if (!isNaN(numId)) {
