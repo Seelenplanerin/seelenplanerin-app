@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   TextInput, Switch, KeyboardAvoidingView, Platform, Alert,
+  ActivityIndicator,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { trpc } from "@/lib/trpc";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -65,6 +67,11 @@ export default function AdminScreen() {
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [newMemberPw, setNewMemberPw] = useState("");
   const [memberFehler, setMemberFehler] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  // tRPC mutations
+  const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
+  const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
 
   useEffect(() => {
     AsyncStorage.getItem("admin_auth").then(val => {
@@ -132,15 +139,44 @@ export default function AdminScreen() {
     setMembers(users);
     setMemberFehler("");
 
-    Alert.alert(
-      "Mitglied angelegt",
-      `${newUser.name} wurde erfolgreich angelegt.\n\n` +
-      `E-Mail: ${newUser.email}\n` +
-      `Temporäres Passwort: ${tempPw}\n\n` +
-      `Bitte sende diese Zugangsdaten per E-Mail an ${newUser.name}.\n\n` +
-      `Das Mitglied wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.`,
-      [{ text: "OK" }]
-    );
+    // Automatisch E-Mail senden
+    setSendingEmail(true);
+    try {
+      const result = await sendWelcomeMutation.mutateAsync({
+        toEmail: newUser.email,
+        toName: newUser.name,
+        tempPassword: tempPw,
+      });
+
+      if (result.success) {
+        Alert.alert(
+          "Mitglied angelegt ✨",
+          `${newUser.name} wurde erfolgreich angelegt.\n\n` +
+          `📧 Willkommens-E-Mail wurde automatisch an ${newUser.email} gesendet!\n\n` +
+          `Das Mitglied erhält die Login-Daten per E-Mail und wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.`,
+          [{ text: "OK" }]
+        );
+      } else {
+        Alert.alert(
+          "Mitglied angelegt – E-Mail fehlgeschlagen",
+          `${newUser.name} wurde angelegt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
+          `Fehler: ${result.error}\n\n` +
+          `Temporäres Passwort: ${tempPw}\n\n` +
+          `Bitte sende die Zugangsdaten manuell per E-Mail.`,
+          [{ text: "OK" }]
+        );
+      }
+    } catch (err: any) {
+      Alert.alert(
+        "Mitglied angelegt – E-Mail fehlgeschlagen",
+        `${newUser.name} wurde angelegt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
+        `Temporäres Passwort: ${tempPw}\n\n` +
+        `Bitte sende die Zugangsdaten manuell per E-Mail.`,
+        [{ text: "OK" }]
+      );
+    } finally {
+      setSendingEmail(false);
+    }
 
     setNewMemberName("");
     setNewMemberEmail("");
@@ -170,11 +206,12 @@ export default function AdminScreen() {
     const tempPw = generateTempPassword();
     Alert.alert(
       "Passwort zurücksetzen",
-      `Neues temporäres Passwort für ${name}:\n\n${tempPw}\n\nBitte sende dieses Passwort per E-Mail an ${name}.\n\nDas Mitglied wird beim nächsten Login aufgefordert, ein eigenes Passwort zu wählen.`,
+      `Neues temporäres Passwort für ${name} generieren und per E-Mail senden?`,
       [
         { text: "Abbrechen", style: "cancel" },
         {
-          text: "Zurücksetzen", onPress: async () => {
+          text: "Zurücksetzen & E-Mail senden", onPress: async () => {
+            // Passwort in der lokalen Datenbank aktualisieren
             const users = await getUsers();
             const idx = users.findIndex(u => u.email === email);
             if (idx >= 0) {
@@ -182,6 +219,41 @@ export default function AdminScreen() {
               users[idx].mustChangePassword = true;
               await saveUsers(users);
               setMembers([...users]);
+            }
+
+            // E-Mail senden
+            try {
+              const result = await sendResetMutation.mutateAsync({
+                toEmail: email,
+                toName: name,
+                tempPassword: tempPw,
+              });
+
+              if (result.success) {
+                Alert.alert(
+                  "Passwort zurückgesetzt ✨",
+                  `Das neue temporäre Passwort wurde per E-Mail an ${name} (${email}) gesendet.\n\n` +
+                  `${name} wird beim nächsten Login aufgefordert, ein eigenes Passwort zu wählen.`,
+                  [{ text: "OK" }]
+                );
+              } else {
+                Alert.alert(
+                  "Passwort zurückgesetzt – E-Mail fehlgeschlagen",
+                  `Das Passwort wurde zurückgesetzt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
+                  `Fehler: ${result.error}\n\n` +
+                  `Temporäres Passwort: ${tempPw}\n\n` +
+                  `Bitte sende es manuell an ${email}.`,
+                  [{ text: "OK" }]
+                );
+              }
+            } catch (err: any) {
+              Alert.alert(
+                "Passwort zurückgesetzt – E-Mail fehlgeschlagen",
+                `Das Passwort wurde zurückgesetzt, aber die E-Mail konnte nicht gesendet werden.\n\n` +
+                `Temporäres Passwort: ${tempPw}\n\n` +
+                `Bitte sende es manuell an ${email}.`,
+                [{ text: "OK" }]
+              );
             }
           }
         },
@@ -241,8 +313,8 @@ export default function AdminScreen() {
         <View style={s.section}>
           <Text style={s.sectionTitle}>👥 Mitgliederverwaltung</Text>
           <Text style={s.sectionHint}>
-            Lege hier neue Community-Mitglieder an. Du vergibst ein temporäres Passwort und sendest es per E-Mail.
-            Das Mitglied wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.
+            Lege hier neue Community-Mitglieder an. Die Login-Daten werden automatisch per E-Mail an das neue Mitglied gesendet.
+            Beim ersten Login wird das Mitglied aufgefordert, ein eigenes Passwort zu wählen.
           </Text>
 
           {/* Mitgliederliste */}
@@ -251,7 +323,7 @@ export default function AdminScreen() {
               <Text style={{ fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 }}>
                 {members.length} Mitglied{members.length !== 1 ? "er" : ""}
               </Text>
-              {members.map((m, i) => (
+              {members.map((m) => (
                 <View key={m.email} style={s.memberRow}>
                   <View style={s.memberAvatar}>
                     <Text style={{ fontSize: 14, color: "#FFF", fontWeight: "700" }}>
@@ -340,8 +412,20 @@ export default function AdminScreen() {
 
               {memberFehler !== "" && <Text style={{ fontSize: 12, color: "#C87C82", marginBottom: 8 }}>{memberFehler}</Text>}
 
-              <TouchableOpacity style={s.addMemberBtn} onPress={handleAddMember} activeOpacity={0.85}>
-                <Text style={s.addMemberBtnText}>Mitglied anlegen →</Text>
+              <TouchableOpacity
+                style={[s.addMemberBtn, sendingEmail && { opacity: 0.6 }]}
+                onPress={handleAddMember}
+                activeOpacity={0.85}
+                disabled={sendingEmail}
+              >
+                {sendingEmail ? (
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <ActivityIndicator size="small" color="#FFF" />
+                    <Text style={s.addMemberBtnText}>E-Mail wird gesendet...</Text>
+                  </View>
+                ) : (
+                  <Text style={s.addMemberBtnText}>📧 Mitglied anlegen & E-Mail senden →</Text>
+                )}
               </TouchableOpacity>
             </View>
           )}

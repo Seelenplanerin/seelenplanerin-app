@@ -342,7 +342,14 @@
 ## Feature: Seelenimpuls Login-Flow + Community-Fragen (26.02.2026)
 - [x] Seelenimpuls: E-Mail-basierter Login-Flow (Admin sendet Login-Daten per Mail, Nutzer loggt sich ein und erstellt eigenes Passwort)
 - [x] Seelenimpuls: Admin kann neue Mitglieder anlegen (E-Mail + temporäres Passwort)
-- [ ] Seelenimpuls: E-Mail-Versand über hinterlegtes Mail-Programm der Seelenplanerin (aktuell: temporäres PW wird im Alert angezeigt, Admin sendet manuell per Mail)
+- [x] Seelenimpuls: E-Mail-Versand über hinterlegtes Mail-Programm der Seelenplanerin – automatisch über smtp.ionos.de / hallo@seelenplanerin.de
 - [x] Community: Eingabefeld für Fragen/Beiträge der Mitglieder (Schreiben-Button + Formular)
 - [x] Community: Mitglieder können eigene Beiträge posten (Titel + Text + Emoji-Auswahl)
 - [x] Community: Posts werden lokal gespeichert und angezeigt
+
+## Feature: Automatischer E-Mail-Versand (26.02.2026)
+- [x] SMTP-Zugangsdaten hinterlegen (Host, Port, User, Passwort, Absender-Name) – smtp.ionos.de / hallo@seelenplanerin.de
+- [x] Server-Route für E-Mail-Versand erstellen (nodemailer + tRPC email.sendWelcome / email.sendPasswordReset)
+- [x] Admin: Beim Anlegen eines Mitglieds automatisch E-Mail mit Login-Daten senden
+- [x] Admin: Beim Passwort-Reset automatisch E-Mail mit neuem temporären Passwort senden
+- [x] E-Mail-Template: Schöne HTML-Mail im Seelenplanerin-Design (Header, Login-Daten-Box, Anleitung, Footer)
