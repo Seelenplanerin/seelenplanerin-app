@@ -456,3 +456,13 @@
 - [x] Runen-Sets: 40 Sets in 8 Kategorien – KORREKT
 - [x] Tages-Tipps: Haare, Garten, Körper, Ernährung, Rituale, Haushalt – KORREKT
 - [x] Keine Fehler gefunden – BEREIT ZUR VERÖFFENTLICHUNG
+
+## KRITISCH: Login nach Registrierung funktioniert nicht (26.02.2026)
+- [x] Nutzer wurden nur in AsyncStorage gespeichert (nicht in DB) – BEHOBEN
+- [x] Gesamte Nutzerverwaltung auf PostgreSQL-Datenbank umgestellt
+- [x] community_users Tabelle erstellt (email, password, name, mustChangePassword)
+- [x] Server-API: communityUsers.login, .list, .create, .update, .delete
+- [x] Community-Screen: Login, PW-ändern, PW-Reset nutzen jetzt Server-API
+- [x] Admin-Screen: Mitglieder anlegen/löschen/PW-Reset nutzen jetzt Server-API
+- [x] laramwille@gmail.com in DB angelegt (temporäres PW: lara2026, muss geändert werden)
+- [x] hallo@seelenplanerin.de in DB angelegt (PW: seelenplanerin2026)

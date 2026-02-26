@@ -102,6 +102,64 @@ export const appRouter = router({
       }),
   }),
 
+  communityUsers: router({
+    // Login: Nutzer per E-Mail finden
+    login: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        const user = await db.getCommunityUserByEmail(input.email);
+        if (!user) return { success: false as const, error: "not_found" };
+        if (user.password !== input.password) return { success: false as const, error: "wrong_password" };
+        return { success: true as const, user: { email: user.email, name: user.name, mustChangePassword: user.mustChangePassword === 1 } };
+      }),
+
+    // Alle Nutzer laden (für Admin)
+    list: publicProcedure.query(async () => {
+      return db.getAllCommunityUsers();
+    }),
+
+    // Neuen Nutzer erstellen (Admin oder Registrierung)
+    create: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+        name: z.string().min(1),
+        mustChangePassword: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await db.getCommunityUserByEmail(input.email);
+        if (existing) return { success: false as const, error: "exists" };
+        const id = await db.createCommunityUser(input);
+        return { success: true as const, id };
+      }),
+
+    // Nutzer aktualisieren (Passwort ändern etc.)
+    update: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().optional(),
+        name: z.string().optional(),
+        mustChangePassword: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { email, ...data } = input;
+        const updateData: Record<string, any> = {};
+        if (data.password !== undefined) updateData.password = data.password;
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.mustChangePassword !== undefined) updateData.mustChangePassword = data.mustChangePassword;
+        await db.updateCommunityUser(email, updateData);
+        return { success: true };
+      }),
+
+    // Nutzer löschen
+    delete: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await db.deleteCommunityUser(input.email);
+        return { success: true };
+      }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

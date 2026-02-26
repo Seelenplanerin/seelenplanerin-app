@@ -15,6 +15,13 @@
       "when": 1772111367564,
       "tag": "0001_loving_tusk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1772118349533,
+      "tag": "0002_lazy_iron_monger",
+      "breakpoints": true
     }
   ]
 }

@@ -130,11 +130,27 @@ interface CommunityUser {
 }
 
 async function getUsers(): Promise<CommunityUser[]> {
-  const data = await AsyncStorage.getItem(USERS_KEY);
-  return data ? JSON.parse(data) : [];
+  // Lade Nutzer vom Server (DB) statt aus AsyncStorage
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityUsers.list`);
+    const json = await res.json();
+    const dbUsers = json?.result?.data?.json || json?.result?.data || [];
+    return dbUsers.map((u: any) => ({
+      email: u.email,
+      password: u.password,
+      name: u.name,
+      mustChangePassword: u.mustChangePassword === 1,
+    }));
+  } catch (e) {
+    // Fallback: AsyncStorage
+    const data = await AsyncStorage.getItem(USERS_KEY);
+    return data ? JSON.parse(data) : [];
+  }
 }
 
 async function saveUsers(users: CommunityUser[]) {
+  // Backward compatibility: auch in AsyncStorage speichern
   await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
 }
 
@@ -453,24 +469,61 @@ export default function CommunityScreen() {
     if (!validateEmail(email.trim())) { setFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return; }
     if (!password.trim()) { setFehler("Bitte gib dein Passwort ein."); return; }
 
-    const users = await getUsers();
-    const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    if (!found) {
-      setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
-      return;
-    }
-    if (found.password !== password) {
-      setFehler("Falsches Passwort. Bitte versuche es erneut.");
-      return;
-    }
-    setIsLoggedIn(true);
-    setUserName(found.name || found.email.split("@")[0]);
-    setCurrentUser(found);
-    setFehler("");
-    await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
-    // Prüfe ob temporäres Passwort → Passwort ändern
-    if (found.mustChangePassword) {
-      setShowChangePw(true);
+    try {
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password } }),
+      });
+      const json = await res.json();
+      const result = json?.result?.data?.json || json?.result?.data;
+      
+      if (!result?.success) {
+        if (result?.error === "not_found") {
+          setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
+        } else if (result?.error === "wrong_password") {
+          setFehler("Falsches Passwort. Bitte versuche es erneut.");
+        } else {
+          setFehler("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
+        }
+        return;
+      }
+
+      const found: CommunityUser = {
+        email: result.user.email,
+        name: result.user.name,
+        password: password,
+        mustChangePassword: result.user.mustChangePassword,
+      };
+      setIsLoggedIn(true);
+      setUserName(found.name || found.email.split("@")[0]);
+      setCurrentUser(found);
+      setFehler("");
+      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+      if (found.mustChangePassword) {
+        setShowChangePw(true);
+      }
+    } catch (e) {
+      // Fallback: AsyncStorage-basierter Login
+      const users = await getUsers();
+      const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+      if (!found) {
+        setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
+        return;
+      }
+      if (found.password !== password) {
+        setFehler("Falsches Passwort. Bitte versuche es erneut.");
+        return;
+      }
+      setIsLoggedIn(true);
+      setUserName(found.name || found.email.split("@")[0]);
+      setCurrentUser(found);
+      setFehler("");
+      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+      if (found.mustChangePassword) {
+        setShowChangePw(true);
+      }
     }
   };
 
@@ -519,16 +572,23 @@ export default function CommunityScreen() {
     if (newPw !== newPwConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
 
     if (currentUser) {
-      const users = await getUsers();
-      const idx = users.findIndex(u => u.email === currentUser.email);
-      if (idx >= 0) {
-        users[idx].password = newPw;
-        users[idx].mustChangePassword = false;
-        await saveUsers(users);
-        const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
-        setCurrentUser(updatedUser);
-        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+      // Passwort in DB aktualisieren
+      try {
+        const API_URL = getApiBaseUrl();
+        await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ json: { email: currentUser.email, password: newPw, mustChangePassword: 0 } }),
+        });
+      } catch (e) {
+        // Fallback: AsyncStorage
+        const users = await getUsers();
+        const idx = users.findIndex(u => u.email === currentUser.email);
+        if (idx >= 0) { users[idx].password = newPw; users[idx].mustChangePassword = false; await saveUsers(users); }
       }
+      const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
+      setCurrentUser(updatedUser);
+      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
     }
     setShowChangePw(false);
     setNewPw("");
@@ -690,23 +750,60 @@ export default function CommunityScreen() {
                       return;
                     }
                     try {
-                      const users = await getUsers();
-                      const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
-                      if (userIdx === -1) {
+                      // Prüfe ob Nutzer in DB existiert
+                      const API_URL_PW = getApiBaseUrl();
+                      let userFound = false;
+                      let userName = "";
+                      try {
+                        const checkRes = await fetch(`${API_URL_PW}/api/trpc/communityUsers.login`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password: "___check___" } }),
+                        });
+                        const checkJson = await checkRes.json();
+                        const checkResult = checkJson?.result?.data?.json || checkJson?.result?.data;
+                        // not_found = Nutzer existiert nicht, wrong_password = Nutzer existiert
+                        if (checkResult?.error === "not_found") {
+                          setFehler("Kein Konto mit dieser E-Mail gefunden.");
+                          return;
+                        }
+                        userFound = true;
+                        userName = checkResult?.user?.name || email.trim().split("@")[0];
+                      } catch (e) {
+                        const users = await getUsers();
+                        const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
+                        if (userIdx === -1) {
+                          setFehler("Kein Konto mit dieser E-Mail gefunden.");
+                          return;
+                        }
+                        userFound = true;
+                        userName = users[userIdx].name;
+                      }
+                      if (!userFound) {
                         setFehler("Kein Konto mit dieser E-Mail gefunden.");
                         return;
                       }
                       const tempPw = Math.random().toString(36).slice(2, 8);
-                      users[userIdx].password = tempPw;
-                      users[userIdx].mustChangePassword = true;
-                      await saveUsers(users);
-                      // E-Mail senden über Server
+                      // Passwort in DB aktualisieren
                       try {
-                        const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
-                        await fetch(`${API_URL}/email.sendPasswordReset`, {
+                        await fetch(`${API_URL_PW}/api/trpc/communityUsers.update`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ json: { toEmail: email.trim(), toName: users[userIdx].name || "Seele", tempPassword: tempPw } }),
+                          body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password: tempPw, mustChangePassword: 1 } }),
+                        });
+                      } catch (e) {
+                        // Fallback
+                        const users = await getUsers();
+                        const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
+                        if (userIdx >= 0) { users[userIdx].password = tempPw; users[userIdx].mustChangePassword = true; await saveUsers(users); }
+                      }
+                      // E-Mail senden über Server
+                      try {
+                        const API_URL_EMAIL = getApiBaseUrl();
+                        await fetch(`${API_URL_EMAIL}/api/trpc/email.sendPasswordReset`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { toEmail: email.trim(), toName: userName || "Seele", tempPassword: tempPw } }),
                         });
                       } catch (e) { /* E-Mail-Fehler ignorieren, PW wurde trotzdem geändert */ }
                       setFehler("");

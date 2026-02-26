@@ -55,8 +55,22 @@ interface Tagesimpuls {
 }
 
 async function getUsers(): Promise<CommunityUser[]> {
-  const data = await AsyncStorage.getItem(USERS_KEY);
-  return data ? JSON.parse(data) : [];
+  // Lade Nutzer vom Server (DB)
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityUsers.list`);
+    const json = await res.json();
+    const dbUsers = json?.result?.data?.json || json?.result?.data || [];
+    return dbUsers.map((u: any) => ({
+      email: u.email,
+      password: u.password,
+      name: u.name,
+      mustChangePassword: u.mustChangePassword === 1,
+    }));
+  } catch (e) {
+    const data = await AsyncStorage.getItem(USERS_KEY);
+    return data ? JSON.parse(data) : [];
+  }
 }
 async function saveUsers(users: CommunityUser[]) {
   await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
@@ -269,9 +283,21 @@ export default function AdminScreen() {
       email: newMemberEmail.trim().toLowerCase(), password: tempPw,
       name: newMemberName.trim(), mustChangePassword: true,
     };
-    users.push(newUser);
-    await saveUsers(users);
-    setMembers(users);
+    // Nutzer in DB speichern
+    try {
+      const API_URL = getApiBaseUrl();
+      await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: newUser.email, password: newUser.password, name: newUser.name, mustChangePassword: newUser.mustChangePassword ? 1 : 0 } }),
+      });
+    } catch (e) {
+      users.push(newUser);
+      await saveUsers(users);
+    }
+    // Liste neu laden
+    const updatedUsers = await getUsers();
+    setMembers(updatedUsers);
     setMemberFehler("");
     setSendingEmail(true);
     try {
@@ -294,8 +320,19 @@ export default function AdminScreen() {
     Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
       { text: "Abbrechen", style: "cancel" },
       { text: "Entfernen", style: "destructive", onPress: async () => {
-        const users = (await getUsers()).filter(u => u.email !== email);
-        await saveUsers(users); setMembers(users);
+        try {
+          const API_URL = getApiBaseUrl();
+          await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ json: { email } }),
+          });
+        } catch (e) {
+          const users = (await getUsers()).filter(u => u.email !== email);
+          await saveUsers(users);
+        }
+        const updatedUsers = await getUsers();
+        setMembers(updatedUsers);
       }},
     ]);
   };
@@ -305,9 +342,20 @@ export default function AdminScreen() {
     Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
       { text: "Abbrechen", style: "cancel" },
       { text: "Zurücksetzen & senden", onPress: async () => {
-        const users = await getUsers();
-        const idx = users.findIndex(u => u.email === email);
-        if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
+        try {
+          const API_URL = getApiBaseUrl();
+          await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ json: { email, password: tempPw, mustChangePassword: 1 } }),
+          });
+          const updatedUsers = await getUsers();
+          setMembers(updatedUsers);
+        } catch (e) {
+          const users = await getUsers();
+          const idx = users.findIndex(u => u.email === email);
+          if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
+        }
         try {
           const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
           Alert.alert(result.success ? "Passwort zurückgesetzt ✨" : "Zurückgesetzt – E-Mail fehlgeschlagen",

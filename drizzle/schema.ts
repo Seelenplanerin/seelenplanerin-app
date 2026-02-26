@@ -39,3 +39,17 @@ export const meditations = mysqlTable("meditations", {
 
 export type Meditation = typeof meditations.$inferSelect;
 export type InsertMeditation = typeof meditations.$inferInsert;
+
+// Community-Nutzer-Tabelle: Speichert registrierte Community-Mitglieder
+export const communityUsers = mysqlTable("community_users", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  mustChangePassword: int("mustChangePassword").default(0).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CommunityUser = typeof communityUsers.$inferSelect;
+export type InsertCommunityUser = typeof communityUsers.$inferInsert;
