@@ -391,3 +391,10 @@
 ## Bug: Upload-Limit zu klein + Mondquiz fehlt (26.02.2026)
 - [x] Upload-Limit von 16 MB auf 64 MB erhöht (Admin + Server body-parser auf 100mb)
 - [x] Mondquiz: Navigation hinzugefügt (Mond-Tab Banner + Startseite Banner)
+
+## Feature: Admin verstecken, Evergreen-Link, Community-Moderation, Upload-Bereiche (26.02.2026)
+- [x] Admin-Bereich verstecken: Kein sichtbarer Button mehr auf der Ich-Seite
+- [x] Admin-Zugang über geheime Geste (5x auf "Version 1.0" tippen)
+- [x] Evergreen Admin-Link: Zugang über geheime Geste (5x tippen auf Version-Text)
+- [x] Community-Moderation: Admin (hallo@seelenplanerin.de) kann Beiträge jederzeit löschen (✕-Button)
+- [x] Upload-Bereiche: Musik und Meditationen klar getrennt + Anleitungen erstellt

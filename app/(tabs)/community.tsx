@@ -357,6 +357,28 @@ export default function CommunityScreen() {
   // Audio für Meditationen
   const audio = useCommunityAudio();
 
+  // Admin-Erkennung (hallo@seelenplanerin.de = Admin)
+  const isAdmin = currentUser?.email?.toLowerCase() === "hallo@seelenplanerin.de";
+
+  const handleDeletePost = async (postId: string) => {
+    Alert.alert(
+      "Beitrag löschen",
+      "Möchtest du diesen Beitrag wirklich löschen?",
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Löschen",
+          style: "destructive",
+          onPress: async () => {
+            const updatedPosts = posts.filter(p => p.id !== postId);
+            setPosts(updatedPosts);
+            await savePosts(updatedPosts);
+          },
+        },
+      ]
+    );
+  };
+
   useEffect(() => {
     AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
       if (data) {
@@ -845,6 +867,15 @@ export default function CommunityScreen() {
                   </View>
                   <Text style={s.postDatum}>{formatDatum(post.datum)}</Text>
                 </View>
+                {isAdmin && (
+                  <TouchableOpacity
+                    onPress={() => handleDeletePost(post.id)}
+                    style={s.deleteBtn}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={s.deleteBtnText}>✕</Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <Text style={s.postTitel}>{post.titel}</Text>
               <Text style={s.postText}>{post.text}</Text>
@@ -951,4 +982,9 @@ const s = StyleSheet.create({
     alignItems: "center", marginTop: 8,
   },
   newPostSubmitText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
+  deleteBtn: {
+    width: 32, height: 32, borderRadius: 16, backgroundColor: "#F5EEE8",
+    alignItems: "center", justifyContent: "center", marginLeft: 8,
+  },
+  deleteBtnText: { fontSize: 14, color: "#C87C82", fontWeight: "700" },
 });

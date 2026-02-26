@@ -1,7 +1,8 @@
-import React from "react";
+
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Alert,
 } from "react-native";
+import { useState, useRef } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 
@@ -59,6 +60,25 @@ const PRODUKTE = [
 ];
 
 export default function IchScreen() {
+  // Geheimer Admin-Zugang: 5x auf Version tippen
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleVersionTap() {
+    const newCount = tapCount + 1;
+    setTapCount(newCount);
+
+    // Timer zurücksetzen
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => setTapCount(0), 2000);
+
+    if (newCount >= 5) {
+      setTapCount(0);
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      router.push("/admin" as any);
+    }
+  }
+
   function navigate(item: { route?: string; url?: string }) {
     if (item.url) {
       Linking.openURL(item.url);
@@ -134,27 +154,15 @@ export default function IchScreen() {
           </View>
         ))}
 
-        {/* Admin */}
-        <Text style={s.sec}>⚙️ Verwaltung</Text>
-        <View style={s.menuSection}>
-          <TouchableOpacity
-            style={s.menuItem}
-            onPress={() => router.push("/admin" as any)}
-            activeOpacity={0.8}
-          >
-            <Text style={s.menuEmoji}>🔐</Text>
-            <Text style={s.menuLabel}>Admin-Bereich</Text>
-            <Text style={s.menuArrow}>›</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Über die App */}
+        {/* Über die App – Version ist geheimer Admin-Zugang */}
         <View style={s.aboutCard}>
           <Text style={s.aboutTitle}>Über Die Seelenplanerin</Text>
           <Text style={s.aboutText}>
             Diese App ist mit Liebe von der Seelenplanerin für alle Frauen geschaffen, die auf ihrer spirituellen Reise Begleitung suchen. Hier findest du Rituale, Mondenergie, Runen und persönliche Impulse – alles handgemacht und von Herzen.
           </Text>
-          <Text style={s.aboutVersion}>Version 1.0 · Made with 🌸 by Die Seelenplanerin</Text>
+          <TouchableOpacity onPress={handleVersionTap} activeOpacity={1}>
+            <Text style={s.aboutVersion}>Version 1.0 · Made with 🌸 by Die Seelenplanerin</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={{ height: 32 }} />

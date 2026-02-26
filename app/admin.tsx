@@ -880,7 +880,7 @@ export default function AdminScreen() {
                 <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
                 <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
                   Meditationen werden automatisch im Community-Bereich für eingeloggte Mitglieder angezeigt.{"\n"}
-                  Lade MP3-Dateien hoch (max. 16 MB) – sie können direkt in der App abgespielt werden.
+                  Lade MP3-Dateien hoch (max. 64 MB) – sie können direkt in der App abgespielt werden.
                 </Text>
               </View>
             </View>
