@@ -416,3 +416,7 @@
 - [x] Premium-Screen: Zeigt jetzt echte hochgeladene Meditationen mit Audio-Player (statt nur Platzhalter)
 - [x] Community-Screen: MeditationenSektion lädt bei jedem Tab-Focus neu (useFocusEffect statt useEffect)
 - [x] Premium-Screen: Meditationen laden bei jedem Screen-Focus neu (useFocusEffect)
+
+## KRITISCH: Feedback Runde 20 (26.02.2026)
+- [x] Meditationen NICHT in Kategorien unterteilen – einfache flache Liste ohne Unterteilung (Platzhalter-Kategorien entfernt)
+- [x] Admin: Meditation-Upload-Button funktioniert nicht – BEHOBEN (Alert.alert durch direkte DocumentPicker-Auswahl ersetzt)

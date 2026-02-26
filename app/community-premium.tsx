@@ -40,15 +40,7 @@ const C = {
 
 const WOCHENTAGE_KURZ = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
-// ── Exklusive Meditationen (Platzhalter) ──
-const PREMIUM_MEDITATIONEN = [
-  { id: "pm1", titel: "Neumond-Manifestation", dauer: "15 Min.", emoji: "🌑", beschreibung: "Geführte Meditation für deine Neumond-Intentionen", verfuegbar: false },
-  { id: "pm2", titel: "Vollmond-Loslassen", dauer: "20 Min.", emoji: "🌕", beschreibung: "Loslassen und Dankbarkeit unter dem Vollmond", verfuegbar: false },
-  { id: "pm3", titel: "Chakra-Reinigung", dauer: "25 Min.", emoji: "🌈", beschreibung: "Alle 7 Chakren reinigen und ausbalancieren", verfuegbar: false },
-  { id: "pm4", titel: "Schutzrune Meditation", dauer: "12 Min.", emoji: "🛡️", beschreibung: "Verbinde dich mit deiner persönlichen Schutzrune", verfuegbar: false },
-  { id: "pm5", titel: "Weibliche Kraft", dauer: "18 Min.", emoji: "🌸", beschreibung: "Aktiviere deine weibliche Urkraft und Intuition", verfuegbar: false },
-  { id: "pm6", titel: "Mondwasser-Zeremonie", dauer: "10 Min.", emoji: "💧", beschreibung: "Anleitung zur Herstellung von Mondwasser", verfuegbar: false },
-];
+// Platzhalter-Meditationen entfernt – nur echte hochgeladene Meditationen werden angezeigt
 
 // ── Premium Mondkalender mit EXAKTEN astronomischen Daten ──
 function getPremiumMondkalender() {
@@ -617,26 +609,6 @@ export default function CommunityPremiumScreen() {
                   </TouchableOpacity>
                 </View>
               )}
-
-              {/* Platzhalter-Meditationen (Bald verfügbar) */}
-              {PREMIUM_MEDITATIONEN.map((med) => (
-                <View key={med.id} style={[s.meditationCard, { opacity: 0.6 }]}>
-                  <View style={s.meditationEmoji}>
-                    <Text style={{ fontSize: 28 }}>{med.emoji}</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Text style={s.meditationTitel}>{med.titel}</Text>
-                      <View style={s.comingSoonBadge}>
-                        <Text style={s.comingSoonText}>Bald verfügbar</Text>
-                      </View>
-                    </View>
-                    <Text style={s.meditationBeschreibung}>{med.beschreibung}</Text>
-                    <Text style={s.meditationDauer}>{med.dauer}</Text>
-                  </View>
-                  <Text style={{ fontSize: 16, color: C.muted }}>🔒</Text>
-                </View>
-              ))}
 
               {uploadedMeditationen.length === 0 && (
                 <View style={s.infoBox}>

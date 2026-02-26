@@ -382,74 +382,28 @@ export default function AdminScreen() {
     }
   };
 
-  // ── Upload-Auswahl-Dialog (Fotos, Kamera, Dateien) ──
-  const showUploadPicker = (
+  // ── Direkte Dateiauswahl (ohne Alert-Dialog, funktioniert zuverlässig auf iOS/Web) ──
+  const pickFileDirectly = async (
     setUrl: (url: string) => void,
     setFileName: (name: string) => void,
     setIsUploading: (v: boolean) => void,
   ) => {
-    const pickFromFiles = async () => {
-      try {
-        const result = await DocumentPicker.getDocumentAsync({ type: "audio/*", copyToCacheDirectory: true });
-        if (result.canceled || !result.assets?.[0]) return;
-        const file = result.assets[0];
-        if (file.size && file.size > 64 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 64 MB"); return; }
-        await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
-      } catch (err: any) {
-        if (err.message !== "User canceled document picker") Alert.alert("Fehler", "Datei konnte nicht ausgew\u00e4hlt werden.");
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: ["audio/*", "video/*", "application/octet-stream"], copyToCacheDirectory: true });
+      if (result.canceled || !result.assets?.[0]) return;
+      const file = result.assets[0];
+      if (file.size && file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 100 MB"); return; }
+      await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
+    } catch (err: any) {
+      if (err.message !== "User canceled document picker") {
+        console.error("[PickFile] Error:", err);
+        Alert.alert("Fehler", "Datei konnte nicht ausgew\u00e4hlt werden: " + (err.message || "Unbekannter Fehler"));
       }
-    };
-
-    const pickFromPhotos = async () => {
-      try {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ["videos"],
-          quality: 1,
-        });
-        if (result.canceled || !result.assets?.[0]) return;
-        const asset = result.assets[0];
-        const name = asset.fileName || `aufnahme_${Date.now()}.mp4`;
-        await processAndUploadFile(asset.uri, name, asset.mimeType || "video/mp4", setUrl, setFileName, setIsUploading);
-      } catch (err: any) {
-        Alert.alert("Fehler", "Mediathek konnte nicht ge\u00f6ffnet werden.");
-      }
-    };
-
-    const pickFromCamera = async () => {
-      try {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Berechtigung ben\u00f6tigt", "Bitte erlaube den Kamera-Zugriff in den Einstellungen.");
-          return;
-        }
-        const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ["videos"],
-          quality: 1,
-          videoMaxDuration: 600,
-        });
-        if (result.canceled || !result.assets?.[0]) return;
-        const asset = result.assets[0];
-        const name = asset.fileName || `aufnahme_${Date.now()}.mp4`;
-        await processAndUploadFile(asset.uri, name, asset.mimeType || "video/mp4", setUrl, setFileName, setIsUploading);
-      } catch (err: any) {
-        Alert.alert("Fehler", "Kamera konnte nicht ge\u00f6ffnet werden.");
-      }
-    };
-
-    Alert.alert(
-      "Datei ausw\u00e4hlen",
-      "Woher m\u00f6chtest du die Datei laden?",
-      [
-        { text: "\ud83d\udcc1 Dateien", onPress: pickFromFiles },
-        { text: "\ud83d\uddbc\ufe0f Fotomediathek", onPress: pickFromPhotos },
-        { text: "\ud83d\udcf7 Kamera", onPress: pickFromCamera },
-        { text: "Abbrechen", style: "cancel" },
-      ]
-    );
+    }
   };
 
   const handlePickMp3 = () => {
-    showUploadPicker(setSongMp3Url, setSongMp3FileName, setUploading);
+    pickFileDirectly(setSongMp3Url, setSongMp3FileName, setUploading);
   };
 
   const handleSaveSong = async () => {
@@ -885,7 +839,7 @@ export default function AdminScreen() {
                   <Text style={s.formLabel}>🎧 MP3-Datei hochladen *</Text>
                   <TouchableOpacity
                     style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, meditUploading && { opacity: 0.6 }]}
-                    onPress={() => showUploadPicker(setMeditMp3Url, setMeditMp3FileName, setMeditUploading)}
+                    onPress={() => pickFileDirectly(setMeditMp3Url, setMeditMp3FileName, setMeditUploading)}
                     activeOpacity={0.85} disabled={meditUploading}>
                     {meditUploading ? (
                       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

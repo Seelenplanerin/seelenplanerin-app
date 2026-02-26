@@ -163,15 +163,7 @@ function formatDatum(isoString: string): string {
   return d.toLocaleDateString("de-DE", { day: "numeric", month: "short" });
 }
 
-// ── Meditationen Sektion Komponente ──
-const MEDITATIONEN_VORSCHAU = [
-  { id: "m1", emoji: "🌙", titel: "Neumond-Manifestation", dauer: "15 Min.", beschreibung: "Setze kraftvolle Intentionen unter dem Neumond" },
-  { id: "m2", emoji: "🌕", titel: "Vollmond-Loslassen", dauer: "20 Min.", beschreibung: "Lass los, was dir nicht mehr dient" },
-  { id: "m3", emoji: "🌈", titel: "Chakra-Reinigung", dauer: "25 Min.", beschreibung: "Alle 7 Chakren reinigen und ausbalancieren" },
-  { id: "m4", emoji: "🛡️", titel: "Schutzrune Meditation", dauer: "12 Min.", beschreibung: "Verbinde dich mit deiner persönlichen Schutzrune" },
-  { id: "m5", emoji: "🌸", titel: "Weibliche Kraft", dauer: "18 Min.", beschreibung: "Aktiviere deine weibliche Urkraft und Intuition" },
-  { id: "m6", emoji: "💧", titel: "Mondwasser-Zeremonie", dauer: "10 Min.", beschreibung: "Anleitung zur Herstellung von Mondwasser" },
-];
+// Platzhalter-Meditationen entfernt – nur echte hochgeladene Meditationen werden angezeigt
 
 function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityAudio> }) {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -267,20 +259,14 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
         </View>
       )}
 
-      {/* Vorschau-Meditationen (Platzhalter) */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
-        {MEDITATIONEN_VORSCHAU.map((m) => (
-          <View key={m.id} style={ms.meditPreviewCard}>
-            <Text style={{ fontSize: 28, marginBottom: 8 }}>{m.emoji}</Text>
-            <Text style={ms.meditPreviewTitel}>{m.titel}</Text>
-            <Text style={ms.meditPreviewDauer}>{m.dauer}</Text>
-            <Text style={ms.meditPreviewBeschreibung}>{m.beschreibung}</Text>
-            <View style={ms.comingSoonBadge}>
-              <Text style={ms.comingSoonText}>Bald verfügbar</Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      {/* Hinweis wenn keine Meditationen vorhanden */}
+      {songs.length === 0 && (
+        <View style={{ marginHorizontal: 16, marginBottom: 12, backgroundColor: "#F9EDE8", borderRadius: 12, padding: 14, alignItems: "center" }}>
+          <Text style={{ fontSize: 13, color: "#A08070", textAlign: "center", lineHeight: 18 }}>
+            Meditationen werden nach und nach hinzugefügt. Schau bald wieder vorbei!
+          </Text>
+        </View>
+      )}
 
       {/* Now Playing Bar */}
       {audio.isPlaying && (
