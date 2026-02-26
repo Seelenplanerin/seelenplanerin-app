@@ -420,3 +420,9 @@
 ## KRITISCH: Feedback Runde 20 (26.02.2026)
 - [x] Meditationen NICHT in Kategorien unterteilen – einfache flache Liste ohne Unterteilung (Platzhalter-Kategorien entfernt)
 - [x] Admin: Meditation-Upload-Button funktioniert nicht – BEHOBEN (Alert.alert durch direkte DocumentPicker-Auswahl ersetzt)
+
+## KRITISCH: Upload funktioniert IMMER NOCH NICHT (26.02.2026)
+- [x] Admin: Meditation-Upload-Button funktioniert nicht – BEHOBEN: HTML <input type="file"> overlay auf Web
+- [x] Admin: Musik-Upload-Button funktioniert nicht – BEHOBEN: HTML <input type="file"> overlay auf Web
+- [x] Doppeltes Beschreibung-Feld im Meditation-Formular – BEHOBEN
+- [x] MP3-Upload-Button direkt nach Titel sichtbar (kein Scrollen nötig)

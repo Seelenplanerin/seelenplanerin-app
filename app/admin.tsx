@@ -689,24 +689,57 @@ export default function AdminScreen() {
 
                   {/* MP3-Upload */}
                   <Text style={s.formLabel}>🎧 MP3-Datei hochladen</Text>
-                  <TouchableOpacity
-                    style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, uploading && { opacity: 0.6 }]}
-                    onPress={handlePickMp3} activeOpacity={0.85} disabled={uploading}>
-                    {uploading ? (
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                        <ActivityIndicator size="small" color={C.rose} />
-                        <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
-                      </View>
-                    ) : (
-                      <>
-                        <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
-                        <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
-                          {songMp3FileName ? songMp3FileName : "MP3-Datei auswählen"}
-                        </Text>
-                        {songMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
-                      </>
-                    )}
-                  </TouchableOpacity>
+                  {Platform.OS === "web" ? (
+                    <View style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8, position: "relative", overflow: "hidden" }, uploading && { opacity: 0.6 }]}>
+                      {uploading ? (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <ActivityIndicator size="small" color={C.rose} />
+                          <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
+                          <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                            {songMp3FileName ? songMp3FileName : "MP3-Datei auswählen"}
+                          </Text>
+                          {songMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
+                        </>
+                      )}
+                      {!uploading && (
+                        <input
+                          type="file"
+                          accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.mp4"
+                          onChange={(e: any) => {
+                            const file = e.target?.files?.[0];
+                            if (!file) return;
+                            if (file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 100 MB"); return; }
+                            const uri = URL.createObjectURL(file);
+                            processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setSongMp3Url, setSongMp3FileName, setUploading);
+                          }}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" } as any}
+                        />
+                      )}
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, uploading && { opacity: 0.6 }]}
+                      onPress={handlePickMp3} activeOpacity={0.85} disabled={uploading}>
+                      {uploading ? (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <ActivityIndicator size="small" color={C.rose} />
+                          <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
+                          <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                            {songMp3FileName ? songMp3FileName : "MP3-Datei auswählen"}
+                          </Text>
+                          {songMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  )}
                   {songMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {songMp3FileName}</Text>
                   ) : (
@@ -821,22 +854,40 @@ export default function AdminScreen() {
                   <TextInput style={s.formInput} placeholder="z.B. Neumond-Manifestation" placeholderTextColor={C.muted}
                     value={meditTitel} onChangeText={t => { setMeditTitel(t); setMeditFehler(""); }} returnKeyType="next" />
 
-                  <Text style={s.formLabel}>Beschreibung</Text>
-                  <TextInput style={s.formInput} placeholder="Kurze Beschreibung der Meditation" placeholderTextColor={C.muted}
-                    value={meditBeschreibung} onChangeText={setMeditBeschreibung} returnKeyType="next" />
-
-                  <Text style={s.formLabel}>Emoji</Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
-                    {["🧘‍♀️", "🌙", "🌕", "🌈", "🛡️", "🌸", "💧", "🕯️", "🌿", "✨", "💜", "🌟"].map(e => (
-                      <TouchableOpacity key={e} onPress={() => setMeditEmoji(e)}
-                        style={[s.emojiBtn, meditEmoji === e && s.emojiBtnActive]} activeOpacity={0.8}>
-                        <Text style={{ fontSize: 20 }}>{e}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-
                   {/* MP3-Upload */}
                   <Text style={s.formLabel}>🎧 MP3-Datei hochladen *</Text>
+                  {Platform.OS === "web" ? (
+                    <View style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8, position: "relative", overflow: "hidden" }, meditUploading && { opacity: 0.6 }]}>
+                      {meditUploading ? (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                          <ActivityIndicator size="small" color={C.rose} />
+                          <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
+                          <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                            {meditMp3FileName ? meditMp3FileName : "MP3-Datei auswählen"}
+                          </Text>
+                          {meditMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
+                        </>
+                      )}
+                      {!meditUploading && (
+                        <input
+                          type="file"
+                          accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.mp4"
+                          onChange={(e: any) => {
+                            const file = e.target?.files?.[0];
+                            if (!file) return;
+                            if (file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 100 MB"); return; }
+                            const uri = URL.createObjectURL(file);
+                            processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setMeditMp3Url, setMeditMp3FileName, setMeditUploading);
+                          }}
+                          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" } as any}
+                        />
+                      )}
+                    </View>
+                  ) : (
                   <TouchableOpacity
                     style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, meditUploading && { opacity: 0.6 }]}
                     onPress={() => pickFileDirectly(setMeditMp3Url, setMeditMp3FileName, setMeditUploading)}
@@ -856,11 +907,16 @@ export default function AdminScreen() {
                       </>
                     )}
                   </TouchableOpacity>
+                  )}
                   {meditMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {meditMp3FileName}</Text>
                   ) : (
                     <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 64 MB. Wird im Community-Bereich direkt abspielbar.</Text>
                   )}
+
+                  <Text style={s.formLabel}>Beschreibung</Text>
+                  <TextInput style={s.formInput} placeholder="Kurze Beschreibung der Meditation" placeholderTextColor={C.muted}
+                    value={meditBeschreibung} onChangeText={setMeditBeschreibung} returnKeyType="next" />
 
                   <View style={[s.switchRow, { marginVertical: 8 }]}>
                     <Text style={{ fontSize: 14, color: C.brownMid }}>Sofort verfügbar</Text>
