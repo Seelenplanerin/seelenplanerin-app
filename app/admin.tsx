@@ -22,27 +22,64 @@ const THEMEN = [
   { key: "dunkel", label: "Dunkle Mondnacht", primary: "#C4826A", bg: "#1A1A2E" },
 ];
 
+const USERS_KEY = "community_users";
+
+interface CommunityUser {
+  email: string;
+  password: string;
+  name: string;
+  mustChangePassword?: boolean;
+}
+
+async function getUsers(): Promise<CommunityUser[]> {
+  const data = await AsyncStorage.getItem(USERS_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
+async function saveUsers(users: CommunityUser[]) {
+  await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function generateTempPassword(): string {
+  const chars = "abcdefghijkmnpqrstuvwxyz23456789";
+  let pw = "";
+  for (let i = 0; i < 6; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
+
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pin, setPin] = useState("");
   const [fehler, setFehler] = useState("");
 
   // Einstellungen
-  const [communityPw, setCommunityPw] = useState("seele2026");
   const [tagesimpulsText, setTagesimpulsText] = useState("");
   const [musikAktiv, setMusikAktiv] = useState(false);
   const [gewaehltesThema, setGewaehltesThema] = useState("rose");
   const [gespeichert, setGespeichert] = useState(false);
 
+  // Mitgliederverwaltung
+  const [members, setMembers] = useState<CommunityUser[]>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberPw, setNewMemberPw] = useState("");
+  const [memberFehler, setMemberFehler] = useState("");
+
   useEffect(() => {
     AsyncStorage.getItem("admin_auth").then(val => {
       if (val === "true") setIsLoggedIn(true);
     });
-    AsyncStorage.getItem("admin_community_pw").then(val => { if (val) setCommunityPw(val); });
     AsyncStorage.getItem("admin_tagesimpuls").then(val => { if (val) setTagesimpulsText(val); });
     AsyncStorage.getItem("admin_musik").then(val => { if (val) setMusikAktiv(val === "true"); });
     AsyncStorage.getItem("admin_thema").then(val => { if (val) setGewaehltesThema(val); });
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getUsers().then(setMembers);
+    }
+  }, [isLoggedIn]);
 
   const handleLogin = () => {
     if (pin === ADMIN_PIN) {
@@ -55,7 +92,6 @@ export default function AdminScreen() {
   };
 
   const handleSpeichern = async () => {
-    await AsyncStorage.setItem("admin_community_pw", communityPw);
     await AsyncStorage.setItem("admin_tagesimpuls", tagesimpulsText);
     await AsyncStorage.setItem("admin_musik", musikAktiv ? "true" : "false");
     await AsyncStorage.setItem("admin_thema", gewaehltesThema);
@@ -67,6 +103,90 @@ export default function AdminScreen() {
     setIsLoggedIn(false);
     AsyncStorage.removeItem("admin_auth");
     router.back();
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberName.trim()) { setMemberFehler("Bitte gib einen Namen ein."); return; }
+    if (!newMemberEmail.trim()) { setMemberFehler("Bitte gib eine E-Mail-Adresse ein."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newMemberEmail.trim())) {
+      setMemberFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return;
+    }
+
+    const users = await getUsers();
+    const exists = users.find(u => u.email.toLowerCase() === newMemberEmail.trim().toLowerCase());
+    if (exists) {
+      setMemberFehler("Diese E-Mail ist bereits registriert.");
+      return;
+    }
+
+    const tempPw = newMemberPw.trim() || generateTempPassword();
+    const newUser: CommunityUser = {
+      email: newMemberEmail.trim().toLowerCase(),
+      password: tempPw,
+      name: newMemberName.trim(),
+      mustChangePassword: true,
+    };
+
+    users.push(newUser);
+    await saveUsers(users);
+    setMembers(users);
+    setMemberFehler("");
+
+    Alert.alert(
+      "Mitglied angelegt",
+      `${newUser.name} wurde erfolgreich angelegt.\n\n` +
+      `E-Mail: ${newUser.email}\n` +
+      `Temporäres Passwort: ${tempPw}\n\n` +
+      `Bitte sende diese Zugangsdaten per E-Mail an ${newUser.name}.\n\n` +
+      `Das Mitglied wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.`,
+      [{ text: "OK" }]
+    );
+
+    setNewMemberName("");
+    setNewMemberEmail("");
+    setNewMemberPw("");
+    setShowAddMember(false);
+  };
+
+  const handleDeleteMember = (email: string, name: string) => {
+    Alert.alert(
+      "Mitglied entfernen",
+      `Möchtest du ${name} (${email}) wirklich aus der Community entfernen?`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Entfernen", style: "destructive", onPress: async () => {
+            const users = await getUsers();
+            const filtered = users.filter(u => u.email !== email);
+            await saveUsers(filtered);
+            setMembers(filtered);
+          }
+        },
+      ]
+    );
+  };
+
+  const handleResetMemberPw = (email: string, name: string) => {
+    const tempPw = generateTempPassword();
+    Alert.alert(
+      "Passwort zurücksetzen",
+      `Neues temporäres Passwort für ${name}:\n\n${tempPw}\n\nBitte sende dieses Passwort per E-Mail an ${name}.\n\nDas Mitglied wird beim nächsten Login aufgefordert, ein eigenes Passwort zu wählen.`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Zurücksetzen", onPress: async () => {
+            const users = await getUsers();
+            const idx = users.findIndex(u => u.email === email);
+            if (idx >= 0) {
+              users[idx].password = tempPw;
+              users[idx].mustChangePassword = true;
+              await saveUsers(users);
+              setMembers([...users]);
+            }
+          }
+        },
+      ]
+    );
   };
 
   if (!isLoggedIn) {
@@ -117,18 +237,114 @@ export default function AdminScreen() {
           <Text style={s.headerSub}>Deine persönlichen Einstellungen</Text>
         </View>
 
-        {/* Community-Passwort */}
+        {/* ── Mitgliederverwaltung ── */}
         <View style={s.section}>
-          <Text style={s.sectionTitle}>🔑 Community-Passwort</Text>
-          <Text style={s.sectionHint}>Das Passwort das Mitglieder eingeben müssen um die Community zu betreten.</Text>
-          <TextInput
-            style={s.input}
-            value={communityPw}
-            onChangeText={setCommunityPw}
-            placeholder="Community-Passwort"
-            placeholderTextColor={C.muted}
-            autoCapitalize="none"
-          />
+          <Text style={s.sectionTitle}>👥 Mitgliederverwaltung</Text>
+          <Text style={s.sectionHint}>
+            Lege hier neue Community-Mitglieder an. Du vergibst ein temporäres Passwort und sendest es per E-Mail.
+            Das Mitglied wird beim ersten Login aufgefordert, ein eigenes Passwort zu wählen.
+          </Text>
+
+          {/* Mitgliederliste */}
+          {members.length > 0 ? (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={{ fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 }}>
+                {members.length} Mitglied{members.length !== 1 ? "er" : ""}
+              </Text>
+              {members.map((m, i) => (
+                <View key={m.email} style={s.memberRow}>
+                  <View style={s.memberAvatar}>
+                    <Text style={{ fontSize: 14, color: "#FFF", fontWeight: "700" }}>
+                      {m.name.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>{m.name}</Text>
+                    <Text style={s.memberEmail}>{m.email}</Text>
+                    {m.mustChangePassword && (
+                      <Text style={{ fontSize: 10, color: C.gold, fontWeight: "600" }}>⏳ Muss Passwort ändern</Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleResetMemberPw(m.email, m.name)}
+                    style={s.memberAction}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ fontSize: 12, color: C.gold }}>🔑</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleDeleteMember(m.email, m.name)}
+                    style={s.memberAction}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={{ fontSize: 13, color: C.muted, marginBottom: 12 }}>
+              Noch keine Mitglieder angelegt. Nutzer können sich auch selbst registrieren.
+            </Text>
+          )}
+
+          {/* Neues Mitglied hinzufügen */}
+          <TouchableOpacity
+            style={[s.themaBtn, { borderColor: C.rose }]}
+            onPress={() => setShowAddMember(!showAddMember)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 18, marginRight: 10 }}>{showAddMember ? "✕" : "➕"}</Text>
+            <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+              {showAddMember ? "Schließen" : "Neues Mitglied anlegen"}
+            </Text>
+          </TouchableOpacity>
+
+          {showAddMember && (
+            <View style={{ marginTop: 12, backgroundColor: C.roseLight, borderRadius: 14, padding: 14 }}>
+              <Text style={s.memberFormLabel}>Name</Text>
+              <TextInput
+                style={s.memberFormInput}
+                placeholder="z.B. Sarah Müller"
+                placeholderTextColor={C.muted}
+                value={newMemberName}
+                onChangeText={(t) => { setNewMemberName(t); setMemberFehler(""); }}
+                autoCapitalize="words"
+                returnKeyType="next"
+              />
+
+              <Text style={s.memberFormLabel}>E-Mail-Adresse</Text>
+              <TextInput
+                style={s.memberFormInput}
+                placeholder="sarah@beispiel.de"
+                placeholderTextColor={C.muted}
+                value={newMemberEmail}
+                onChangeText={(t) => { setNewMemberEmail(t); setMemberFehler(""); }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                returnKeyType="next"
+              />
+
+              <Text style={s.memberFormLabel}>Temporäres Passwort (optional)</Text>
+              <TextInput
+                style={s.memberFormInput}
+                placeholder="Leer = automatisch generiert"
+                placeholderTextColor={C.muted}
+                value={newMemberPw}
+                onChangeText={(t) => { setNewMemberPw(t); setMemberFehler(""); }}
+                autoCapitalize="none"
+                returnKeyType="done"
+                onSubmitEditing={handleAddMember}
+              />
+
+              {memberFehler !== "" && <Text style={{ fontSize: 12, color: "#C87C82", marginBottom: 8 }}>{memberFehler}</Text>}
+
+              <TouchableOpacity style={s.addMemberBtn} onPress={handleAddMember} activeOpacity={0.85}>
+                <Text style={s.addMemberBtnText}>Mitglied anlegen →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Tagesimpuls */}
@@ -259,4 +475,31 @@ const s = StyleSheet.create({
   speichernBtnText: { color: "#FFF", fontWeight: "700", fontSize: 16 },
   logoutBtn: { marginHorizontal: 16, marginBottom: 8, backgroundColor: C.surface, borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: C.border },
   logoutText: { fontSize: 14, color: C.muted },
+
+  // Mitgliederverwaltung
+  memberRow: {
+    flexDirection: "row", alignItems: "center", backgroundColor: C.surface,
+    borderRadius: 12, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: C.border,
+  },
+  memberAvatar: {
+    width: 34, height: 34, borderRadius: 17, backgroundColor: C.rose,
+    alignItems: "center", justifyContent: "center", marginRight: 10,
+  },
+  memberName: { fontSize: 14, fontWeight: "700", color: C.brown },
+  memberEmail: { fontSize: 11, color: C.muted },
+  memberAction: {
+    width: 30, height: 30, borderRadius: 15, backgroundColor: C.card,
+    alignItems: "center", justifyContent: "center", marginLeft: 6,
+    borderWidth: 1, borderColor: C.border,
+  },
+  memberFormLabel: { fontSize: 12, color: C.brownMid, fontWeight: "600", marginBottom: 4, marginTop: 4 },
+  memberFormInput: {
+    backgroundColor: C.card, borderRadius: 10, padding: 12, fontSize: 14,
+    color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 6,
+  },
+  addMemberBtn: {
+    backgroundColor: C.rose, borderRadius: 12, paddingVertical: 12,
+    alignItems: "center", marginTop: 4,
+  },
+  addMemberBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
 });

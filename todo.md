@@ -338,3 +338,11 @@
 - [x] Branding: "Lara" → "Die Seelenplanerin" in rituale.tsx (Shop-CTA Text)
 - [x] Branding: "Lara" → "Die Seelenplanerin" in ich.tsx (Produkte-Sektion, Admin-Link, Version)
 - [x] 50 Tests bestanden, 0 TypeScript-Fehler
+
+## Feature: Seelenimpuls Login-Flow + Community-Fragen (26.02.2026)
+- [x] Seelenimpuls: E-Mail-basierter Login-Flow (Admin sendet Login-Daten per Mail, Nutzer loggt sich ein und erstellt eigenes Passwort)
+- [x] Seelenimpuls: Admin kann neue Mitglieder anlegen (E-Mail + temporäres Passwort)
+- [ ] Seelenimpuls: E-Mail-Versand über hinterlegtes Mail-Programm der Seelenplanerin (aktuell: temporäres PW wird im Alert angezeigt, Admin sendet manuell per Mail)
+- [x] Community: Eingabefeld für Fragen/Beiträge der Mitglieder (Schreiben-Button + Formular)
+- [x] Community: Mitglieder können eigene Beiträge posten (Titel + Text + Emoji-Auswahl)
+- [x] Community: Posts werden lokal gespeichert und angezeigt

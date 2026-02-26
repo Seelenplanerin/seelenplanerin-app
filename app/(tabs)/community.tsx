@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
-  TextInput, KeyboardAvoidingView, Platform, Alert,
+  TextInput, KeyboardAvoidingView, Platform, Alert, FlatList,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -13,26 +14,36 @@ const C = {
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
 
-const POSTS = [
+interface CommunityPost {
+  id: string;
+  emoji: string;
+  titel: string;
+  text: string;
+  datum: string;
+  von: string;
+  istLara: boolean;
+}
+
+const DEFAULT_POSTS: CommunityPost[] = [
   {
-    id: "1", emoji: "🌙", titel: "Willkommen in unserem Seelenraum",
+    id: "default-1", emoji: "🌙", titel: "Willkommen in unserem Seelenraum",
     text: "Ich bin so froh, dass du hier bist. Dieser Raum gehört uns – ein sicherer Ort für alle Frauen, die ihren spirituellen Weg gehen. Hier teilen wir Erfahrungen, unterstützen uns gegenseitig und wachsen gemeinsam.",
-    datum: "Heute", von: "Die Seelenplanerin", istLara: true,
+    datum: new Date().toISOString(), von: "Die Seelenplanerin", istLara: true,
   },
   {
-    id: "2", emoji: "✨", titel: "Nächster Community-Call",
+    id: "default-2", emoji: "✨", titel: "Nächster Community-Call",
     text: "Unser monatlicher Community-Call findet bald statt! Ich freue mich so sehr auf euch. Wir sprechen über die aktuelle Mondenergie, eure Fragen und ich führe euch durch eine kurze Meditation. Alle Seelenimpuls-Mitglieder sind dabei.",
-    datum: "Gestern", von: "Die Seelenplanerin", istLara: true,
+    datum: new Date(Date.now() - 86400000).toISOString(), von: "Die Seelenplanerin", istLara: true,
   },
   {
-    id: "3", emoji: "🌸", titel: "Meine Erfahrung mit dem Neumond-Ritual",
+    id: "default-3", emoji: "🌸", titel: "Meine Erfahrung mit dem Neumond-Ritual",
     text: "Ich habe gestern das Neumond-Ritual gemacht und es war so kraftvoll. Ich habe drei Intentionen gesetzt und konnte wirklich spüren wie die Energie sich verändert hat. Danke für diese wunderschöne Anleitung!",
-    datum: "Vor 2 Tagen", von: "Sarah M.", istLara: false,
+    datum: new Date(Date.now() - 172800000).toISOString(), von: "Sarah M.", istLara: false,
   },
   {
-    id: "4", emoji: "💎", titel: "Frage zu Heilsteinen",
+    id: "default-4", emoji: "💎", titel: "Frage zu Heilsteinen",
     text: "Welchen Heilstein empfehlt ihr für mehr Schutz im Alltag? Ich trage gerade Rosenquarz aber spüre dass ich etwas Stärkeres brauche.",
-    datum: "Vor 3 Tagen", von: "Julia K.", istLara: false,
+    datum: new Date(Date.now() - 259200000).toISOString(), von: "Julia K.", istLara: false,
   },
 ];
 
@@ -42,14 +53,17 @@ const ANGEBOTE = [
   { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
 ];
 
-// Speichert registrierte Benutzer als JSON-Array in AsyncStorage
+const POSTS_KEY = "community_posts";
 const USERS_KEY = "community_users";
 const CURRENT_USER_KEY = "community_current_user";
+
+const POST_EMOJIS = ["🌸", "🌙", "✨", "💎", "🔮", "🌿", "🦋", "💫", "🕯️", "🌈"];
 
 interface CommunityUser {
   email: string;
   password: string;
   name: string;
+  mustChangePassword?: boolean;
 }
 
 async function getUsers(): Promise<CommunityUser[]> {
@@ -59,6 +73,32 @@ async function getUsers(): Promise<CommunityUser[]> {
 
 async function saveUsers(users: CommunityUser[]) {
   await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+async function getPosts(): Promise<CommunityPost[]> {
+  const data = await AsyncStorage.getItem(POSTS_KEY);
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  }
+  // Initialisiere mit Default-Posts
+  await AsyncStorage.setItem(POSTS_KEY, JSON.stringify(DEFAULT_POSTS));
+  return DEFAULT_POSTS;
+}
+
+async function savePosts(posts: CommunityPost[]) {
+  await AsyncStorage.setItem(POSTS_KEY, JSON.stringify(posts));
+}
+
+function formatDatum(isoString: string): string {
+  const d = new Date(isoString);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 0) return "Heute";
+  if (diffDays === 1) return "Gestern";
+  if (diffDays < 7) return `Vor ${diffDays} Tagen`;
+  return d.toLocaleDateString("de-DE", { day: "numeric", month: "short" });
 }
 
 export default function CommunityScreen() {
@@ -71,6 +111,19 @@ export default function CommunityScreen() {
   const [fehler, setFehler] = useState("");
   const [checking, setChecking] = useState(true);
   const [userName, setUserName] = useState("");
+  const [currentUser, setCurrentUser] = useState<CommunityUser | null>(null);
+
+  // Post-Erstellung
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [showNewPost, setShowNewPost] = useState(false);
+  const [newPostTitel, setNewPostTitel] = useState("");
+  const [newPostText, setNewPostText] = useState("");
+  const [selectedEmoji, setSelectedEmoji] = useState("🌸");
+
+  // Passwort ändern
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [newPwConfirm, setNewPwConfirm] = useState("");
 
   useEffect(() => {
     AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
@@ -78,10 +131,22 @@ export default function CommunityScreen() {
         const user = JSON.parse(data) as CommunityUser;
         setIsLoggedIn(true);
         setUserName(user.name || user.email.split("@")[0]);
+        setCurrentUser(user);
+        // Prüfe ob Passwort geändert werden muss
+        if (user.mustChangePassword) {
+          setShowChangePw(true);
+        }
       }
       setChecking(false);
     });
   }, []);
+
+  // Posts laden bei Focus
+  useFocusEffect(
+    useCallback(() => {
+      getPosts().then(setPosts);
+    }, [])
+  );
 
   const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -102,8 +167,13 @@ export default function CommunityScreen() {
     }
     setIsLoggedIn(true);
     setUserName(found.name || found.email.split("@")[0]);
+    setCurrentUser(found);
     setFehler("");
     await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+    // Prüfe ob temporäres Passwort → Passwort ändern
+    if (found.mustChangePassword) {
+      setShowChangePw(true);
+    }
   };
 
   const handleRegister = async () => {
@@ -127,6 +197,7 @@ export default function CommunityScreen() {
     await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
     setIsLoggedIn(true);
     setUserName(newUser.name);
+    setCurrentUser(newUser);
     setFehler("");
   };
 
@@ -137,14 +208,124 @@ export default function CommunityScreen() {
     setPasswordConfirm("");
     setName("");
     setUserName("");
+    setCurrentUser(null);
     setMode("login");
+    setShowNewPost(false);
+    setShowChangePw(false);
     await AsyncStorage.removeItem(CURRENT_USER_KEY);
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPw.trim()) { setFehler("Bitte gib ein neues Passwort ein."); return; }
+    if (newPw.length < 4) { setFehler("Das Passwort muss mindestens 4 Zeichen haben."); return; }
+    if (newPw !== newPwConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
+
+    if (currentUser) {
+      const users = await getUsers();
+      const idx = users.findIndex(u => u.email === currentUser.email);
+      if (idx >= 0) {
+        users[idx].password = newPw;
+        users[idx].mustChangePassword = false;
+        await saveUsers(users);
+        const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
+        setCurrentUser(updatedUser);
+        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+      }
+    }
+    setShowChangePw(false);
+    setNewPw("");
+    setNewPwConfirm("");
+    setFehler("");
+    Alert.alert("Passwort geändert", "Dein neues Passwort wurde gespeichert.");
+  };
+
+  const handleCreatePost = async () => {
+    if (!newPostTitel.trim()) {
+      Alert.alert("Titel fehlt", "Bitte gib deinem Beitrag einen Titel.");
+      return;
+    }
+    if (!newPostText.trim()) {
+      Alert.alert("Text fehlt", "Bitte schreibe etwas für deinen Beitrag.");
+      return;
+    }
+
+    const newPost: CommunityPost = {
+      id: `user-${Date.now()}`,
+      emoji: selectedEmoji,
+      titel: newPostTitel.trim(),
+      text: newPostText.trim(),
+      datum: new Date().toISOString(),
+      von: userName,
+      istLara: false,
+    };
+
+    const updatedPosts = [newPost, ...posts];
+    setPosts(updatedPosts);
+    await savePosts(updatedPosts);
+    setNewPostTitel("");
+    setNewPostText("");
+    setSelectedEmoji("🌸");
+    setShowNewPost(false);
   };
 
   if (checking) {
     return <ScreenContainer><View style={{ flex: 1, backgroundColor: C.bg }} /></ScreenContainer>;
   }
 
+  // ── Passwort ändern (nach erstem Login mit temporärem Passwort) ──
+  if (isLoggedIn && showChangePw) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <KeyboardAvoidingView
+          style={{ flex: 1, backgroundColor: C.bg }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <ScrollView contentContainerStyle={s.loginContainer} keyboardShouldPersistTaps="handled">
+            <Text style={s.loginEmoji}>🔑</Text>
+            <Text style={s.loginTitel}>Passwort ändern</Text>
+            <Text style={s.loginSub}>
+              Bitte wähle ein neues, persönliches Passwort für deinen Community-Zugang.
+            </Text>
+
+            <View style={s.loginCard}>
+              <Text style={s.loginLabel}>Neues Passwort</Text>
+              <TextInput
+                style={s.loginInput}
+                placeholder="Dein neues Passwort"
+                placeholderTextColor={C.muted}
+                secureTextEntry
+                value={newPw}
+                onChangeText={(t) => { setNewPw(t); setFehler(""); }}
+                returnKeyType="next"
+                autoCapitalize="none"
+              />
+
+              <Text style={[s.loginLabel, { marginTop: 4 }]}>Passwort bestätigen</Text>
+              <TextInput
+                style={s.loginInput}
+                placeholder="Passwort wiederholen"
+                placeholderTextColor={C.muted}
+                secureTextEntry
+                value={newPwConfirm}
+                onChangeText={(t) => { setNewPwConfirm(t); setFehler(""); }}
+                returnKeyType="done"
+                onSubmitEditing={handleChangePassword}
+                autoCapitalize="none"
+              />
+
+              {fehler !== "" && <Text style={s.loginFehler}>{fehler}</Text>}
+
+              <TouchableOpacity style={s.loginBtn} onPress={handleChangePassword} activeOpacity={0.85}>
+                <Text style={s.loginBtnText}>Passwort speichern →</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ScreenContainer>
+    );
+  }
+
+  // ── Login / Registrierung ──
   if (!isLoggedIn) {
     return (
       <ScreenContainer containerClassName="bg-background">
@@ -161,7 +342,6 @@ export default function CommunityScreen() {
                 : "Erstelle dein Konto und werde Teil unserer Community."}
             </Text>
 
-            {/* Tab-Umschalter Login / Registrieren */}
             <View style={s.tabRow}>
               <TouchableOpacity
                 style={[s.tab, mode === "login" && s.tabActive]}
@@ -256,34 +436,34 @@ export default function CommunityScreen() {
                 <TouchableOpacity
                   style={s.forgotBtn}
                   onPress={() => {
-                    if (!email.trim() || !validateEmail(email.trim())) {
+                    if (!email.trim()) {
                       setFehler("Bitte gib zuerst deine E-Mail-Adresse ein.");
                       return;
                     }
                     Alert.alert(
-                      "Passwort zur\u00fccksetzen",
-                      `Dein Passwort f\u00fcr ${email.trim()} wird zur\u00fcckgesetzt. Du kannst dich danach mit dem neuen Passwort anmelden.`,
+                      "Passwort zurücksetzen",
+                      `Dein Passwort für ${email.trim()} wird zurückgesetzt. Du kannst dich danach mit dem neuen Passwort anmelden.`,
                       [
                         { text: "Abbrechen", style: "cancel" },
-                        { text: "Zur\u00fccksetzen", style: "destructive", onPress: async () => {
+                        { text: "Zurücksetzen", style: "destructive", onPress: async () => {
                           try {
                             const users = await getUsers();
                             const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
                             if (userIdx === -1) {
-                              Alert.alert("Nicht gefunden", "Es gibt kein Konto mit dieser E-Mail-Adresse. Bitte registriere dich zuerst.");
+                              Alert.alert("Nicht gefunden", "Es gibt kein Konto mit dieser E-Mail-Adresse.");
                               return;
                             }
-                            // Neues tempor\u00e4res Passwort generieren
                             const tempPw = Math.random().toString(36).slice(2, 8);
                             users[userIdx].password = tempPw;
+                            users[userIdx].mustChangePassword = true;
                             await saveUsers(users);
                             setFehler("");
                             Alert.alert(
-                              "Passwort zur\u00fcckgesetzt",
-                              `Dein neues tempor\u00e4res Passwort lautet:\n\n${tempPw}\n\nBitte merke es dir und \u00e4ndere es nach dem Anmelden in deinem Profil.\n\nAbsender: Die Seelenplanerin App`,
+                              "Passwort zurückgesetzt",
+                              `Dein neues temporäres Passwort lautet:\n\n${tempPw}\n\nBitte merke es dir und ändere es nach dem Anmelden.\n\nAbsender: Die Seelenplanerin App`,
                             );
                           } catch {
-                            Alert.alert("Fehler", "Beim Zur\u00fccksetzen ist ein Fehler aufgetreten. Bitte versuche es erneut.");
+                            Alert.alert("Fehler", "Beim Zurücksetzen ist ein Fehler aufgetreten.");
                           }
                         }},
                       ]
@@ -309,85 +489,149 @@ export default function CommunityScreen() {
     );
   }
 
+  // ── Eingeloggt: Community-Feed ──
   return (
     <ScreenContainer containerClassName="bg-background">
-      <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
-        <View style={s.header}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <View>
-              <Text style={s.headerTitle}>Community 🌸</Text>
-              <Text style={s.headerSub}>
-                Willkommen, {userName}! Schön, dass du da bist.
-              </Text>
-            </View>
-            <TouchableOpacity onPress={handleLogout} style={s.logoutBtn} activeOpacity={0.8}>
-              <Text style={s.logoutText}>Abmelden</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Premium-Inhalte Banner */}
-        <TouchableOpacity
-          style={s.premiumBanner}
-          onPress={() => router.push("/community-premium" as any)}
-          activeOpacity={0.85}
-        >
-          <Text style={{ fontSize: 22 }}>👑</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={s.premiumBannerTitle}>Premium Inhalte</Text>
-            <Text style={s.premiumBannerSub}>Mondkalender · Meditationen · Mond & Zyklus</Text>
-          </View>
-          <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
-        </TouchableOpacity>
-
-        <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
-          {ANGEBOTE.map((a, i) => (
-            <TouchableOpacity key={i} style={s.angebotCard} onPress={() => Linking.openURL(a.url)} activeOpacity={0.85}>
-              <Text style={{ fontSize: 32, marginBottom: 8 }}>{a.emoji}</Text>
-              <Text style={s.angebotTitel}>{a.titel}</Text>
-              <Text style={s.angebotBeschreibung}>{a.beschreibung}</Text>
-              <Text style={s.angebotPreis}>{a.preis}</Text>
-              <View style={s.angebotBtn}><Text style={s.angebotBtnText}>Buchen →</Text></View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <Text style={s.sec}>💬 Community-Beiträge</Text>
-        {POSTS.map(post => (
-          <View key={post.id} style={[s.postCard, post.istLara && s.postCardLara]}>
-            <View style={s.postHeader}>
-              <View style={[s.postAvatar, post.istLara && s.postAvatarLara]}>
-                <Text style={{ fontSize: 18 }}>{post.emoji}</Text>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: C.bg }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <View style={s.header}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <View>
+                <Text style={s.headerTitle}>Community 🌸</Text>
+                <Text style={s.headerSub}>
+                  Willkommen, {userName}! Schön, dass du da bist.
+                </Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <Text style={s.postVon}>{post.von}</Text>
-                  {post.istLara && <View style={s.laraTag}><Text style={s.laraTagText}>Seelenplanerin</Text></View>}
+              <TouchableOpacity onPress={handleLogout} style={s.logoutBtn} activeOpacity={0.8}>
+                <Text style={s.logoutText}>Abmelden</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Premium-Inhalte Banner */}
+          <TouchableOpacity
+            style={s.premiumBanner}
+            onPress={() => router.push("/community-premium" as any)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 22 }}>👑</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.premiumBannerTitle}>Premium Inhalte</Text>
+              <Text style={s.premiumBannerSub}>Mondkalender · Meditationen · Mond & Zyklus</Text>
+            </View>
+            <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
+          </TouchableOpacity>
+
+          <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
+            {ANGEBOTE.map((a, i) => (
+              <TouchableOpacity key={i} style={s.angebotCard} onPress={() => Linking.openURL(a.url)} activeOpacity={0.85}>
+                <Text style={{ fontSize: 32, marginBottom: 8 }}>{a.emoji}</Text>
+                <Text style={s.angebotTitel}>{a.titel}</Text>
+                <Text style={s.angebotBeschreibung}>{a.beschreibung}</Text>
+                <Text style={s.angebotPreis}>{a.preis}</Text>
+                <View style={s.angebotBtn}><Text style={s.angebotBtnText}>Buchen →</Text></View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Neuen Beitrag schreiben ── */}
+          <View style={s.newPostSection}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={s.sec}>💬 Community-Beiträge</Text>
+              <TouchableOpacity
+                style={s.newPostToggle}
+                onPress={() => setShowNewPost(!showNewPost)}
+                activeOpacity={0.8}
+              >
+                <Text style={s.newPostToggleText}>{showNewPost ? "✕ Schließen" : "✏️ Schreiben"}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {showNewPost && (
+              <View style={s.newPostCard}>
+                <Text style={s.newPostLabel}>Wähle ein Emoji für deinen Beitrag</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
+                  {POST_EMOJIS.map(e => (
+                    <TouchableOpacity
+                      key={e}
+                      style={[s.emojiBtn, selectedEmoji === e && s.emojiBtnActive]}
+                      onPress={() => setSelectedEmoji(e)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={{ fontSize: 22 }}>{e}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <Text style={s.newPostLabel}>Titel</Text>
+                <TextInput
+                  style={s.newPostInput}
+                  placeholder="z.B. Meine Erfahrung mit dem Vollmond-Ritual"
+                  placeholderTextColor={C.muted}
+                  value={newPostTitel}
+                  onChangeText={setNewPostTitel}
+                  returnKeyType="next"
+                  maxLength={100}
+                />
+
+                <Text style={s.newPostLabel}>Dein Beitrag</Text>
+                <TextInput
+                  style={[s.newPostInput, { height: 100, textAlignVertical: "top" }]}
+                  placeholder="Teile deine Erfahrungen, stelle eine Frage oder inspiriere andere..."
+                  placeholderTextColor={C.muted}
+                  value={newPostText}
+                  onChangeText={setNewPostText}
+                  multiline
+                  maxLength={500}
+                />
+
+                <TouchableOpacity style={s.newPostSubmit} onPress={handleCreatePost} activeOpacity={0.85}>
+                  <Text style={s.newPostSubmitText}>Beitrag veröffentlichen →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* ── Posts ── */}
+          {posts.map(post => (
+            <View key={post.id} style={[s.postCard, post.istLara && s.postCardLara]}>
+              <View style={s.postHeader}>
+                <View style={[s.postAvatar, post.istLara && s.postAvatarLara]}>
+                  <Text style={{ fontSize: 18 }}>{post.emoji}</Text>
                 </View>
-                <Text style={s.postDatum}>{post.datum}</Text>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Text style={s.postVon}>{post.von}</Text>
+                    {post.istLara && <View style={s.laraTag}><Text style={s.laraTagText}>Seelenplanerin</Text></View>}
+                  </View>
+                  <Text style={s.postDatum}>{formatDatum(post.datum)}</Text>
+                </View>
               </View>
+              <Text style={s.postTitel}>{post.titel}</Text>
+              <Text style={s.postText}>{post.text}</Text>
             </View>
-            <Text style={s.postTitel}>{post.titel}</Text>
-            <Text style={s.postText}>{post.text}</Text>
-          </View>
-        ))}
+          ))}
 
-        <TouchableOpacity
-          style={s.instagramCard}
-          onPress={() => Linking.openURL("https://www.instagram.com/die.seelenplanerin")}
-          activeOpacity={0.85}
-        >
-          <Text style={{ fontSize: 28 }}>📸</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={s.instagramTitel}>Folge mir auf Instagram</Text>
-            <Text style={s.instagramHandle}>@die.seelenplanerin</Text>
-          </View>
-          <Text style={{ fontSize: 20, color: C.muted }}>›</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={s.instagramCard}
+            onPress={() => Linking.openURL("https://www.instagram.com/die.seelenplanerin")}
+            activeOpacity={0.85}
+          >
+            <Text style={{ fontSize: 28 }}>📸</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.instagramTitel}>Folge mir auf Instagram</Text>
+              <Text style={s.instagramHandle}>@die.seelenplanerin</Text>
+            </View>
+            <Text style={{ fontSize: 20, color: C.muted }}>›</Text>
+          </TouchableOpacity>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 }
@@ -445,4 +689,31 @@ const s = StyleSheet.create({
   },
   premiumBannerTitle: { fontSize: 15, fontWeight: "700", color: C.brown },
   premiumBannerSub: { fontSize: 12, color: C.muted },
+
+  // Neuer Beitrag
+  newPostSection: { marginTop: 4 },
+  newPostToggle: {
+    backgroundColor: C.rose, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8,
+    marginRight: 16,
+  },
+  newPostToggleText: { color: "#FFF", fontSize: 13, fontWeight: "700" },
+  newPostCard: {
+    marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
+    borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.rose,
+  },
+  newPostLabel: { fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 6, marginTop: 4 },
+  newPostInput: {
+    backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14,
+    color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8,
+  },
+  emojiBtn: {
+    width: 44, height: 44, borderRadius: 22, backgroundColor: C.surface,
+    alignItems: "center", justifyContent: "center", borderWidth: 1.5, borderColor: C.border,
+  },
+  emojiBtnActive: { borderColor: C.rose, backgroundColor: C.roseLight },
+  newPostSubmit: {
+    backgroundColor: C.rose, borderRadius: 14, paddingVertical: 14,
+    alignItems: "center", marginTop: 8,
+  },
+  newPostSubmitText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
 });
