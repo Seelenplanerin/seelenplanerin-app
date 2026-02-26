@@ -53,8 +53,8 @@ async function startServer() {
     next();
   });
 
-  app.use(express.json({ limit: "100mb" }));
-  app.use(express.urlencoded({ limit: "100mb", extended: true }));
+  app.use(express.json({ limit: "250mb" }));
+  app.use(express.urlencoded({ limit: "250mb", extended: true }));
 
   registerOAuthRoutes(app);
 
@@ -62,8 +62,8 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
-  // Multipart-Upload-Route für große Dateien (bis 100 MB)
-  const upload = multer({ limits: { fileSize: 100 * 1024 * 1024 } });
+  // Multipart-Upload-Route für große Dateien (bis 200 MB)
+  const upload = multer({ limits: { fileSize: 200 * 1024 * 1024 } });
   app.post("/api/upload-audio", upload.single("file"), async (req, res) => {
     try {
       const file = req.file;

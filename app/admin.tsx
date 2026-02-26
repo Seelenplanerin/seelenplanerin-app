@@ -392,7 +392,7 @@ export default function AdminScreen() {
       const result = await DocumentPicker.getDocumentAsync({ type: ["audio/*", "video/*", "application/octet-stream"], copyToCacheDirectory: true });
       if (result.canceled || !result.assets?.[0]) return;
       const file = result.assets[0];
-      if (file.size && file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 100 MB"); return; }
+      if (file.size && file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 100 MB"); return; }
       await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
     } catch (err: any) {
       if (err.message !== "User canceled document picker") {
@@ -712,7 +712,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 100 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setSongMp3Url, setSongMp3FileName, setUploading);
                           }}
@@ -743,7 +743,7 @@ export default function AdminScreen() {
                   {songMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {songMp3FileName}</Text>
                   ) : (
-                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 64 MB. Wird in der App direkt abspielbar.</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 200 MB. Wird in der App direkt abspielbar.</Text>
                   )}
 
                   <View style={{ height: 1, backgroundColor: C.border, marginVertical: 8 }} />
@@ -879,7 +879,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 100 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 100 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setMeditMp3Url, setMeditMp3FileName, setMeditUploading);
                           }}
@@ -911,7 +911,7 @@ export default function AdminScreen() {
                   {meditMp3Url ? (
                     <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {meditMp3FileName}</Text>
                   ) : (
-                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 64 MB. Wird im Community-Bereich direkt abspielbar.</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 200 MB. Wird im Community-Bereich direkt abspielbar.</Text>
                   )}
 
                   <Text style={s.formLabel}>Beschreibung</Text>
@@ -956,7 +956,7 @@ export default function AdminScreen() {
                 <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
                 <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
                   Meditationen werden automatisch im Community-Bereich für eingeloggte Mitglieder angezeigt.{"\n"}
-                  Lade MP3-Dateien hoch (max. 64 MB) – sie können direkt in der App abgespielt werden.
+                  Lade MP3-Dateien hoch (max. 200 MB) – sie können direkt in der App abgespielt werden.
                 </Text>
               </View>
             </View>

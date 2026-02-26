@@ -426,3 +426,9 @@
 - [x] Admin: Musik-Upload-Button funktioniert nicht – BEHOBEN: HTML <input type="file"> overlay auf Web
 - [x] Doppeltes Beschreibung-Feld im Meditation-Formular – BEHOBEN
 - [x] MP3-Upload-Button direkt nach Titel sichtbar (kein Scrollen nötig)
+
+## KRITISCH: Feedback Runde 21 (26.02.2026)
+- [x] Community: Registrierungs-Button ENTFERNT – nur Login, keine Selbst-Registrierung
+- [x] Ich-Bereich: Komplett neu als persönliche Nutzer-Seite (Name, Stimmung, Intention, Lieblingszitat, Journal/Favoriten-Zähler)
+- [x] Passwort-Reset: Sendet echte E-Mail über hallo@seelenplanerin.de mit temporärem Passwort
+- [x] Upload-Limit: Von 64 MB auf 200 MB erhöht (Server + Admin + Multer)

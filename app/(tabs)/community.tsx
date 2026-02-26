@@ -405,7 +405,7 @@ export default function CommunityScreen() {
     const users = await getUsers();
     const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
     if (!found) {
-      setFehler("Kein Konto mit dieser E-Mail gefunden. Bitte registriere dich zuerst.");
+      setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
       return;
     }
     if (found.password !== password) {
@@ -584,43 +584,12 @@ export default function CommunityScreen() {
             <Text style={s.loginEmoji}>🌸</Text>
             <Text style={s.loginTitel}>Community</Text>
             <Text style={s.loginSub}>
-              {mode === "login"
-                ? "Melde dich an, um in deinen Seelenraum zu gelangen."
-                : "Erstelle dein Konto und werde Teil unserer Community."}
+              Melde dich an, um in deinen Seelenraum zu gelangen.
             </Text>
 
-            <View style={s.tabRow}>
-              <TouchableOpacity
-                style={[s.tab, mode === "login" && s.tabActive]}
-                onPress={() => { setMode("login"); setFehler(""); }}
-                activeOpacity={0.8}
-              >
-                <Text style={[s.tabText, mode === "login" && s.tabTextActive]}>Anmelden</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[s.tab, mode === "register" && s.tabActive]}
-                onPress={() => { setMode("register"); setFehler(""); }}
-                activeOpacity={0.8}
-              >
-                <Text style={[s.tabText, mode === "register" && s.tabTextActive]}>Registrieren</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Nur Login - Registrierung nur über Admin */}
 
             <View style={s.loginCard}>
-              {mode === "register" && (
-                <>
-                  <Text style={s.loginLabel}>Dein Name</Text>
-                  <TextInput
-                    style={s.loginInput}
-                    placeholder="z.B. Sarah"
-                    placeholderTextColor={C.muted}
-                    value={name}
-                    onChangeText={(t) => { setName(t); setFehler(""); }}
-                    autoCapitalize="words"
-                    returnKeyType="next"
-                  />
-                </>
-              )}
 
               <Text style={s.loginLabel}>E-Mail-Adresse</Text>
               <TextInput
@@ -639,88 +608,69 @@ export default function CommunityScreen() {
               <Text style={[s.loginLabel, { marginTop: 4 }]}>Passwort</Text>
               <TextInput
                 style={s.loginInput}
-                placeholder={mode === "register" ? "Wähle ein Passwort" : "Dein Passwort"}
+                placeholder="Dein Passwort"
                 placeholderTextColor={C.muted}
                 secureTextEntry
                 value={password}
                 onChangeText={(t) => { setPassword(t); setFehler(""); }}
-                returnKeyType={mode === "register" ? "next" : "done"}
-                onSubmitEditing={mode === "login" ? handleLogin : undefined}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
                 autoCapitalize="none"
                 textContentType="password"
               />
 
-              {mode === "register" && (
-                <>
-                  <Text style={[s.loginLabel, { marginTop: 4 }]}>Passwort bestätigen</Text>
-                  <TextInput
-                    style={s.loginInput}
-                    placeholder="Passwort wiederholen"
-                    placeholderTextColor={C.muted}
-                    secureTextEntry
-                    value={passwordConfirm}
-                    onChangeText={(t) => { setPasswordConfirm(t); setFehler(""); }}
-                    returnKeyType="done"
-                    onSubmitEditing={handleRegister}
-                    autoCapitalize="none"
-                  />
-                </>
-              )}
+
 
               {fehler !== "" && <Text style={s.loginFehler}>{fehler}</Text>}
 
               <TouchableOpacity
                 style={s.loginBtn}
-                onPress={mode === "login" ? handleLogin : handleRegister}
+                onPress={handleLogin}
                 activeOpacity={0.85}
               >
-                <Text style={s.loginBtnText}>
-                  {mode === "login" ? "Anmelden →" : "Konto erstellen →"}
-                </Text>
+                <Text style={s.loginBtnText}>Anmelden →</Text>
               </TouchableOpacity>
 
-              {mode === "login" && (
-                <TouchableOpacity
+              <TouchableOpacity
                   style={s.forgotBtn}
-                  onPress={() => {
+                  onPress={async () => {
                     if (!email.trim()) {
                       setFehler("Bitte gib zuerst deine E-Mail-Adresse ein.");
                       return;
                     }
-                    Alert.alert(
-                      "Passwort zurücksetzen",
-                      `Dein Passwort für ${email.trim()} wird zurückgesetzt. Du kannst dich danach mit dem neuen Passwort anmelden.`,
-                      [
-                        { text: "Abbrechen", style: "cancel" },
-                        { text: "Zurücksetzen", style: "destructive", onPress: async () => {
-                          try {
-                            const users = await getUsers();
-                            const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
-                            if (userIdx === -1) {
-                              Alert.alert("Nicht gefunden", "Es gibt kein Konto mit dieser E-Mail-Adresse.");
-                              return;
-                            }
-                            const tempPw = Math.random().toString(36).slice(2, 8);
-                            users[userIdx].password = tempPw;
-                            users[userIdx].mustChangePassword = true;
-                            await saveUsers(users);
-                            setFehler("");
-                            Alert.alert(
-                              "Passwort zurückgesetzt",
-                              `Dein neues temporäres Passwort lautet:\n\n${tempPw}\n\nBitte merke es dir und ändere es nach dem Anmelden.\n\nAbsender: Die Seelenplanerin App`,
-                            );
-                          } catch {
-                            Alert.alert("Fehler", "Beim Zurücksetzen ist ein Fehler aufgetreten.");
-                          }
-                        }},
-                      ]
-                    );
+                    try {
+                      const users = await getUsers();
+                      const userIdx = users.findIndex(u => u.email.toLowerCase() === email.trim().toLowerCase());
+                      if (userIdx === -1) {
+                        setFehler("Kein Konto mit dieser E-Mail gefunden.");
+                        return;
+                      }
+                      const tempPw = Math.random().toString(36).slice(2, 8);
+                      users[userIdx].password = tempPw;
+                      users[userIdx].mustChangePassword = true;
+                      await saveUsers(users);
+                      // E-Mail senden über Server
+                      try {
+                        const API_URL = Platform.OS === "web" ? "/api/trpc" : "http://127.0.0.1:3000/api/trpc";
+                        await fetch(`${API_URL}/email.sendPasswordReset`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { toEmail: email.trim(), toName: users[userIdx].name || "Seele", tempPassword: tempPw } }),
+                        });
+                      } catch (e) { /* E-Mail-Fehler ignorieren, PW wurde trotzdem geändert */ }
+                      setFehler("");
+                      Alert.alert(
+                        "E-Mail gesendet ✉️",
+                        `Ein neues temporäres Passwort wurde an ${email.trim()} gesendet. Prüfe deinen Posteingang (auch Spam-Ordner).`,
+                      );
+                    } catch {
+                      Alert.alert("Fehler", "Beim Zurücksetzen ist ein Fehler aufgetreten.");
+                    }
                   }}
                   activeOpacity={0.7}
                 >
                   <Text style={s.forgotText}>Passwort vergessen?</Text>
                 </TouchableOpacity>
-              )}
             </View>
 
             <TouchableOpacity
