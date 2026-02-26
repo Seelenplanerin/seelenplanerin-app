@@ -8,6 +8,8 @@ import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { trpc } from "@/lib/trpc";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system/legacy";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -35,6 +37,8 @@ interface Song {
   spotifyUrl?: string;
   appleMusicUrl?: string;
   youtubeUrl?: string;
+  mp3Url?: string;
+  mp3FileName?: string;
   emoji: string;
   kategorie: "musik" | "meditation" | "ritual" | "mantra";
   verfuegbar: boolean;
@@ -133,6 +137,9 @@ export default function AdminScreen() {
   const [songKat, setSongKat] = useState<Song["kategorie"]>("musik");
   const [songVerfuegbar, setSongVerfuegbar] = useState(true);
   const [songFehler, setSongFehler] = useState("");
+  const [songMp3Url, setSongMp3Url] = useState("");
+  const [songMp3FileName, setSongMp3FileName] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   // Tagesimpulse-Verwaltung
   const [impulse, setImpulse] = useState<Tagesimpuls[]>([]);
@@ -144,6 +151,7 @@ export default function AdminScreen() {
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
   const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
+  const uploadAudioMutation = trpc.storage.uploadAudio.useMutation();
 
   useEffect(() => {
     AsyncStorage.getItem("admin_auth").then(val => {
@@ -267,7 +275,65 @@ export default function AdminScreen() {
   const resetSongForm = () => {
     setSongTitel(""); setSongBeschreibung(""); setSongSpotify(""); setSongApple("");
     setSongYoutube(""); setSongEmoji("🎶"); setSongKat("musik"); setSongVerfuegbar(true);
-    setSongFehler(""); setEditSongId(null);
+    setSongFehler(""); setEditSongId(null); setSongMp3Url(""); setSongMp3FileName("");
+  };
+
+  const handlePickMp3 = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "audio/*",
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+      const file = result.assets[0];
+      if (file.size && file.size > 16 * 1024 * 1024) {
+        Alert.alert("Datei zu groß", "Maximale Dateigröße: 16 MB");
+        return;
+      }
+      setUploading(true);
+      setSongMp3FileName(file.name);
+      try {
+        let base64Data: string;
+        if (Platform.OS === "web") {
+          // Web: fetch blob and convert to base64
+          const resp = await fetch(file.uri);
+          const blob = await resp.blob();
+          base64Data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const dataUrl = reader.result as string;
+              resolve(dataUrl.split(",")[1] || "");
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } else {
+          // Native: use FileSystem
+          base64Data = await FileSystem.readAsStringAsync(file.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+        }
+        const uploadResult = await uploadAudioMutation.mutateAsync({
+          fileName: file.name,
+          base64Data,
+          contentType: file.mimeType || "audio/mpeg",
+        });
+        if (uploadResult.success) {
+          setSongMp3Url(uploadResult.url!);
+          Alert.alert("Upload erfolgreich ✓", `"${file.name}" wurde hochgeladen.`);
+        } else {
+          Alert.alert("Upload fehlgeschlagen", uploadResult.error || "Unbekannter Fehler");
+        }
+      } catch (err: any) {
+        Alert.alert("Upload fehlgeschlagen", err.message || "Fehler beim Hochladen");
+      } finally {
+        setUploading(false);
+      }
+    } catch (err: any) {
+      if (err.message !== "User canceled document picker") {
+        Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden.");
+      }
+    }
   };
 
   const handleSaveSong = async () => {
@@ -278,6 +344,7 @@ export default function AdminScreen() {
       titel: songTitel.trim(), beschreibung: songBeschreibung.trim(),
       spotifyUrl: songSpotify.trim() || undefined, appleMusicUrl: songApple.trim() || undefined,
       youtubeUrl: songYoutube.trim() || undefined,
+      mp3Url: songMp3Url.trim() || undefined, mp3FileName: songMp3FileName.trim() || undefined,
       emoji: songEmoji, kategorie: songKat, verfuegbar: songVerfuegbar,
     };
     if (editSongId) {
@@ -296,6 +363,7 @@ export default function AdminScreen() {
     setSongSpotify(song.spotifyUrl || ""); setSongApple(song.appleMusicUrl || "");
     setSongYoutube(song.youtubeUrl || ""); setSongEmoji(song.emoji);
     setSongKat(song.kategorie); setSongVerfuegbar(song.verfuegbar);
+    setSongMp3Url(song.mp3Url || ""); setSongMp3FileName(song.mp3FileName || "");
     setShowAddSong(true);
   };
 
@@ -481,8 +549,8 @@ export default function AdminScreen() {
             <View style={s.section}>
               <Text style={s.sectionTitle}>🎵 Musik verwalten</Text>
               <Text style={s.sectionHint}>
-                Füge Songs mit Streaming-Links hinzu. Nutzer sehen sie im Musik-Bereich der App.
-                Du kannst Spotify-, Apple Music- und YouTube-Links hinterlegen.
+                Füge Songs mit Streaming-Links oder eigenen MP3-Dateien hinzu.
+                Du kannst Spotify-, Apple Music-, YouTube-Links hinterlegen oder MP3s direkt hochladen.
               </Text>
 
               {songs.length > 0 && songs.map(song => (
@@ -494,6 +562,7 @@ export default function AdminScreen() {
                     <Text style={s.memberName}>{song.titel}</Text>
                     <Text style={s.memberEmail}>{song.beschreibung || song.kategorie}</Text>
                     <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
+                      {song.mp3Url && <Text style={{ fontSize: 10, color: C.rose }}>● MP3</Text>}
                       {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#1DB954" }}>● Spotify</Text>}
                       {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#FC3C44" }}>● Apple</Text>}
                       {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#FF0000" }}>● YouTube</Text>}
@@ -546,6 +615,35 @@ export default function AdminScreen() {
                       </TouchableOpacity>
                     ))}
                   </View>
+
+                  {/* MP3-Upload */}
+                  <Text style={s.formLabel}>🎧 MP3-Datei hochladen</Text>
+                  <TouchableOpacity
+                    style={[s.actionBtn, { borderColor: C.rose, marginBottom: 8 }, uploading && { opacity: 0.6 }]}
+                    onPress={handlePickMp3} activeOpacity={0.85} disabled={uploading}>
+                    {uploading ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                        <ActivityIndicator size="small" color={C.rose} />
+                        <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>Wird hochgeladen...</Text>
+                      </View>
+                    ) : (
+                      <>
+                        <Text style={{ fontSize: 18, marginRight: 10 }}>📁</Text>
+                        <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                          {songMp3FileName ? songMp3FileName : "MP3-Datei auswählen"}
+                        </Text>
+                        {songMp3Url ? <Text style={{ color: "#5C8A5C", fontSize: 14 }}>✓</Text> : null}
+                      </>
+                    )}
+                  </TouchableOpacity>
+                  {songMp3Url ? (
+                    <Text style={{ fontSize: 11, color: "#5C8A5C", marginBottom: 8 }}>✓ MP3 hochgeladen: {songMp3FileName}</Text>
+                  ) : (
+                    <Text style={{ fontSize: 11, color: C.muted, marginBottom: 8 }}>Max. 16 MB. Wird in der App direkt abspielbar.</Text>
+                  )}
+
+                  <View style={{ height: 1, backgroundColor: C.border, marginVertical: 8 }} />
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 8 }}>Oder: Streaming-Links</Text>
 
                   <Text style={s.formLabel}>🟢 Spotify-Link</Text>
                   <TextInput style={s.formInput} placeholder="https://open.spotify.com/..." placeholderTextColor={C.muted}

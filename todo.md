@@ -361,3 +361,9 @@
 - [x] Inhalte steuern: Tagesimpulse erstellen, sammeln und aktivieren (Schnelleingabe + Impulse-Bibliothek)
 - [ ] Inhalte steuern: Rituale-Texte bearbeiten (noch offen)
 - [x] Admin-Bereich: Tab-basierte Steuerungszentrale (Mitglieder, Musik, Impulse, Einstellungen)
+
+## Feature: MP3-Upload (26.02.2026)
+- [x] Server: Upload-Route für MP3-Dateien (S3 Storage via tRPC storage.uploadAudio)
+- [x] Admin Musik-Tab: MP3-Datei auswählen und hochladen (DocumentPicker + Base64 + S3)
+- [x] Musik-Screen: In-App-Player für hochgeladene MP3s (Web: HTML5 Audio, Native: expo-audio)
+- [x] Songs mit MP3-URL statt nur Streaming-Links (MP3-Badge + In-App Abspielen)
