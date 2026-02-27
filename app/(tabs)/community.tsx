@@ -504,26 +504,9 @@ export default function CommunityScreen() {
       if (found.mustChangePassword) {
         setShowChangePw(true);
       }
-    } catch (e) {
-      // Fallback: AsyncStorage-basierter Login
-      const users = await getUsers();
-      const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (!found) {
-        setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
-        return;
-      }
-      if (found.password !== password) {
-        setFehler("Falsches Passwort. Bitte versuche es erneut.");
-        return;
-      }
-      setIsLoggedIn(true);
-      setUserName(found.name || found.email.split("@")[0]);
-      setCurrentUser(found);
-      setFehler("");
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
-      if (found.mustChangePassword) {
-        setShowChangePw(true);
-      }
+    } catch (e: any) {
+      console.error('Login error:', e?.message || e);
+      setFehler("Verbindungsfehler: " + (e?.message || "Bitte versuche es erneut."));
     }
   };
 
