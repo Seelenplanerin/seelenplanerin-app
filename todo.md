@@ -489,3 +489,7 @@
 - [ ] Tab-Icons reparieren (SVG statt MaterialIcons)
 - [ ] PostgreSQL-Migration deployen (DB-Fehler beheben)
 - [ ] Mitglieder löschen testen nach DB-Migration
+
+## Feedback Runde 19 (27.02.2026)
+- [ ] Passwort-Zurücksetzen-Funktion verifizieren und sicherstellen dass sie funktioniert
+- [ ] Push-Benachrichtigungen aus dem Adminbereich senden können (jederzeit)

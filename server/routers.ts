@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -43,6 +43,21 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         return sendPasswordResetEmail(input);
+      }),
+
+    sendBroadcast: publicProcedure
+      .input(z.object({
+        subject: z.string().min(1),
+        message: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        // Alle Community-Mitglieder laden
+        const users = await db.getAllCommunityUsers();
+        const recipients = users.map((u: any) => ({ email: u.email, name: u.name }));
+        if (recipients.length === 0) {
+          return { success: false, sent: 0, failed: 0, errors: ["Keine Mitglieder vorhanden."] };
+        }
+        return sendBroadcastEmail({ recipients, subject: input.subject, message: input.message });
       }),
   }),
 

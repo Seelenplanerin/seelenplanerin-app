@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "einstellungen";
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -207,9 +207,17 @@ export default function AdminScreen() {
   const [impulsAutor, setImpulsAutor] = useState("Die Seelenplanerin");
   const [impulsFehler, setImpulsFehler] = useState("");
 
+  // Nachrichten (Broadcast)
+  const [nachrichtBetreff, setNachrichtBetreff] = useState("");
+  const [nachrichtText, setNachrichtText] = useState("");
+  const [nachrichtFehler, setNachrichtFehler] = useState("");
+  const [nachrichtSending, setNachrichtSending] = useState(false);
+  const [nachrichtErfolg, setNachrichtErfolg] = useState("");
+
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
   const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
+  const sendBroadcastMutation = trpc.email.sendBroadcast.useMutation();
   const uploadAudioMutation = trpc.storage.uploadAudio.useMutation();
 
   useEffect(() => {
@@ -586,6 +594,7 @@ export default function AdminScreen() {
     { key: "musik", label: "Musik", emoji: "🎵" },
     { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
     { key: "impulse", label: "Impulse", emoji: "✨" },
+    { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
@@ -1162,6 +1171,104 @@ export default function AdminScreen() {
                   }} activeOpacity={0.85}>
                   <Text style={s.submitBtnText}>Impuls aktualisieren</Text>
                 </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ NACHRICHTEN TAB ═══════ */}
+          {activeTab === "nachrichten" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>📬 Nachricht an alle Mitglieder</Text>
+              <Text style={s.sectionHint}>
+                Sende eine E-Mail-Nachricht an alle Community-Mitglieder gleichzeitig.
+                {members.length > 0 ? ` Aktuell ${members.length} Mitglied${members.length !== 1 ? "er" : ""}.` : ""}
+              </Text>
+
+              <View style={s.formBox}>
+                <Text style={s.formLabel}>Betreff *</Text>
+                <TextInput style={s.formInput}
+                  placeholder="z.B. Neuer Seelenimpuls f\u00fcr dich \u{1F338}"
+                  placeholderTextColor={C.muted}
+                  value={nachrichtBetreff}
+                  onChangeText={t => { setNachrichtBetreff(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
+                  returnKeyType="next" />
+
+                <Text style={s.formLabel}>Nachricht *</Text>
+                <TextInput style={[s.formInput, { height: 140, textAlignVertical: "top" }]}
+                  placeholder="Deine Nachricht an die Community..."
+                  placeholderTextColor={C.muted}
+                  value={nachrichtText}
+                  onChangeText={t => { setNachrichtText(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
+                  multiline />
+
+                {nachrichtFehler !== "" && <Text style={s.formError}>{nachrichtFehler}</Text>}
+                {nachrichtErfolg !== "" && (
+                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                    <Text style={{ fontSize: 13, color: "#2E7D32", fontWeight: "600" }}>{nachrichtErfolg}</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[s.submitBtn, nachrichtSending && { opacity: 0.6 }]}
+                  onPress={async () => {
+                    if (!nachrichtBetreff.trim()) { setNachrichtFehler("Bitte gib einen Betreff ein."); return; }
+                    if (!nachrichtText.trim()) { setNachrichtFehler("Bitte gib eine Nachricht ein."); return; }
+                    if (members.length === 0) { setNachrichtFehler("Keine Mitglieder vorhanden."); return; }
+
+                    Alert.alert(
+                      "Nachricht senden?",
+                      `E-Mail an ${members.length} Mitglied${members.length !== 1 ? "er" : ""} senden?\n\nBetreff: ${nachrichtBetreff}`,
+                      [
+                        { text: "Abbrechen", style: "cancel" },
+                        {
+                          text: "Senden",
+                          style: "default",
+                          onPress: async () => {
+                            setNachrichtSending(true);
+                            setNachrichtFehler("");
+                            setNachrichtErfolg("");
+                            try {
+                              const result = await sendBroadcastMutation.mutateAsync({
+                                subject: nachrichtBetreff.trim(),
+                                message: nachrichtText.trim(),
+                              });
+                              if (result.sent > 0) {
+                                setNachrichtErfolg(`\u2705 ${result.sent} E-Mail${result.sent !== 1 ? "s" : ""} erfolgreich gesendet!${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
+                                setNachrichtBetreff("");
+                                setNachrichtText("");
+                              } else {
+                                setNachrichtFehler("Keine E-Mails konnten gesendet werden. " + (result.errors?.[0] || ""));
+                              }
+                            } catch (e: any) {
+                              setNachrichtFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
+                            } finally {
+                              setNachrichtSending(false);
+                            }
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  activeOpacity={0.85}
+                  disabled={nachrichtSending}>
+                  {nachrichtSending ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={s.submitBtnText}>Wird gesendet...</Text>
+                    </View>
+                  ) : (
+                    <Text style={s.submitBtnText}>📨 An alle {members.length} Mitglieder senden</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Die Nachricht wird als sch\u00f6ne E-Mail im Seelenplanerin-Design an jedes Mitglied pers\u00f6nlich gesendet.{"\n"}
+                  Jede E-Mail beginnt mit "Hallo [Name]" und enth\u00e4lt deine Nachricht.
+                </Text>
               </View>
             </View>
           )}
