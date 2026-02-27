@@ -471,12 +471,20 @@ export default function CommunityScreen() {
 
     try {
       const API_URL = getApiBaseUrl();
-      const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password } }),
+      // Use XMLHttpRequest for iOS Safari compatibility (fetch causes 'Load failed' on iOS)
+      const json = await new Promise<any>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/api/trpc/communityUsers.login`, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.timeout = 15000;
+        xhr.onload = () => {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch(e) { reject(new Error('Ungültige Serverantwort')); }
+        };
+        xhr.onerror = () => reject(new Error('Netzwerkfehler. Bitte prüfe deine Verbindung.'));
+        xhr.ontimeout = () => reject(new Error('Zeitüberschreitung. Bitte versuche es erneut.'));
+        xhr.send(JSON.stringify({ json: { email: email.trim().toLowerCase(), password } }));
       });
-      const json = await res.json();
       const result = json?.result?.data?.json || json?.result?.data;
       
       if (!result?.success) {
