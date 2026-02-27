@@ -470,40 +470,47 @@ export default function CommunityScreen() {
     if (!password.trim()) { setFehler("Bitte gib dein Passwort ein."); return; }
 
     try {
+      // Login: Lade Nutzerliste vom Server (mit Fallback auf AsyncStorage)
+      // Nutze XMLHttpRequest für iOS Safari Kompatibilität
       const API_URL = getApiBaseUrl();
-      // Use XMLHttpRequest for iOS Safari compatibility (fetch causes 'Load failed' on iOS)
-      const json = await new Promise<any>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${API_URL}/api/trpc/communityUsers.login`, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.timeout = 15000;
-        xhr.onload = () => {
-          try { resolve(JSON.parse(xhr.responseText)); }
-          catch(e) { reject(new Error('Ungültige Serverantwort')); }
-        };
-        xhr.onerror = () => reject(new Error('Netzwerkfehler. Bitte prüfe deine Verbindung.'));
-        xhr.ontimeout = () => reject(new Error('Zeitüberschreitung. Bitte versuche es erneut.'));
-        xhr.send(JSON.stringify({ json: { email: email.trim().toLowerCase(), password } }));
-      });
-      const result = json?.result?.data?.json || json?.result?.data;
-      
-      if (!result?.success) {
-        if (result?.error === "not_found") {
-          setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
-        } else if (result?.error === "wrong_password") {
-          setFehler("Falsches Passwort. Bitte versuche es erneut.");
-        } else {
-          setFehler("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
+      let users: CommunityUser[] = [];
+      try {
+        const usersJson = await new Promise<any>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', `${API_URL}/api/trpc/communityUsers.list`, true);
+          xhr.timeout = 10000;
+          xhr.onload = () => { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
+          xhr.onerror = () => reject(new Error('network'));
+          xhr.ontimeout = () => reject(new Error('timeout'));
+          xhr.send();
+        });
+        const dbUsers = usersJson?.result?.data?.json || usersJson?.result?.data || [];
+        if (Array.isArray(dbUsers) && dbUsers.length > 0) {
+          users = dbUsers.map((u: any) => ({
+            email: u.email, password: u.password, name: u.name,
+            mustChangePassword: u.mustChangePassword === 1 || u.mustChangePassword === true,
+          }));
+          // Lokal cachen für Offline-Nutzung
+          await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
         }
+      } catch (_) {
+        // Fallback auf gecachte Nutzerliste
+        const cached = await AsyncStorage.getItem(USERS_KEY);
+        users = cached ? JSON.parse(cached) : [];
+      }
+
+      const emailLower = email.trim().toLowerCase();
+      const found = users.find(u => u.email.toLowerCase() === emailLower);
+      
+      if (!found) {
+        setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
+        return;
+      }
+      if (found.password !== password) {
+        setFehler("Falsches Passwort. Bitte versuche es erneut.");
         return;
       }
 
-      const found: CommunityUser = {
-        email: result.user.email,
-        name: result.user.name,
-        password: password,
-        mustChangePassword: result.user.mustChangePassword,
-      };
       setIsLoggedIn(true);
       setUserName(found.name || found.email.split("@")[0]);
       setCurrentUser(found);
@@ -514,7 +521,7 @@ export default function CommunityScreen() {
       }
     } catch (e: any) {
       console.error('Login error:', e?.message || e);
-      setFehler("Verbindungsfehler: " + (e?.message || "Bitte versuche es erneut."));
+      setFehler("Verbindungsfehler. Bitte versuche es erneut.");
     }
   };
 
