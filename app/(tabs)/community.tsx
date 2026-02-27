@@ -51,7 +51,7 @@ function useCommunityAudio() {
     if (Platform.OS === "web") {
       const audio = new Audio();
       audioRef.current = audio;
-      audio.crossOrigin = "anonymous";
+      // No crossOrigin - causes CORS issues on iOS Safari with CDN audio
       audio.addEventListener("loadedmetadata", () => { setDuration(audio.duration); setLoading(false); });
       audio.addEventListener("canplaythrough", () => setLoading(false));
       audio.addEventListener("error", () => { setLoading(false); setIsPlaying(false); });
@@ -59,8 +59,12 @@ function useCommunityAudio() {
       intervalRef.current = setInterval(() => {
         if (audio && !audio.paused) { setCurrentTime(audio.currentTime); if (audio.duration) setDuration(audio.duration); }
       }, 250);
-      audio.src = url; audio.load();
-      setTimeout(() => { audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => setLoading(false)); }, 300);
+      audio.src = url;
+      // Play immediately within user gesture context (no setTimeout)
+      audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => {
+        // Fallback: try after brief delay
+        setTimeout(() => { audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => setLoading(false)); }, 100);
+      });
     }
   }, [currentUrl, isPlaying, cleanup]);
 
