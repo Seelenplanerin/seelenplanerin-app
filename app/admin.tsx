@@ -322,17 +322,18 @@ export default function AdminScreen() {
       { text: "Entfernen", style: "destructive", onPress: async () => {
         try {
           const API_URL = getApiBaseUrl();
-          await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
+          const res = await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ json: { email } }),
           });
+          if (!res.ok) throw new Error("Server-Fehler");
+          const updatedUsers = await getUsers();
+          setMembers(updatedUsers);
+          Alert.alert("Entfernt ✓", `${name} wurde aus der Community entfernt.`);
         } catch (e) {
-          const users = (await getUsers()).filter(u => u.email !== email);
-          await saveUsers(users);
+          Alert.alert("Fehler", "Mitglied konnte nicht entfernt werden. Bitte versuche es erneut.");
         }
-        const updatedUsers = await getUsers();
-        setMembers(updatedUsers);
       }},
     ]);
   };
@@ -635,8 +636,13 @@ export default function AdminScreen() {
                       <TouchableOpacity onPress={() => handleResetMemberPw(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
                         <Text style={{ fontSize: 12, color: C.gold }}>🔑</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteMember(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
-                        <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteMember(m.email, m.name)}
+                        style={s.memberDeleteBtn}
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text style={{ fontSize: 16, color: "#C87C82", fontWeight: "700" }}>✕</Text>
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -1265,6 +1271,7 @@ const s = StyleSheet.create({
   memberName: { fontSize: 14, fontWeight: "700", color: C.brown },
   memberEmail: { fontSize: 11, color: C.muted },
   memberAction: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.card, alignItems: "center", justifyContent: "center", marginLeft: 6, borderWidth: 1, borderColor: C.border },
+  memberDeleteBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FDE8E8", alignItems: "center", justifyContent: "center", marginLeft: 8, borderWidth: 1, borderColor: "#C87C82" },
 
   // Switch
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
