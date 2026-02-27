@@ -482,3 +482,10 @@
 
 ## Bug-Fixes (27.02.2026 Nachmittag)
 - [x] BUG: E-Mails werden bei Nutzeranmeldung nicht versendet – BEHOBEN: SMTP-Zugangsdaten neu gesetzt (IONOS)
+
+## Layout & Optik Verbesserungen (27.02.2026 Abend)
+- [ ] Startseite optisch verbessern (schöneres Layout, bessere Proportionen)
+- [ ] Größen anpassen (Schriften, Abstände, Karten)
+- [ ] Tab-Icons reparieren (SVG statt MaterialIcons)
+- [ ] PostgreSQL-Migration deployen (DB-Fehler beheben)
+- [ ] Mitglieder löschen testen nach DB-Migration

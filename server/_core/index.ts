@@ -14,6 +14,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import multer from "multer";
 import { storagePut } from "../storage";
+import { runMigrations } from "../db-migrate";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -51,6 +52,14 @@ function getWebDistPath(): string {
 }
 
 async function startServer() {
+  // Auto-migrate database on startup
+  try {
+    await runMigrations();
+    console.log("[db] Migrations completed");
+  } catch (err) {
+    console.error("[db] Migration failed:", err);
+  }
+
   const app = express();
   const server = createServer(app);
 
