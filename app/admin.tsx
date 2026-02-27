@@ -274,46 +274,53 @@ export default function AdminScreen() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newMemberEmail.trim())) {
       setMemberFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return;
     }
-    const users = await getUsers();
-    if (users.find(u => u.email.toLowerCase() === newMemberEmail.trim().toLowerCase())) {
-      setMemberFehler("Diese E-Mail ist bereits registriert."); return;
-    }
     const tempPw = newMemberPw.trim() || generateTempPassword();
-    const newUser: CommunityUser = {
-      email: newMemberEmail.trim().toLowerCase(), password: tempPw,
-      name: newMemberName.trim(), mustChangePassword: true,
-    };
-    // Nutzer in DB speichern
+    const emailLower = newMemberEmail.trim().toLowerCase();
+    setSendingEmail(true);
+    setMemberFehler("");
     try {
+      // 1. Mitglied in DB speichern
       const API_URL = getApiBaseUrl();
-      await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
+      const createRes = await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: newUser.email, password: newUser.password, name: newUser.name, mustChangePassword: newUser.mustChangePassword ? 1 : 0 } }),
+        body: JSON.stringify({ json: { email: emailLower, password: tempPw, name: newMemberName.trim(), mustChangePassword: 1 } }),
       });
-    } catch (e) {
-      users.push(newUser);
-      await saveUsers(users);
+      const createData = await createRes.json();
+      const createResult = createData?.result?.data?.json;
+      if (createResult?.error === "exists") {
+        setMemberFehler("Diese E-Mail ist bereits registriert.");
+        setSendingEmail(false);
+        return;
+      }
+      if (!createResult?.success) {
+        setMemberFehler("Fehler beim Speichern. Bitte versuche es erneut.");
+        setSendingEmail(false);
+        return;
+      }
+      // 2. Liste neu laden
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+      // 3. Willkommens-E-Mail senden
+      try {
+        const mailResult = await sendWelcomeMutation.mutateAsync({
+          toEmail: emailLower, toName: newMemberName.trim(), tempPassword: tempPw,
+        });
+        Alert.alert(
+          mailResult.success ? "Mitglied angelegt ✨" : "Mitglied angelegt – E-Mail fehlgeschlagen",
+          mailResult.success
+            ? `${newMemberName.trim()} wurde angelegt.\n📧 E-Mail gesendet an ${emailLower}!`
+            : `Angelegt, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}\nBitte manuell senden.`,
+        );
+      } catch {
+        Alert.alert("Mitglied angelegt ✓", `Gespeichert, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`);
+      }
+      setNewMemberName(""); setNewMemberEmail(""); setNewMemberPw(""); setShowAddMember(false);
+    } catch (e: any) {
+      setMemberFehler("Verbindungsfehler. Bitte prüfe deine Internetverbindung.");
+    } finally {
+      setSendingEmail(false);
     }
-    // Liste neu laden
-    const updatedUsers = await getUsers();
-    setMembers(updatedUsers);
-    setMemberFehler("");
-    setSendingEmail(true);
-    try {
-      const result = await sendWelcomeMutation.mutateAsync({
-        toEmail: newUser.email, toName: newUser.name, tempPassword: tempPw,
-      });
-      Alert.alert(
-        result.success ? "Mitglied angelegt ✨" : "Mitglied angelegt – E-Mail fehlgeschlagen",
-        result.success
-          ? `${newUser.name} wurde angelegt.\n📧 E-Mail gesendet an ${newUser.email}!`
-          : `Angelegt, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}\nBitte manuell senden.`,
-      );
-    } catch {
-      Alert.alert("Mitglied angelegt", `E-Mail konnte nicht gesendet werden.\nPasswort: ${tempPw}`);
-    } finally { setSendingEmail(false); }
-    setNewMemberName(""); setNewMemberEmail(""); setNewMemberPw(""); setShowAddMember(false);
   };
 
   const handleDeleteMember = (email: string, name: string) => {
