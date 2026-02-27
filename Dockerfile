@@ -2,23 +2,23 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm and expo-cli
+RUN npm install -g pnpm@9.12.0
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
+# Install all dependencies (including devDependencies for build)
 RUN pnpm install --frozen-lockfile
 
 # Copy all source files
 COPY . .
 
-# Build the server
-RUN pnpm build
+# Build the web app first (Expo export)
+RUN npx expo export --platform web --output-dir dist || echo "Expo export skipped"
 
-# Build the web app (Expo export)
-RUN npx expo export --platform web --output-dir dist 2>/dev/null || true
+# Build the server (esbuild)
+RUN pnpm build
 
 EXPOSE 3000
 
