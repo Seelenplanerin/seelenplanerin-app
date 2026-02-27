@@ -476,3 +476,6 @@
 - [x] Mond-Kalender: Emojis auch für 2027 korrekt anzeigen (alle 4 Hauptphasen mit exakten UTC-Daten)
 - [x] Tentary-Links: Bereits eingebaut (dieseelenplanerin.tentary.com) in Shop, Rituale, Community, Runen, Ich
 - [ ] Apple Music + YouTube Links: Warten auf Links von Nutzerin
+
+## Bug-Fixes (27.02.2026)
+- [x] BUG: Community-Login findet registrierte E-Mail nicht – Ursache: neue DB-Instanz nach Projekt-Reset. Fix: App veröffentlichen für permanente Datenbank
