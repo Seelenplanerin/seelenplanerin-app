@@ -6,6 +6,8 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import multer from "multer";
+import { storagePut } from "../storage";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -51,13 +53,33 @@ async function startServer() {
     next();
   });
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.json({ limit: "250mb" }));
+  app.use(express.urlencoded({ limit: "250mb", extended: true }));
 
   registerOAuthRoutes(app);
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  // Multipart-Upload-Route für große Dateien (bis 200 MB)
+  const upload = multer({ limits: { fileSize: 200 * 1024 * 1024 } });
+  app.post("/api/upload-audio", upload.single("file"), async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ success: false, error: "Keine Datei hochgeladen" });
+        return;
+      }
+      const randomSuffix = Math.random().toString(36).slice(2, 8);
+      const safeName = (file.originalname || "audio.mp3").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const fileKey = `audio/${safeName}-${randomSuffix}`;
+      const result = await storagePut(fileKey, file.buffer, file.mimetype || "audio/mpeg");
+      res.json({ success: true, url: result.url, key: result.key });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      res.status(500).json({ success: false, error: err.message || "Upload fehlgeschlagen" });
+    }
   });
 
   app.use(

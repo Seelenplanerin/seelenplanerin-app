@@ -1,10 +1,13 @@
+import { z } from "zod";
 import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { sendWelcomeEmail, sendPasswordResetEmail, verifySmtpConnection } from "./email";
+import { storagePut } from "./storage";
+import * as db from "./db";
 
 export const appRouter = router({
-  // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query((opts) => opts.ctx.user),
@@ -17,12 +20,166 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  email: router({
+    verifySmtp: publicProcedure.query(async () => {
+      return verifySmtpConnection();
+    }),
+
+    sendWelcome: publicProcedure
+      .input(z.object({
+        toEmail: z.string().email(),
+        toName: z.string().min(1),
+        tempPassword: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        return sendWelcomeEmail(input);
+      }),
+
+    sendPasswordReset: publicProcedure
+      .input(z.object({
+        toEmail: z.string().email(),
+        toName: z.string().min(1),
+        tempPassword: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        return sendPasswordResetEmail(input);
+      }),
+  }),
+
+  meditations: router({
+    // Alle aktiven Meditationen laden (für Community-Screen)
+    list: publicProcedure.query(async () => {
+      return db.getActiveMeditations();
+    }),
+
+    // Alle Meditationen laden (für Admin)
+    listAll: publicProcedure.query(async () => {
+      return db.getAllMeditations();
+    }),
+
+    // Neue Meditation erstellen
+    create: publicProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        description: z.string().optional(),
+        emoji: z.string().optional(),
+        audioUrl: z.string().min(1),
+        isPremium: z.number().default(1),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createMeditation({
+          title: input.title,
+          description: input.description || null,
+          emoji: input.emoji || "🧘\u200d\u2640\ufe0f",
+          audioUrl: input.audioUrl,
+          isPremium: input.isPremium,
+        });
+        return { success: true, id };
+      }),
+
+    // Meditation löschen
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteMeditation(input.id);
+        return { success: true };
+      }),
+
+    // Meditation aktualisieren
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        emoji: z.string().optional(),
+        isPremium: z.number().optional(),
+        isActive: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateMeditation(id, data);
+        return { success: true };
+      }),
+  }),
+
+  communityUsers: router({
+    // Login: Nutzer per E-Mail finden
+    login: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        const user = await db.getCommunityUserByEmail(input.email);
+        if (!user) return { success: false as const, error: "not_found" };
+        if (user.password !== input.password) return { success: false as const, error: "wrong_password" };
+        return { success: true as const, user: { email: user.email, name: user.name, mustChangePassword: user.mustChangePassword === 1 } };
+      }),
+
+    // Alle Nutzer laden (für Admin)
+    list: publicProcedure.query(async () => {
+      return db.getAllCommunityUsers();
+    }),
+
+    // Neuen Nutzer erstellen (Admin oder Registrierung)
+    create: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+        name: z.string().min(1),
+        mustChangePassword: z.number().default(0),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await db.getCommunityUserByEmail(input.email);
+        if (existing) return { success: false as const, error: "exists" };
+        const id = await db.createCommunityUser(input);
+        return { success: true as const, id };
+      }),
+
+    // Nutzer aktualisieren (Passwort ändern etc.)
+    update: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().optional(),
+        name: z.string().optional(),
+        mustChangePassword: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { email, ...data } = input;
+        const updateData: Record<string, any> = {};
+        if (data.password !== undefined) updateData.password = data.password;
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.mustChangePassword !== undefined) updateData.mustChangePassword = data.mustChangePassword;
+        await db.updateCommunityUser(email, updateData);
+        return { success: true };
+      }),
+
+    // Nutzer löschen
+    delete: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        await db.deleteCommunityUser(input.email);
+        return { success: true };
+      }),
+  }),
+
+  storage: router({
+    uploadAudio: publicProcedure
+      .input(z.object({
+        fileName: z.string().min(1),
+        base64Data: z.string().min(1),
+        contentType: z.string().default("audio/mpeg"),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          const buffer = Buffer.from(input.base64Data, "base64");
+          const randomSuffix = Math.random().toString(36).slice(2, 8);
+          const safeFileName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const fileKey = `audio/${safeFileName}-${randomSuffix}.mp3`;
+          const result = await storagePut(fileKey, buffer, input.contentType);
+          return { success: true as const, url: result.url, key: result.key };
+        } catch (err: any) {
+          return { success: false as const, error: err.message || "Upload fehlgeschlagen" };
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

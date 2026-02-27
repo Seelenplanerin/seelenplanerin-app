@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,74 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ── Meditationen ──
+
+export async function getAllMeditations() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meditations).orderBy(desc(meditations.createdAt));
+}
+
+export async function getActiveMeditations() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meditations).where(eq(meditations.isActive, 1)).orderBy(desc(meditations.createdAt));
+}
+
+export async function createMeditation(data: InsertMeditation) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(meditations).values(data);
+  return result[0].insertId;
+}
+
+export async function deleteMeditation(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(meditations).where(eq(meditations.id, id));
+}
+
+export async function updateMeditation(id: number, data: Partial<InsertMeditation>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(meditations).set(data).where(eq(meditations.id, id));
+}
+
+// ── Community Users ──
+
+export async function getAllCommunityUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(communityUsers).orderBy(desc(communityUsers.createdAt));
+}
+
+export async function getCommunityUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(communityUsers).where(eq(communityUsers.email, email.toLowerCase())).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createCommunityUser(data: { email: string; password: string; name: string; mustChangePassword?: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(communityUsers).values({
+    email: data.email.toLowerCase(),
+    password: data.password,
+    name: data.name,
+    mustChangePassword: data.mustChangePassword || 0,
+  });
+  return result[0].insertId;
+}
+
+export async function updateCommunityUser(email: string, data: Partial<{ password: string; name: string; mustChangePassword: number; isActive: number }>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(communityUsers).set(data).where(eq(communityUsers.email, email.toLowerCase()));
+}
+
+export async function deleteCommunityUser(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
+}

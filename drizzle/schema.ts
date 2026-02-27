@@ -25,4 +25,31 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Meditationen-Tabelle: Speichert hochgeladene Meditationen (sichtbar für alle Community-Mitglieder)
+export const meditations = mysqlTable("meditations", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  emoji: varchar("emoji", { length: 10 }).default("🧘\u200d\u2640\ufe0f"),
+  audioUrl: text("audioUrl").notNull(),
+  isPremium: int("isPremium").default(1).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Meditation = typeof meditations.$inferSelect;
+export type InsertMeditation = typeof meditations.$inferInsert;
+
+// Community-Nutzer-Tabelle: Speichert registrierte Community-Mitglieder
+export const communityUsers = mysqlTable("community_users", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  mustChangePassword: int("mustChangePassword").default(0).notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CommunityUser = typeof communityUsers.$inferSelect;
+export type InsertCommunityUser = typeof communityUsers.$inferInsert;
