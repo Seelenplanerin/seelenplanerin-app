@@ -34,6 +34,22 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+// Resolve the web dist path correctly in both dev and production:
+// - Dev (tsx): __dirname = .../server/_core/ -> ../../dist = project root/dist ✅
+// - Prod (node dist/index.js): __dirname = .../dist/ -> ../../dist = wrong ❌
+// Solution: use process.cwd() which is always the project root in both modes
+function getWebDistPath(): string {
+  // Try process.cwd()/dist first (works in production when started from /app)
+  const cwdDist = path.join(process.cwd(), "dist");
+  // In dev, __dirname is server/_core, so ../../dist is the project dist
+  const devDist = path.join(__dirname, "../../dist");
+  
+  // In production, the server runs from /app and dist is at /app/dist
+  // In dev, dist is at project-root/dist
+  // Both should resolve to the same place via cwd
+  return cwdDist;
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -68,24 +84,26 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
+  const webDistPath = getWebDistPath();
+  console.log(`[api] Web dist path: ${webDistPath} (exists: ${fs.existsSync(webDistPath)})`);
+
   // Serve the web app under /api/app/* so the published domain (which only proxies /api/*) can serve the full app
-  const distPath2 = path.join(__dirname, "../../dist");
-  if (fs.existsSync(distPath2)) {
+  if (fs.existsSync(webDistPath)) {
     // Serve static assets under /api/app/_expo, /api/app/assets etc.
-    app.use("/api/app", express.static(distPath2));
+    app.use("/api/app", express.static(webDistPath));
+    // Root /api/app serves index.html
+    app.get("/api/app", (_req, res) => {
+      res.sendFile(path.join(webDistPath, "index.html"));
+    });
     // Catch-all: serve index.html for all /api/app/* routes (SPA routing)
     app.get("/api/app/*", (req, res) => {
       const reqPath = req.path; // path relative to /api/app
-      const htmlFile = path.join(distPath2, reqPath.endsWith(".html") ? reqPath : reqPath.replace(/\/$/, "") + ".html");
+      const htmlFile = path.join(webDistPath, reqPath.endsWith(".html") ? reqPath : reqPath.replace(/\/$/, "") + ".html");
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);
       } else {
-        res.sendFile(path.join(distPath2, "index.html"));
+        res.sendFile(path.join(webDistPath, "index.html"));
       }
-    });
-    // Root /api/app serves index.html
-    app.get("/api/app", (_req, res) => {
-      res.sendFile(path.join(distPath2, "index.html"));
     });
   }
 
@@ -117,17 +135,16 @@ async function startServer() {
     }),
   );
 
-  // Serve static web build (Expo export)
-  const distPath = path.join(__dirname, "../../dist");
-  if (fs.existsSync(distPath)) {
-    app.use(express.static(distPath));
+  // Serve static web build (Expo export) - root level routes
+  if (fs.existsSync(webDistPath)) {
+    app.use(express.static(webDistPath));
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
-      const htmlFile = path.join(distPath, req.path.endsWith(".html") ? req.path : req.path.replace(/\/$/, "") + ".html");
+      const htmlFile = path.join(webDistPath, req.path.endsWith(".html") ? req.path : req.path.replace(/\/$/, "") + ".html");
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);
       } else {
-        res.sendFile(path.join(distPath, "index.html"));
+        res.sendFile(path.join(webDistPath, "index.html"));
       }
     });
   }
