@@ -479,3 +479,6 @@
 
 ## Bug-Fixes (27.02.2026)
 - [x] BUG: Community-Login findet registrierte E-Mail nicht – Ursache: neue DB-Instanz nach Projekt-Reset. Fix: App veröffentlichen für permanente Datenbank
+
+## Bug-Fixes (27.02.2026 Nachmittag)
+- [x] BUG: E-Mails werden bei Nutzeranmeldung nicht versendet – BEHOBEN: SMTP-Zugangsdaten neu gesetzt (IONOS)
