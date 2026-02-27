@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { getApiBaseUrl } from "@/constants/oauth";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -91,14 +92,40 @@ export default function MeditationScreen() {
 
   const loadMeditationen = useCallback(async () => {
     try {
+      // Zuerst aus der Datenbank laden (sichtbar auf ALLEN Geräten)
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/meditations.listAll`);
+      const data = await res.json();
+      const dbItems = data?.result?.data?.json;
+      if (Array.isArray(dbItems) && dbItems.length > 0) {
+        const mapped: Meditation[] = dbItems.map((m: any) => ({
+          id: String(m.id),
+          titel: m.title,
+          dauer: m.dauer || "",
+          beschreibung: m.description || "",
+          emoji: m.emoji || "🧘‍♀️",
+          kategorie: "geführt" as Meditation["kategorie"],
+          spotifyUrl: m.spotifyUrl,
+          appleMusicUrl: m.appleMusicUrl,
+          mp3Url: m.audioUrl,
+        }));
+        setMeditationen(mapped);
+        return;
+      }
+    } catch {}
+    // Fallback: AsyncStorage (für ältere Einträge)
+    try {
       const stored = await AsyncStorage.getItem("lara_meditationen");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMeditationen(parsed);
+          return;
         }
       }
     } catch {}
+    // Letzer Fallback: Standard-Meditationen
+    setMeditationen(DEFAULT_MEDITATIONEN);
   }, []);
 
   useFocusEffect(

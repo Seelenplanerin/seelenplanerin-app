@@ -1022,45 +1022,42 @@ export default function AdminScreen() {
                   <TouchableOpacity style={s.submitBtn} onPress={async () => {
                     if (!meditTitel.trim()) { setMeditFehler("Bitte gib einen Titel ein."); return; }
                     if (!meditMp3Url) { setMeditFehler("Bitte lade eine MP3-Datei hoch."); return; }
-                    const all = await getMeditationen();
-                    const meditData: Song = {
-                      id: editMeditId || generateId(),
-                      titel: meditTitel.trim(), beschreibung: meditBeschreibung.trim(),
-                      mp3Url: meditMp3Url, mp3FileName: meditMp3FileName,
-                      emoji: meditEmoji, kategorie: "meditation", verfuegbar: meditVerfuegbar,
-                    };
-                    if (editMeditId) {
-                      const idx = all.findIndex(m => m.id === editMeditId);
-                      if (idx >= 0) all[idx] = meditData;
-                    } else {
-                      all.push(meditData);
-                    }
-                    // In Datenbank speichern (sichtbar auf ALLEN Geräten)
+                    setMeditUploading(true);
                     try {
                       const API_URL = `${getApiBaseUrl()}/api/trpc`;
                       if (editMeditId) {
+                        // Update in DB
                         const numId = parseInt(editMeditId);
                         if (!isNaN(numId)) {
-                          await fetch(`${API_URL}/meditations.update`, {
+                          const res = await fetch(`${API_URL}/meditations.update`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ json: { id: numId, title: meditData.titel, description: meditData.beschreibung, emoji: meditData.emoji, isActive: meditData.verfuegbar ? 1 : 0 } }),
+                            body: JSON.stringify({ json: { id: numId, title: meditTitel.trim(), description: meditBeschreibung.trim(), emoji: meditEmoji, isActive: meditVerfuegbar ? 1 : 0 } }),
                           });
+                          if (!res.ok) throw new Error("Update fehlgeschlagen");
                         }
                       } else {
-                        await fetch(`${API_URL}/meditations.create`, {
+                        // Neu in DB erstellen
+                        const res = await fetch(`${API_URL}/meditations.create`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ json: { title: meditData.titel, description: meditData.beschreibung || "", emoji: meditData.emoji, audioUrl: meditData.mp3Url || "", isPremium: 1 } }),
+                          body: JSON.stringify({ json: { title: meditTitel.trim(), description: meditBeschreibung.trim() || "", emoji: meditEmoji, audioUrl: meditMp3Url, isPremium: 1 } }),
                         });
+                        if (!res.ok) throw new Error("Erstellen fehlgeschlagen");
+                        const resData = await res.json();
+                        if (!resData?.result?.data?.json?.success) throw new Error("Erstellen fehlgeschlagen");
                       }
-                    } catch (e) {
-                      console.error("[Admin] DB-Speichern fehlgeschlagen:", e);
+                      // Liste neu laden
+                      const updated = await getMeditationen();
+                      setMeditationen(updated);
+                      setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
+                      setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
+                      Alert.alert("Gespeichert ✓", editMeditId ? "Meditation wurde aktualisiert." : "Neue Meditation wurde hinzugefügt.");
+                    } catch (e: any) {
+                      setMeditFehler("Fehler beim Speichern: " + (e?.message || "Bitte versuche es erneut."));
+                    } finally {
+                      setMeditUploading(false);
                     }
-                    await saveMeditationen(all); setMeditationen(all);
-                    setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
-                    setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
-                    Alert.alert("Gespeichert ✓", editMeditId ? "Meditation wurde aktualisiert." : "Neue Meditation wurde hinzugefügt.");
                   }} activeOpacity={0.85}>
                     <Text style={s.submitBtnText}>{editMeditId ? "✓ Meditation aktualisieren" : "🧘‍♀️ Meditation hinzufügen"}</Text>
                   </TouchableOpacity>
