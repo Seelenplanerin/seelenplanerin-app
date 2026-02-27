@@ -2,6 +2,12 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -89,6 +95,21 @@ async function startServer() {
       createContext,
     }),
   );
+
+  // Serve static web build (Expo export)
+  const distPath = path.join(__dirname, "../dist");
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith("/api")) return next();
+      const htmlFile = path.join(distPath, req.path.endsWith(".html") ? req.path : req.path.replace(/\/$/, "") + ".html");
+      if (fs.existsSync(htmlFile)) {
+        res.sendFile(htmlFile);
+      } else {
+        res.sendFile(path.join(distPath, "index.html"));
+      }
+    });
+  }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
