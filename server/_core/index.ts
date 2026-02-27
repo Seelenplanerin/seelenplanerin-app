@@ -68,6 +68,27 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
+  // Serve the web app under /api/app/* so the published domain (which only proxies /api/*) can serve the full app
+  const distPath2 = path.join(__dirname, "../../dist");
+  if (fs.existsSync(distPath2)) {
+    // Serve static assets under /api/app/_expo, /api/app/assets etc.
+    app.use("/api/app", express.static(distPath2));
+    // Catch-all: serve index.html for all /api/app/* routes (SPA routing)
+    app.get("/api/app/*", (req, res) => {
+      const reqPath = req.path; // path relative to /api/app
+      const htmlFile = path.join(distPath2, reqPath.endsWith(".html") ? reqPath : reqPath.replace(/\/$/, "") + ".html");
+      if (fs.existsSync(htmlFile)) {
+        res.sendFile(htmlFile);
+      } else {
+        res.sendFile(path.join(distPath2, "index.html"));
+      }
+    });
+    // Root /api/app serves index.html
+    app.get("/api/app", (_req, res) => {
+      res.sendFile(path.join(distPath2, "index.html"));
+    });
+  }
+
   // Multipart-Upload-Route für große Dateien (bis 200 MB)
   const upload = multer({ limits: { fileSize: 200 * 1024 * 1024 } });
   app.post("/api/upload-audio", upload.single("file"), async (req, res) => {

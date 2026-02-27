@@ -14,10 +14,7 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build the web app first (Expo export)
-RUN npx expo export --platform web --output-dir dist || echo "Expo export skipped"
-
-# Build the server (esbuild)
+# Build the server (esbuild) - web app dist is pre-built and committed to repo
 RUN pnpm build
 
 EXPOSE 3000
