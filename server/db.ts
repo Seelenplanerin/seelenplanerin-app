@@ -1,5 +1,6 @@
-import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { eq, desc, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -9,7 +10,8 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const client = postgres(process.env.DATABASE_URL, { ssl: "require" });
+      _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -68,7 +70,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    // PostgreSQL upsert using onConflictDoUpdate
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -106,8 +110,8 @@ export async function getActiveMeditations() {
 export async function createMeditation(data: InsertMeditation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(meditations).values(data);
-  return result[0].insertId;
+  const result = await db.insert(meditations).values(data).returning({ id: meditations.id });
+  return result[0].id;
 }
 
 export async function deleteMeditation(id: number) {
@@ -145,8 +149,8 @@ export async function createCommunityUser(data: { email: string; password: strin
     password: data.password,
     name: data.name,
     mustChangePassword: data.mustChangePassword || 0,
-  });
-  return result[0].insertId;
+  }).returning({ id: communityUsers.id });
+  return result[0].id;
 }
 
 export async function updateCommunityUser(email: string, data: Partial<{ password: string; name: string; mustChangePassword: number; isActive: number }>) {

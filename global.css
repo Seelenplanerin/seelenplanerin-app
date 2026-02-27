@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* MaterialIcons font for web - required for tab bar icons */
+@font-face {
+  font-family: 'MaterialIcons';
+  src: url('/assets/node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/MaterialIcons.4e85bc9ebe07e0340c9c4fc2f6c38908.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
