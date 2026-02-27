@@ -116,6 +116,33 @@ async function startServer() {
     });
   }
 
+  // Audio-Proxy-Route: Streamt externe Audio-Dateien mit CORS-Headern
+  // Lösung für iOS Safari CORS-Problem bei externen Audio-URLs
+  app.get("/api/audio-proxy", async (req, res) => {
+    const url = req.query.url as string;
+    if (!url || !url.startsWith("https://")) {
+      res.status(400).json({ error: "Invalid URL" });
+      return;
+    }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        res.status(response.status).json({ error: "Upstream error" });
+        return;
+      }
+      const contentType = response.headers.get("content-type") || "audio/mpeg";
+      const contentLength = response.headers.get("content-length");
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Accept-Ranges", "bytes");
+      if (contentLength) res.setHeader("Content-Length", contentLength);
+      const buffer = await response.arrayBuffer();
+      res.send(Buffer.from(buffer));
+    } catch (err) {
+      res.status(500).json({ error: "Proxy error" });
+    }
+  });
+
   // Multipart-Upload-Route für große Dateien (bis 200 MB)
   const upload = multer({ limits: { fileSize: 200 * 1024 * 1024 } });
   app.post("/api/upload-audio", upload.single("file"), async (req, res) => {

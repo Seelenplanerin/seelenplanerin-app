@@ -251,7 +251,9 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
 
   const handlePlay = (song: Song) => {
     if (song.mp3Url) {
-      audio.play(song.mp3Url);
+      // Proxy the audio through our server to avoid CORS issues on iOS Safari
+      const proxyUrl = `${getApiBaseUrl()}/api/audio-proxy?url=${encodeURIComponent(song.mp3Url)}`;
+      audio.play(proxyUrl);
       setPlayingSongId(audio.currentUrl === song.mp3Url && audio.isPlaying ? null : song.id);
     } else if (song.spotifyUrl) {
       Linking.openURL(song.spotifyUrl);
