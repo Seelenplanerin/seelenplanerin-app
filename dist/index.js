@@ -864,6 +864,50 @@ async function sendPasswordResetEmail(params) {
     return { success: false, error: err.message || "Unbekannter Fehler" };
   }
 }
+async function sendBroadcastEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+    const safeMessage = params.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+    for (const recipient of params.recipients) {
+      try {
+        const content = `
+          <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Nachricht von der Seelenplanerin \u{1F338}</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#C4826A;">Hallo ${recipient.name},</p>
+          <div style="margin:0 0 20px;font-size:15px;color:#8B5E3C;line-height:26px;">${safeMessage}</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px;text-align:center;">
+                <p style="margin:0;font-size:14px;color:#8B5E3C;">
+                  \xD6ffne die <strong>Seelenplanerin-App</strong> f\xFCr mehr Inhalte \u2728
+                </p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:0;font-size:13px;color:#A08070;text-align:center;font-style:italic;">
+            "Vertraue deinem Weg \u2013 die Sterne begleiten dich." \u{1F319}
+          </p>`;
+        await transporter.sendMail({
+          from: `"${config.fromName}" <${config.user}>`,
+          to: recipient.email,
+          subject: params.subject,
+          html: emailTemplate(content)
+        });
+        sent++;
+      } catch (err) {
+        failed++;
+        errors.push(`${recipient.email}: ${err.message}`);
+      }
+    }
+    return { success: failed === 0, sent, failed, errors };
+  } catch (err) {
+    console.error("[Email] Broadcast-Fehler:", err);
+    return { success: false, sent: 0, failed: params.recipients.length, errors: [err.message] };
+  }
+}
 async function verifySmtpConnection() {
   try {
     const transporter = createTransporter();
@@ -956,6 +1000,17 @@ var appRouter = router({
       tempPassword: z2.string().min(1)
     })).mutation(async ({ input }) => {
       return sendPasswordResetEmail(input);
+    }),
+    sendBroadcast: publicProcedure.input(z2.object({
+      subject: z2.string().min(1),
+      message: z2.string().min(1)
+    })).mutation(async ({ input }) => {
+      const users2 = await getAllCommunityUsers();
+      const recipients = users2.map((u) => ({ email: u.email, name: u.name }));
+      if (recipients.length === 0) {
+        return { success: false, sent: 0, failed: 0, errors: ["Keine Mitglieder vorhanden."] };
+      }
+      return sendBroadcastEmail({ recipients, subject: input.subject, message: input.message });
     })
   }),
   meditations: router({
