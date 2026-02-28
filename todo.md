@@ -519,7 +519,7 @@
 - [x] Direktes Anmelde-Formular auf dem Startbildschirm für Affiliate-Registrierung
 - [x] Provision von 15% auf 20% ändern (überall: Server, App, Admin, Richtlinien, E-Mails)
 - [x] Korrekte Produktpreise recherchieren und in App/Dokumentation einpflegen
-- [ ] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf implementieren
+- [x] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf implementieren
 - [ ] Tracking-Lösung für Tentary-Verkäufe klären
-- [ ] Deep Talk alle 4 Preisstufen als einzelne Produkte im Shop (111€, 222€, 444€, 888€)
-- [ ] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf über ihren Link
+- [x] Deep Talk alle 4 Preisstufen als einzelne Produkte im Shop (111€, 222€, 444€, 888€)
+- [x] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf über ihren Link
