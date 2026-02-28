@@ -531,3 +531,6 @@
 - [x] Seelen Academy: Aura Reading Ausbildung als Coming Soon ankündigen
 - [x] Seelen Academy: Theta Healing Ausbildung als Coming Soon ankündigen
 - [x] Server-Route für Academy-Warteliste (E-Mail speichern + Bestätigungs-E-Mail)
+- [x] Academy-Warteliste im Admin-Panel anzeigen (wer hat sich eingetragen)
+- [x] Affiliate-Tracking komplett: Immer sichtbar wer was über welchen Link verkauft hat
+- [x] Prüfen warum Academy auf Render nicht sichtbar ist (Academy-Tab im Admin-Panel hinzugefügt)

@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "affiliate" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "affiliate" | "academy" | "einstellungen";
 
 interface AffiliateInfo {
   id: number; code: string; name: string; email: string;
@@ -241,6 +241,10 @@ export default function AdminScreen() {
   const [nachrichtFehler, setNachrichtFehler] = useState("");
   const [nachrichtSending, setNachrichtSending] = useState(false);
   const [nachrichtErfolg, setNachrichtErfolg] = useState("");
+
+  // Academy-Warteliste
+  const [academyWaitlist, setAcademyWaitlist] = useState<{ id: number; email: string; createdAt: string }[]>([]);
+  const [academyLoading, setAcademyLoading] = useState(false);
 
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
@@ -645,6 +649,7 @@ export default function AdminScreen() {
     { key: "impulse", label: "Impulse", emoji: "✨" },
     { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
     { key: "affiliate", label: "Affiliate", emoji: "🤝" },
+    { key: "academy", label: "Academy", emoji: "🎓" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
@@ -1332,7 +1337,7 @@ export default function AdminScreen() {
               {/* Affiliates Übersicht */}
               <View style={s.section}>
                 <Text style={s.sectionTitle}>🤝 Affiliate-Übersicht</Text>
-                <Text style={s.sectionHint}>Alle Affiliates und deren Statistiken auf einen Blick.</Text>
+                <Text style={s.sectionHint}>Alle Affiliates und deren Statistiken auf einen Blick. Volle Transparenz: Wer hat was empfohlen und wie viel Provision fällt an.</Text>
                 <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
                   setAffLoading(true);
                   try {
@@ -1348,9 +1353,38 @@ export default function AdminScreen() {
                 }} activeOpacity={0.85}>
                   <Text style={{ fontSize: 18, marginRight: 10 }}>🔄</Text>
                   <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
-                    {affLoading ? "Lade..." : "Affiliates laden"}
+                    {affLoading ? "Lade..." : "Daten laden"}
                   </Text>
                 </TouchableOpacity>
+
+                {/* Gesamt-Statistik */}
+                {affiliates.length > 0 && (
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: "#E8D5B0" }}>
+                    <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 6 }}>📊 Gesamt-Statistik</Text>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.length}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Affiliates</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.reduce((s, a) => s + a.totalClicks, 0)}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Klicks</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.reduce((s, a) => s + a.totalSales, 0)}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verkäufe</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: "#4CAF50" }}>{(affiliates.reduce((s, a) => s + a.totalEarnings, 0) / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Provision</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: "#E65100" }}>{((affiliates.reduce((s, a) => s + a.totalEarnings, 0) - affiliates.reduce((s, a) => s + a.totalPaid, 0)) / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Offen</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
 
                 {affiliates.length > 0 && affiliates.map(a => (
                   <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
@@ -1401,10 +1435,47 @@ export default function AdminScreen() {
                 <Text style={s.sectionTitle}>💰 Verkauf eintragen</Text>
                 <Text style={s.sectionHint}>Trage einen Verkauf ein, der über einen Affiliate-Link zustande kam. Die 20% Provision wird automatisch berechnet (nur auf Produktpreis, nicht auf Versand).</Text>
                 <View style={s.formBox}>
-                  <Text style={s.formLabel}>Affiliate-Code (z.B. SP-7X3K9)</Text>
-                  <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
-                    value={saleCode} onChangeText={setSaleCode} autoCapitalize="characters" />
-                  <Text style={s.formLabel}>Produkt / Dienstleistung</Text>
+                  <Text style={s.formLabel}>Affiliate auswählen</Text>
+                  {affiliates.length > 0 ? (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                      <View style={{ flexDirection: "row", gap: 6 }}>
+                        {affiliates.map(a => (
+                          <TouchableOpacity key={a.code}
+                            style={[s.katBtn, saleCode === a.code && s.katBtnActive]}
+                            onPress={() => setSaleCode(a.code)} activeOpacity={0.8}>
+                            <Text style={[s.katText, saleCode === a.code && s.katTextActive]}>{a.name} ({a.code})</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  ) : (
+                    <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
+                      value={saleCode} onChangeText={setSaleCode} autoCapitalize="characters" />
+                  )}
+                  <Text style={s.formLabel}>Produkt auswählen</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
+                    <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
+                      {[
+                        { name: "Schutzarmband", price: "24.00" },
+                        { name: "Runen-Armband", price: "94.00" },
+                        { name: "Runen-Charm", price: "24.00" },
+                        { name: "Aura Reading", price: "77.00" },
+                        { name: "Meditationskerze", price: "17.00" },
+                        { name: "Seelenimpuls", price: "17.00" },
+                        { name: "Deep Talk Basis", price: "111.00" },
+                        { name: "Deep Talk Vertiefung", price: "222.00" },
+                        { name: "Deep Talk Intensiv", price: "444.00" },
+                        { name: "Deep Talk Premium", price: "888.00" },
+                      ].map(p => (
+                        <TouchableOpacity key={p.name}
+                          style={[s.katBtn, saleProduct === p.name && s.katBtnActive, { marginBottom: 4 }]}
+                          onPress={() => { setSaleProduct(p.name); setSaleAmount(p.price); }} activeOpacity={0.8}>
+                          <Text style={[s.katText, saleProduct === p.name && s.katTextActive]}>{p.name} ({p.price}€)</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
+                  <Text style={s.formLabel}>Oder manuell eingeben:</Text>
                   <TextInput style={s.formInput} placeholder="z.B. Seelenimpuls, Armband, Aura Reading" placeholderTextColor={C.muted}
                     value={saleProduct} onChangeText={setSaleProduct} />
                   <Text style={s.formLabel}>Betrag in Euro (z.B. 17.00)</Text>
@@ -1529,24 +1600,127 @@ export default function AdminScreen() {
               {/* Letzte Verkäufe */}
               {affSales.length > 0 && (
                 <View style={s.section}>
-                  <Text style={s.sectionTitle}>📊 Letzte Verkäufe</Text>
-                  {affSales.slice(0, 20).map(sale => (
-                    <View key={sale.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
-                        <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown }}>{sale.productName}</Text>
-                        <Text style={{ fontSize: 13, fontWeight: "700", color: "#4CAF50" }}>+{(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                  <Text style={s.sectionTitle}>📊 Alle Verkäufe – Volle Transparenz</Text>
+                  <Text style={s.sectionHint}>Hier siehst du jeden einzelnen Verkauf: Wer hat empfohlen, was wurde gekauft, wie viel Provision fällt an.</Text>
+                  {affSales.map(sale => {
+                    const affName = affiliates.find(a => a.code === sale.affiliateCode)?.name || sale.affiliateCode;
+                    const affEmail = affiliates.find(a => a.code === sale.affiliateCode)?.email || "";
+                    const saleDate = new Date(sale.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                    return (
+                      <View key={sale.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
+                        {/* Zeile 1: Produkt + Provision */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, flex: 1 }}>{sale.productName}</Text>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: "#4CAF50" }}>+{(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                        </View>
+                        {/* Zeile 2: Empfohlen von (Affiliate-Name) */}
+                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
+                          <View style={{ backgroundColor: C.goldLight, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6 }}>
+                            <Text style={{ fontSize: 10, fontWeight: "700", color: C.gold }}>{sale.affiliateCode}</Text>
+                          </View>
+                          <Text style={{ fontSize: 12, fontWeight: "600", color: C.brownMid }}>Empfohlen von: {affName}</Text>
+                        </View>
+                        {affEmail ? <Text style={{ fontSize: 10, color: C.muted, marginBottom: 3 }}>{affEmail}</Text> : null}
+                        {/* Zeile 3: Betrag + Status + Datum */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                          <Text style={{ fontSize: 12, color: C.muted }}>Betrag: {(sale.saleAmount / 100).toFixed(2)} € · 20% = {(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                          <View style={{ backgroundColor: sale.status === "paid" ? "#E8F5E9" : sale.status === "confirmed" ? C.goldLight : C.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                            <Text style={{ fontSize: 10, fontWeight: "700", color: sale.status === "paid" ? "#4CAF50" : sale.status === "confirmed" ? C.gold : C.muted }}>
+                              {sale.status === "paid" ? "✓ Bezahlt" : sale.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                            </Text>
+                          </View>
+                        </View>
+                        {/* Zeile 4: Kunde + Datum */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 3 }}>
+                          {sale.customerName ? <Text style={{ fontSize: 11, color: C.muted }}>Kunde: {sale.customerName}</Text> : <View />}
+                          <Text style={{ fontSize: 10, color: C.muted }}>{saleDate}</Text>
+                        </View>
                       </View>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                        <Text style={{ fontSize: 11, color: C.muted }}>Code: {sale.affiliateCode} · {(sale.saleAmount / 100).toFixed(2)} €</Text>
-                        <Text style={{ fontSize: 11, color: sale.status === "paid" ? "#4CAF50" : sale.status === "confirmed" ? C.gold : C.muted }}>
-                          {sale.status === "paid" ? "Bezahlt" : sale.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
-                        </Text>
-                      </View>
-                      {sale.customerName && <Text style={{ fontSize: 11, color: C.muted }}>Kunde: {sale.customerName}</Text>}
-                    </View>
-                  ))}
+                    );
+                  })}
                 </View>
               )}
+            </>
+          )}
+
+          {/* ═══════ ACADEMY TAB ═══════ */}
+          {activeTab === "academy" && (
+            <>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🎓 Seelen Academy – Warteliste</Text>
+                <Text style={s.sectionHint}>Alle Interessentinnen, die sich für die Academy-Ausbildungen auf die Warteliste eingetragen haben.</Text>
+                <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
+                  setAcademyLoading(true);
+                  try {
+                    const API = getApiBaseUrl();
+                    const res = await fetch(`${API}/api/trpc/academy.listWaitlist`);
+                    const d = await res.json();
+                    if (d?.result?.data?.json) setAcademyWaitlist(d.result.data.json);
+                    else if (d?.result?.data) setAcademyWaitlist(d.result.data);
+                  } catch (e) { console.error(e); }
+                  setAcademyLoading(false);
+                }} activeOpacity={0.85}>
+                  <Text style={{ fontSize: 18, marginRight: 10 }}>🔄</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                    {academyLoading ? "Lade..." : "Warteliste laden"}
+                  </Text>
+                </TouchableOpacity>
+
+                {academyWaitlist.length > 0 && (
+                  <View style={{ marginTop: 8 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 4 }}>
+                      <Text style={{ fontSize: 14, fontWeight: "700", color: C.gold }}>
+                        {academyWaitlist.length} Einträg{academyWaitlist.length === 1 ? "" : "e"}
+                      </Text>
+                    </View>
+                    {academyWaitlist.map((entry, idx) => (
+                      <View key={entry.id || idx} style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                        <View style={[s.memberAvatar, { backgroundColor: C.gold }]}>
+                          <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{idx + 1}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.memberName}>{entry.email}</Text>
+                          <Text style={s.memberEmail}>
+                            Eingetragen am {new Date(entry.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {academyWaitlist.length === 0 && !academyLoading && (
+                  <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Einträge auf der Warteliste.</Text>
+                )}
+              </View>
+
+              {/* Geplante Ausbildungen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>📚 Geplante Ausbildungen</Text>
+                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>👁️</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>Aura Reading Ausbildung</Text>
+                    <Text style={s.memberEmail}>Coming Soon</Text>
+                  </View>
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
+                  </View>
+                </View>
+                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>🌀</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>Theta Healing Ausbildung</Text>
+                    <Text style={s.memberEmail}>Coming Soon</Text>
+                  </View>
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
+                  </View>
+                </View>
+              </View>
             </>
           )}
 
