@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -332,6 +332,29 @@ export const appRouter = router({
       }),
   }),
 
+  academy: router({
+    joinWaitlist: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        try {
+          const email = input.email.trim().toLowerCase();
+          await db.addAcademyWaitlist(email);
+          // Send confirmation email
+          try {
+            await sendAcademyWaitlistEmail(email);
+          } catch (e) { console.error("Academy email failed:", e); }
+          return { success: true };
+        } catch (e: any) {
+          if (e.message?.includes("duplicate") || e.code === "23505") {
+            return { success: true, message: "Bereits eingetragen" };
+          }
+          throw e;
+        }
+      }),
+    listWaitlist: publicProcedure.query(async () => {
+      return db.getAcademyWaitlist();
+    }),
+  }),
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

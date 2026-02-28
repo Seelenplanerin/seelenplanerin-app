@@ -527,3 +527,7 @@
 - [x] Neue Meditation "Mut" hochladen (ID: 2)
 - [x] Kompletter Test aller App-Funktionen (API, UI, Affiliate, Shop, Meditationen, Admin)
 - [x] Seelen Academy "Coming Soon" Button auf Startseite einbauen
+- [ ] Seelen Academy: Warteliste mit E-Mail-Eintragung
+- [ ] Seelen Academy: Aura Reading Ausbildung als Coming Soon ankündigen
+- [ ] Seelen Academy: Theta Healing Ausbildung als Coming Soon ankündigen
+- [ ] Server-Route für Academy-Warteliste (E-Mail speichern + Bestätigungs-E-Mail)

@@ -127,6 +127,7 @@ var init_env = __esm({
 // server/db.ts
 var db_exports = {};
 __export(db_exports, {
+  addAcademyWaitlist: () => addAcademyWaitlist,
   createAffiliate: () => createAffiliate,
   createAffiliatePayout: () => createAffiliatePayout,
   createAffiliateSale: () => createAffiliateSale,
@@ -135,6 +136,7 @@ __export(db_exports, {
   deleteCommunityUser: () => deleteCommunityUser,
   deleteMeditation: () => deleteMeditation,
   generateAffiliateCode: () => generateAffiliateCode,
+  getAcademyWaitlist: () => getAcademyWaitlist,
   getActiveMeditations: () => getActiveMeditations,
   getAffiliateByCode: () => getAffiliateByCode,
   getAffiliateByEmail: () => getAffiliateByEmail,
@@ -396,6 +398,28 @@ async function getAllAffiliatePayouts() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+}
+async function addAcademyWaitlist(email) {
+  const db = await getDb();
+  if (!db) throw new Error("No database connection");
+  const client = postgres(process.env.DATABASE_URL, { ssl: "require" });
+  try {
+    await client`INSERT INTO academy_waitlist (email) VALUES (${email.toLowerCase()}) ON CONFLICT (email) DO NOTHING`;
+  } finally {
+    await client.end();
+  }
+  return { success: true };
+}
+async function getAcademyWaitlist() {
+  const db = await getDb();
+  if (!db) return [];
+  const client = postgres(process.env.DATABASE_URL, { ssl: "require" });
+  try {
+    const rows = await client`SELECT id, email, "createdAt" FROM academy_waitlist ORDER BY "createdAt" DESC`;
+    return rows;
+  } finally {
+    await client.end();
+  }
 }
 var _db;
 var init_db = __esm({
@@ -1252,6 +1276,44 @@ async function sendAffiliateSaleNotification(params) {
     return { success: false, error: err.message || "Unbekannter Fehler" };
   }
 }
+async function sendAcademyWaitlistEmail(email) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <span style="font-size:48px;">\u{1F393}</span>
+      </div>
+      <h1 style="color:#C9A96E;text-align:center;font-size:24px;">Seelen Academy \u2013 Du bist dabei!</h1>
+      <p style="text-align:center;color:#666;font-size:16px;line-height:1.6;">
+        Liebe Seele,<br><br>
+        vielen Dank, dass du dich f\xFCr die <strong>Seelen Academy</strong> interessierst!
+        Du bist jetzt auf der Warteliste und wirst als Erste erfahren, wenn die Ausbildungen starten.
+      </p>
+      <div style="background:#FDF8F4;border-radius:12px;padding:20px;margin:20px 0;">
+        <h3 style="color:#3D2314;margin-bottom:12px;">Geplante Ausbildungen:</h3>
+        <p style="color:#666;margin:8px 0;">\u{1F441}\uFE0F <strong>Aura Reading Ausbildung</strong> \u2013 Coming Soon</p>
+        <p style="color:#666;margin:8px 0;">\u{1F300} <strong>Theta Healing Ausbildung</strong> \u2013 Coming Soon</p>
+      </div>
+      <p style="text-align:center;color:#666;font-size:14px;line-height:1.6;">
+        Ich freue mich riesig, dass du diesen Weg mit mir gehen m\xF6chtest.
+        Sobald es Neuigkeiten gibt, melde ich mich bei dir!<br><br>
+        Von Herzen,<br>
+        <strong>Lara \u2013 Die Seelenplanerin</strong> \u2728
+      </p>
+    `;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: email,
+      subject: "\u{1F393} Seelen Academy \u2013 Du bist auf der Warteliste!",
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Academy-Warteliste Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
 async function verifySmtpConnection() {
   try {
     const transporter = createTransporter();
@@ -1572,6 +1634,28 @@ var appRouter = router({
       return { success: true };
     })
   }),
+  academy: router({
+    joinWaitlist: publicProcedure.input(z2.object({ email: z2.string().email() })).mutation(async ({ input }) => {
+      try {
+        const email = input.email.trim().toLowerCase();
+        await addAcademyWaitlist(email);
+        try {
+          await sendAcademyWaitlistEmail(email);
+        } catch (e) {
+          console.error("Academy email failed:", e);
+        }
+        return { success: true };
+      } catch (e) {
+        if (e.message?.includes("duplicate") || e.code === "23505") {
+          return { success: true, message: "Bereits eingetragen" };
+        }
+        throw e;
+      }
+    }),
+    listWaitlist: publicProcedure.query(async () => {
+      return getAcademyWaitlist();
+    })
+  }),
   storage: router({
     uploadAudio: publicProcedure.input(z2.object({
       fileName: z2.string().min(1),
@@ -1714,7 +1798,14 @@ async function runMigrations() {
         "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `;
-    console.log("[db-migrate] All tables created/verified (incl. affiliate)");
+    await sql2`
+      CREATE TABLE IF NOT EXISTS academy_waitlist (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    console.log("[db-migrate] All tables created/verified (incl. affiliate + academy)");
   } finally {
     await sql2.end();
   }

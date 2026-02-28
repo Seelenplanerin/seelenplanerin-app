@@ -300,3 +300,28 @@ export async function getAllAffiliatePayouts() {
   if (!db) return [];
   return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
 }
+
+
+// ─── Academy Waitlist ─────────────────────────────────────────────────────────
+export async function addAcademyWaitlist(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("No database connection");
+  const client = postgres(process.env.DATABASE_URL!, { ssl: "require" });
+  try {
+    await client`INSERT INTO academy_waitlist (email) VALUES (${email.toLowerCase()}) ON CONFLICT (email) DO NOTHING`;
+  } finally {
+    await client.end();
+  }
+  return { success: true };
+}
+export async function getAcademyWaitlist() {
+  const db = await getDb();
+  if (!db) return [];
+  const client = postgres(process.env.DATABASE_URL!, { ssl: "require" });
+  try {
+    const rows = await client`SELECT id, email, "createdAt" FROM academy_waitlist ORDER BY "createdAt" DESC`;
+    return rows;
+  } finally {
+    await client.end();
+  }
+}

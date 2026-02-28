@@ -1,8 +1,10 @@
 import React, { useMemo } from "react";
+import { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Image, Dimensions, Linking,
+  StyleSheet, Image, Dimensions, Linking, TextInput, Alert, Platform,
 } from "react-native";
+import { getApiBaseUrl } from "@/constants/oauth";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
@@ -96,6 +98,34 @@ export default function AktuellesScreen() {
     const day = new Date().getDay() + new Date().getDate();
     return IMPULSE[day % IMPULSE.length];
   }, []);
+
+  // Academy Warteliste
+  const [academyEmail, setAcademyEmail] = useState("");
+  const [academyDone, setAcademyDone] = useState(false);
+  const [academyLoading, setAcademyLoading] = useState(false);
+
+  const handleAcademySignup = async () => {
+    if (!academyEmail.trim() || !academyEmail.includes("@")) {
+      if (Platform.OS === "web") { window.alert("Bitte gib eine gültige E-Mail-Adresse ein."); }
+      else { Alert.alert("Fehler", "Bitte gib eine gültige E-Mail-Adresse ein."); }
+      return;
+    }
+    setAcademyLoading(true);
+    try {
+      const base = getApiBaseUrl();
+      await fetch(`${base}/api/trpc/academy.joinWaitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: academyEmail.trim().toLowerCase() } }),
+      });
+      setAcademyDone(true);
+      setAcademyEmail("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAcademyLoading(false);
+    }
+  };
 
   return (
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
@@ -329,14 +359,67 @@ export default function AktuellesScreen() {
             <Text style={s.academyTitle}>Seelen Academy</Text>
             <Text style={s.academySubtitle}>Ich möchte ausbilden</Text>
             <Text style={s.academyDesc}>
-              Lerne von der Seelenplanerin – tiefes Wissen über Runen, Mondrituale, Aura-Reading und spirituelle Begleitung. Werde selbst zur Seelenplanerin und begleite andere auf ihrem Weg.
+              Lerne von der Seelenplanerin und werde selbst zur spirituellen Begleiterin. Tiefes Wissen, das dein Leben und das anderer transformiert.
             </Text>
-            <View style={s.academyBadge}>
-              <Text style={s.academyBadgeText}>✨ Coming Soon ✨</Text>
+
+            {/* Ausbildungen */}
+            <View style={s.academyCourses}>
+              <View style={s.academyCourseRow}>
+                <Text style={s.academyCourseEmoji}>👁️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.academyCourseName}>Aura Reading Ausbildung</Text>
+                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
+                </View>
+              </View>
+              <View style={s.academyCourseDivider} />
+              <View style={s.academyCourseRow}>
+                <Text style={s.academyCourseEmoji}>🌀</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.academyCourseName}>Theta Healing Ausbildung</Text>
+                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
+                </View>
+              </View>
             </View>
-            <Text style={s.academyHint}>
-              Du möchtest als Erste erfahren, wenn die Academy startet? Folge mir auf Instagram!
-            </Text>
+
+            {/* Warteliste */}
+            {academyDone ? (
+              <View style={s.academySuccessBox}>
+                <Text style={s.academySuccessEmoji}>💌</Text>
+                <Text style={s.academySuccessText}>
+                  Du bist auf der Warteliste! Ich melde mich bei dir, sobald es losgeht.
+                </Text>
+              </View>
+            ) : (
+              <View style={s.academyWaitlist}>
+                <Text style={s.academyWaitlistTitle}>
+                  Trag dich auf die Warteliste ein
+                </Text>
+                <Text style={s.academyWaitlistDesc}>
+                  Sei die Erste, die erfährt, wenn die Ausbildungen starten.
+                </Text>
+                <TextInput
+                  style={s.academyInput}
+                  placeholder="Deine E-Mail-Adresse"
+                  placeholderTextColor="rgba(201,169,110,0.4)"
+                  value={academyEmail}
+                  onChangeText={setAcademyEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="done"
+                  onSubmitEditing={handleAcademySignup}
+                />
+                <TouchableOpacity
+                  style={[s.academyBtn, academyLoading && { opacity: 0.6 }]}
+                  onPress={handleAcademySignup}
+                  disabled={academyLoading}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.academyBtnText}>
+                    {academyLoading ? "Wird eingetragen..." : "✨ Auf die Warteliste"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </LinearGradient>
         </View>
 
@@ -516,18 +599,60 @@ const s = StyleSheet.create({
     fontSize: 14, color: "rgba(255,255,255,0.75)", textAlign: "center" as const,
     lineHeight: 22, marginBottom: 16, paddingHorizontal: 8,
   },
-  academyBadge: {
-    backgroundColor: "rgba(201,169,110,0.2)", borderRadius: 14,
-    paddingVertical: 12, paddingHorizontal: 28,
-    borderWidth: 1, borderColor: "rgba(201,169,110,0.4)",
-    marginBottom: 12,
+  // Academy Kurse
+  academyCourses: {
+    width: "100%" as any, marginBottom: 20,
+    backgroundColor: "rgba(201,169,110,0.08)", borderRadius: 16,
+    padding: 16, borderWidth: 1, borderColor: "rgba(201,169,110,0.15)",
   },
-  academyBadgeText: {
-    color: C.gold, fontSize: 16, fontWeight: "700" as any,
+  academyCourseRow: {
+    flexDirection: "row" as const, alignItems: "center" as const, gap: 12,
+    paddingVertical: 8,
   },
-  academyHint: {
-    fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center" as const,
-    lineHeight: 18,
+  academyCourseEmoji: { fontSize: 28 },
+  academyCourseName: {
+    fontSize: 15, fontWeight: "700" as any, color: C.goldLight, marginBottom: 2,
+  },
+  academyCourseStatus: {
+    fontSize: 12, fontWeight: "600" as any, color: C.gold, fontStyle: "italic" as const,
+  },
+  academyCourseDivider: {
+    height: 1, backgroundColor: "rgba(201,169,110,0.15)", marginVertical: 4,
+  },
+  // Academy Warteliste
+  academyWaitlist: {
+    width: "100%" as any, alignItems: "center" as const,
+  },
+  academyWaitlistTitle: {
+    fontSize: 16, fontWeight: "700" as any, color: C.goldLight, marginBottom: 6,
+  },
+  academyWaitlistDesc: {
+    fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: "center" as const,
+    lineHeight: 19, marginBottom: 14,
+  },
+  academyInput: {
+    width: "100%" as any, backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
+    fontSize: 15, color: C.goldLight, borderWidth: 1,
+    borderColor: "rgba(201,169,110,0.25)", marginBottom: 12,
+  },
+  academyBtn: {
+    backgroundColor: C.gold, borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 28, width: "100%" as any,
+    alignItems: "center" as const,
+  },
+  academyBtnText: {
+    color: "#FFF", fontSize: 15, fontWeight: "700" as any,
+  },
+  // Academy Erfolg
+  academySuccessBox: {
+    width: "100%" as any, alignItems: "center" as const,
+    backgroundColor: "rgba(201,169,110,0.12)", borderRadius: 16,
+    padding: 20, borderWidth: 1, borderColor: "rgba(201,169,110,0.2)",
+  },
+  academySuccessEmoji: { fontSize: 32, marginBottom: 8 },
+  academySuccessText: {
+    fontSize: 14, color: C.goldLight, textAlign: "center" as const, lineHeight: 22,
   },
 
   // Instagram

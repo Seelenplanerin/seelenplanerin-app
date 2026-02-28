@@ -354,6 +354,45 @@ export async function sendAffiliateSaleNotification(params: {
   }
 }
 
+export async function sendAcademyWaitlistEmail(email: string) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <span style="font-size:48px;">🎓</span>
+      </div>
+      <h1 style="color:#C9A96E;text-align:center;font-size:24px;">Seelen Academy – Du bist dabei!</h1>
+      <p style="text-align:center;color:#666;font-size:16px;line-height:1.6;">
+        Liebe Seele,<br><br>
+        vielen Dank, dass du dich für die <strong>Seelen Academy</strong> interessierst!
+        Du bist jetzt auf der Warteliste und wirst als Erste erfahren, wenn die Ausbildungen starten.
+      </p>
+      <div style="background:#FDF8F4;border-radius:12px;padding:20px;margin:20px 0;">
+        <h3 style="color:#3D2314;margin-bottom:12px;">Geplante Ausbildungen:</h3>
+        <p style="color:#666;margin:8px 0;">👁️ <strong>Aura Reading Ausbildung</strong> – Coming Soon</p>
+        <p style="color:#666;margin:8px 0;">🌀 <strong>Theta Healing Ausbildung</strong> – Coming Soon</p>
+      </div>
+      <p style="text-align:center;color:#666;font-size:14px;line-height:1.6;">
+        Ich freue mich riesig, dass du diesen Weg mit mir gehen möchtest.
+        Sobald es Neuigkeiten gibt, melde ich mich bei dir!<br><br>
+        Von Herzen,<br>
+        <strong>Lara – Die Seelenplanerin</strong> ✨
+      </p>
+    `;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: email,
+      subject: "🎓 Seelen Academy – Du bist auf der Warteliste!",
+      html: emailTemplate(content),
+    });
+    return { success: true };
+  } catch (err: any) {
+    console.error("[Email] Academy-Warteliste Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+
 export async function verifySmtpConnection(): Promise<{ success: boolean; error?: string }> {
   try {
     const transporter = createTransporter();

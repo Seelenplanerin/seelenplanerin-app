@@ -124,7 +124,15 @@ export async function runMigrations(): Promise<void> {
       )
     `;
 
-    console.log("[db-migrate] All tables created/verified (incl. affiliate)");
+    // academy_waitlist table
+    await sql`
+      CREATE TABLE IF NOT EXISTS academy_waitlist (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    console.log("[db-migrate] All tables created/verified (incl. affiliate + academy)");
   } finally {
     await sql.end();
   }
