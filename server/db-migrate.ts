@@ -65,7 +65,66 @@ export async function runMigrations(): Promise<void> {
       )
     `;
 
-    console.log("[db-migrate] All tables created/verified");
+    // affiliate_codes table
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliate_codes (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(320) NOT NULL UNIQUE,
+        code VARCHAR(20) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        "isActive" INTEGER DEFAULT 1 NOT NULL,
+        "totalClicks" INTEGER DEFAULT 0 NOT NULL,
+        "totalSales" INTEGER DEFAULT 0 NOT NULL,
+        "totalEarnings" INTEGER DEFAULT 0 NOT NULL,
+        "totalPaid" INTEGER DEFAULT 0 NOT NULL,
+        "paypalEmail" VARCHAR(320),
+        iban VARCHAR(50),
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+
+    // affiliate_clicks table
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliate_clicks (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        "ipHash" VARCHAR(64),
+        "userAgent" TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+
+    // affiliate_sales table
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliate_sales (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        "productName" VARCHAR(255) NOT NULL,
+        "saleAmount" INTEGER NOT NULL,
+        "commissionRate" INTEGER DEFAULT 15 NOT NULL,
+        "commissionAmount" INTEGER NOT NULL,
+        "customerEmail" VARCHAR(320),
+        "customerName" VARCHAR(255),
+        status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+        notes TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+
+    // affiliate_payouts table
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliate_payouts (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        amount INTEGER NOT NULL,
+        method VARCHAR(50) DEFAULT 'paypal' NOT NULL,
+        reference VARCHAR(255),
+        notes TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+
+    console.log("[db-migrate] All tables created/verified (incl. affiliate)");
   } finally {
     await sql.end();
   }

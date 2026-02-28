@@ -175,6 +175,145 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Affiliate-System ──
+  affiliate: router({
+    // Affiliate-Code für einen Nutzer erstellen oder abrufen
+    getOrCreate: publicProcedure
+      .input(z.object({ email: z.string().email(), name: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        let affiliate = await db.getAffiliateByEmail(input.email);
+        if (affiliate) return { success: true as const, affiliate };
+        // Neuen Code generieren (einzigartig)
+        let code = await db.generateAffiliateCode();
+        let attempts = 0;
+        while (await db.getAffiliateByCode(code) && attempts < 10) {
+          code = await db.generateAffiliateCode();
+          attempts++;
+        }
+        const id = await db.createAffiliate({ email: input.email, name: input.name, code });
+        affiliate = await db.getAffiliateByEmail(input.email);
+        return { success: true as const, affiliate };
+      }),
+
+    // Affiliate-Daten per Code abrufen
+    getByCode: publicProcedure
+      .input(z.object({ code: z.string().min(1) }))
+      .query(async ({ input }) => {
+        const affiliate = await db.getAffiliateByCode(input.code);
+        return affiliate || null;
+      }),
+
+    // Affiliate-Daten per E-Mail abrufen
+    getByEmail: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .query(async ({ input }) => {
+        const affiliate = await db.getAffiliateByEmail(input.email);
+        return affiliate || null;
+      }),
+
+    // Alle Affiliates laden (Admin)
+    list: publicProcedure.query(async () => {
+      return db.getAllAffiliates();
+    }),
+
+    // Klick tracken
+    trackClick: publicProcedure
+      .input(z.object({ code: z.string().min(1), ipHash: z.string().optional(), userAgent: z.string().optional() }))
+      .mutation(async ({ input }) => {
+        const affiliate = await db.getAffiliateByCode(input.code);
+        if (!affiliate) return { success: false as const, error: "code_not_found" };
+        await db.recordAffiliateClick(input.code, input.ipHash, input.userAgent);
+        return { success: true as const };
+      }),
+
+    // Verkäufe eines Affiliates abrufen
+    getSales: publicProcedure
+      .input(z.object({ code: z.string().min(1) }))
+      .query(async ({ input }) => {
+        return db.getAffiliateSales(input.code);
+      }),
+
+    // Alle Verkäufe (Admin)
+    listAllSales: publicProcedure.query(async () => {
+      return db.getAllAffiliateSales();
+    }),
+
+    // Verkauf eintragen (Admin)
+    createSale: publicProcedure
+      .input(z.object({
+        affiliateCode: z.string().min(1),
+        productName: z.string().min(1),
+        saleAmount: z.number().min(1), // in Cent
+        customerEmail: z.string().optional(),
+        customerName: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const affiliate = await db.getAffiliateByCode(input.affiliateCode);
+        if (!affiliate) return { success: false as const, error: "code_not_found" };
+        const commissionAmount = Math.round(input.saleAmount * 0.15);
+        const id = await db.createAffiliateSale({
+          affiliateCode: input.affiliateCode,
+          productName: input.productName,
+          saleAmount: input.saleAmount,
+          commissionAmount,
+          customerEmail: input.customerEmail,
+          customerName: input.customerName,
+          notes: input.notes,
+        });
+        return { success: true as const, id, commissionAmount };
+      }),
+
+    // Verkaufsstatus ändern (Admin)
+    updateSaleStatus: publicProcedure
+      .input(z.object({ id: z.number(), status: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        await db.updateAffiliateSaleStatus(input.id, input.status);
+        return { success: true };
+      }),
+
+    // Auszahlung erstellen (Admin)
+    createPayout: publicProcedure
+      .input(z.object({
+        affiliateCode: z.string().min(1),
+        amount: z.number().min(1), // in Cent
+        method: z.string().default("paypal"),
+        reference: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createAffiliatePayout(input);
+        return { success: true as const, id };
+      }),
+
+    // Auszahlungen eines Affiliates
+    getPayouts: publicProcedure
+      .input(z.object({ code: z.string().min(1) }))
+      .query(async ({ input }) => {
+        return db.getAffiliatePayouts(input.code);
+      }),
+
+    // Alle Auszahlungen (Admin)
+    listAllPayouts: publicProcedure.query(async () => {
+      return db.getAllAffiliatePayouts();
+    }),
+
+    // Affiliate-Zahlungsdaten aktualisieren
+    updatePaymentInfo: publicProcedure
+      .input(z.object({
+        code: z.string().min(1),
+        paypalEmail: z.string().optional(),
+        iban: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const updateData: Record<string, any> = {};
+        if (input.paypalEmail !== undefined) updateData.paypalEmail = input.paypalEmail;
+        if (input.iban !== undefined) updateData.iban = input.iban;
+        await db.updateAffiliate(input.code, updateData);
+        return { success: true };
+      }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

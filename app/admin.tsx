@@ -140,7 +140,18 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "affiliate" | "einstellungen";
+
+interface AffiliateInfo {
+  id: number; code: string; name: string; email: string;
+  totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number;
+  paypalEmail?: string; iban?: string; isActive: number; createdAt: string;
+}
+interface AffiliateSaleInfo {
+  id: number; affiliateCode: string; productName: string;
+  saleAmount: number; commissionAmount: number; status: string;
+  customerEmail?: string; customerName?: string; createdAt: string;
+}
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -206,6 +217,23 @@ export default function AdminScreen() {
   const [impulsText, setImpulsText] = useState("");
   const [impulsAutor, setImpulsAutor] = useState("Die Seelenplanerin");
   const [impulsFehler, setImpulsFehler] = useState("");
+
+  // Affiliate-Verwaltung
+  const [affiliates, setAffiliates] = useState<AffiliateInfo[]>([]);
+  const [affSales, setAffSales] = useState<AffiliateSaleInfo[]>([]);
+  const [affLoading, setAffLoading] = useState(false);
+  // Verkauf eintragen
+  const [saleCode, setSaleCode] = useState("");
+  const [saleProduct, setSaleProduct] = useState("");
+  const [saleAmount, setSaleAmount] = useState("");
+  const [saleCustomer, setSaleCustomer] = useState("");
+  const [saleAdding, setSaleAdding] = useState(false);
+  // Auszahlung
+  const [payoutCode, setPayoutCode] = useState("");
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutMethod, setPayoutMethod] = useState("paypal");
+  const [payoutRef, setPayoutRef] = useState("");
+  const [payoutAdding, setPayoutAdding] = useState(false);
 
   // Nachrichten (Broadcast)
   const [nachrichtBetreff, setNachrichtBetreff] = useState("");
@@ -616,6 +644,7 @@ export default function AdminScreen() {
     { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
     { key: "impulse", label: "Impulse", emoji: "✨" },
     { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
+    { key: "affiliate", label: "Affiliate", emoji: "🤝" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
@@ -1295,6 +1324,239 @@ export default function AdminScreen() {
                 </Text>
               </View>
             </View>
+          )}
+
+          {/* ═══════ AFFILIATE TAB ═══════ */}
+          {activeTab === "affiliate" && (
+            <>
+              {/* Affiliates Übersicht */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🤝 Affiliate-Übersicht</Text>
+                <Text style={s.sectionHint}>Alle Affiliates und deren Statistiken auf einen Blick.</Text>
+                <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
+                  setAffLoading(true);
+                  try {
+                    const API = getApiBaseUrl();
+                    const res = await fetch(`${API}/api/trpc/affiliate.list`);
+                    const d = await res.json();
+                    if (d?.result?.data?.json) setAffiliates(d.result.data.json);
+                    const res2 = await fetch(`${API}/api/trpc/affiliate.listAllSales`);
+                    const d2 = await res2.json();
+                    if (d2?.result?.data?.json) setAffSales(d2.result.data.json);
+                  } catch (e) { console.error(e); }
+                  setAffLoading(false);
+                }} activeOpacity={0.85}>
+                  <Text style={{ fontSize: 18, marginRight: 10 }}>🔄</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                    {affLoading ? "Lade..." : "Affiliates laden"}
+                  </Text>
+                </TouchableOpacity>
+
+                {affiliates.length > 0 && affiliates.map(a => (
+                  <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                      <View style={[s.memberAvatar, { backgroundColor: C.gold }]}>
+                        <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{a.name.charAt(0)}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.memberName}>{a.name}</Text>
+                        <Text style={s.memberEmail}>{a.email}</Text>
+                      </View>
+                      <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                        <Text style={{ fontSize: 12, fontWeight: "700", color: C.gold }}>{a.code}</Text>
+                      </View>
+                    </View>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{a.totalClicks}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Klicks</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{a.totalSales}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verkäufe</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: "#4CAF50" }}>{(a.totalEarnings / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verdient</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{(a.totalPaid / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Bezahlt</Text>
+                      </View>
+                    </View>
+                    {(a.paypalEmail || a.iban) && (
+                      <Text style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                        Zahlung: {a.paypalEmail ? `PayPal: ${a.paypalEmail}` : `IBAN: ${a.iban}`}
+                      </Text>
+                    )}
+                  </View>
+                ))}
+                {affiliates.length === 0 && !affLoading && (
+                  <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Affiliates vorhanden.</Text>
+                )}
+              </View>
+
+              {/* Verkauf eintragen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>💰 Verkauf eintragen</Text>
+                <Text style={s.sectionHint}>Trage einen Verkauf ein, der über einen Affiliate-Link zustande kam. Die 15% Provision wird automatisch berechnet.</Text>
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Affiliate-Code (z.B. SP-7X3K9)</Text>
+                  <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
+                    value={saleCode} onChangeText={setSaleCode} autoCapitalize="characters" />
+                  <Text style={s.formLabel}>Produkt / Dienstleistung</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. Seelenimpuls, Armband, Aura Reading" placeholderTextColor={C.muted}
+                    value={saleProduct} onChangeText={setSaleProduct} />
+                  <Text style={s.formLabel}>Betrag in Euro (z.B. 17.00)</Text>
+                  <TextInput style={s.formInput} placeholder="17.00" placeholderTextColor={C.muted}
+                    value={saleAmount} onChangeText={setSaleAmount} keyboardType="decimal-pad" />
+                  <Text style={s.formLabel}>Kundenname (optional)</Text>
+                  <TextInput style={s.formInput} placeholder="Name des Käufers" placeholderTextColor={C.muted}
+                    value={saleCustomer} onChangeText={setSaleCustomer} />
+                  {saleAmount ? (
+                    <Text style={{ fontSize: 13, color: "#4CAF50", fontWeight: "600", marginBottom: 8 }}>
+                      Provision: {(parseFloat(saleAmount.replace(",", ".")) * 0.15).toFixed(2)} € (15%)
+                    </Text>
+                  ) : null}
+                  <TouchableOpacity style={[s.submitBtn, saleAdding && { opacity: 0.6 }]} onPress={async () => {
+                    if (!saleCode.trim() || !saleProduct.trim() || !saleAmount.trim()) {
+                      if (Platform.OS === "web") window.alert("Bitte fülle alle Pflichtfelder aus.");
+                      else Alert.alert("Fehler", "Bitte fülle alle Pflichtfelder aus.");
+                      return;
+                    }
+                    const amountEuro = parseFloat(saleAmount.replace(",", "."));
+                    if (isNaN(amountEuro) || amountEuro <= 0) {
+                      if (Platform.OS === "web") window.alert("Bitte gib einen gültigen Betrag ein.");
+                      else Alert.alert("Fehler", "Bitte gib einen gültigen Betrag ein.");
+                      return;
+                    }
+                    setSaleAdding(true);
+                    try {
+                      const API = getApiBaseUrl();
+                      const res = await fetch(`${API}/api/trpc/affiliate.createSale`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: {
+                          affiliateCode: saleCode.trim().toUpperCase(),
+                          productName: saleProduct.trim(),
+                          saleAmount: Math.round(amountEuro * 100),
+                          customerName: saleCustomer.trim() || undefined,
+                        } }),
+                      });
+                      const d = await res.json();
+                      if (d?.result?.data?.json?.success) {
+                        const comm = (d.result.data.json.commissionAmount / 100).toFixed(2);
+                        if (Platform.OS === "web") window.alert(`Verkauf eingetragen! Provision: ${comm} €`);
+                        else Alert.alert("Erfolg", `Verkauf eingetragen! Provision: ${comm} €`);
+                        setSaleCode(""); setSaleProduct(""); setSaleAmount(""); setSaleCustomer("");
+                      } else {
+                        const err = d?.result?.data?.json?.error === "code_not_found" ? "Affiliate-Code nicht gefunden!" : "Fehler beim Eintragen.";
+                        if (Platform.OS === "web") window.alert(err);
+                        else Alert.alert("Fehler", err);
+                      }
+                    } catch (e) {
+                      if (Platform.OS === "web") window.alert("Verbindungsfehler.");
+                      else Alert.alert("Fehler", "Verbindungsfehler.");
+                    }
+                    setSaleAdding(false);
+                  }} disabled={saleAdding} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{saleAdding ? "Wird eingetragen..." : "💰 Verkauf eintragen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Auszahlung erstellen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>💸 Auszahlung erstellen</Text>
+                <Text style={s.sectionHint}>Wenn du eine Provision ausgezahlt hast, trage es hier ein.</Text>
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Affiliate-Code</Text>
+                  <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
+                    value={payoutCode} onChangeText={setPayoutCode} autoCapitalize="characters" />
+                  <Text style={s.formLabel}>Betrag in Euro</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. 25.50" placeholderTextColor={C.muted}
+                    value={payoutAmount} onChangeText={setPayoutAmount} keyboardType="decimal-pad" />
+                  <Text style={s.formLabel}>Methode</Text>
+                  <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+                    <TouchableOpacity style={[s.katBtn, payoutMethod === "paypal" && s.katBtnActive]}
+                      onPress={() => setPayoutMethod("paypal")} activeOpacity={0.8}>
+                      <Text style={[s.katText, payoutMethod === "paypal" && s.katTextActive]}>PayPal</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[s.katBtn, payoutMethod === "bank" && s.katBtnActive]}
+                      onPress={() => setPayoutMethod("bank")} activeOpacity={0.8}>
+                      <Text style={[s.katText, payoutMethod === "bank" && s.katTextActive]}>Überweisung</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={s.formLabel}>Referenz / Notiz (optional)</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. PayPal Transaktions-ID" placeholderTextColor={C.muted}
+                    value={payoutRef} onChangeText={setPayoutRef} />
+                  <TouchableOpacity style={[s.submitBtn, payoutAdding && { opacity: 0.6 }]} onPress={async () => {
+                    if (!payoutCode.trim() || !payoutAmount.trim()) {
+                      if (Platform.OS === "web") window.alert("Bitte fülle Code und Betrag aus.");
+                      else Alert.alert("Fehler", "Bitte fülle Code und Betrag aus.");
+                      return;
+                    }
+                    const amountEuro = parseFloat(payoutAmount.replace(",", "."));
+                    if (isNaN(amountEuro) || amountEuro <= 0) {
+                      if (Platform.OS === "web") window.alert("Bitte gib einen gültigen Betrag ein.");
+                      else Alert.alert("Fehler", "Bitte gib einen gültigen Betrag ein.");
+                      return;
+                    }
+                    setPayoutAdding(true);
+                    try {
+                      const API = getApiBaseUrl();
+                      const res = await fetch(`${API}/api/trpc/affiliate.createPayout`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: {
+                          affiliateCode: payoutCode.trim().toUpperCase(),
+                          amount: Math.round(amountEuro * 100),
+                          method: payoutMethod,
+                          reference: payoutRef.trim() || undefined,
+                        } }),
+                      });
+                      const d = await res.json();
+                      if (d?.result?.data?.json?.success) {
+                        if (Platform.OS === "web") window.alert("Auszahlung eingetragen!");
+                        else Alert.alert("Erfolg", "Auszahlung eingetragen!");
+                        setPayoutCode(""); setPayoutAmount(""); setPayoutRef("");
+                      } else {
+                        if (Platform.OS === "web") window.alert("Fehler beim Eintragen.");
+                        else Alert.alert("Fehler", "Fehler beim Eintragen.");
+                      }
+                    } catch (e) {
+                      if (Platform.OS === "web") window.alert("Verbindungsfehler.");
+                      else Alert.alert("Fehler", "Verbindungsfehler.");
+                    }
+                    setPayoutAdding(false);
+                  }} disabled={payoutAdding} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{payoutAdding ? "Wird eingetragen..." : "💸 Auszahlung eintragen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Letzte Verkäufe */}
+              {affSales.length > 0 && (
+                <View style={s.section}>
+                  <Text style={s.sectionTitle}>📊 Letzte Verkäufe</Text>
+                  {affSales.slice(0, 20).map(sale => (
+                    <View key={sale.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                        <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown }}>{sale.productName}</Text>
+                        <Text style={{ fontSize: 13, fontWeight: "700", color: "#4CAF50" }}>+{(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                      </View>
+                      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        <Text style={{ fontSize: 11, color: C.muted }}>Code: {sale.affiliateCode} · {(sale.saleAmount / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 11, color: sale.status === "paid" ? "#4CAF50" : sale.status === "confirmed" ? C.gold : C.muted }}>
+                          {sale.status === "paid" ? "Bezahlt" : sale.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                        </Text>
+                      </View>
+                      {sale.customerName && <Text style={{ fontSize: 11, color: C.muted }}>Kunde: {sale.customerName}</Text>}
+                    </View>
+                  ))}
+                </View>
+              )}
+            </>
           )}
 
           {/* ═══════ EINSTELLUNGEN TAB ═══════ */}

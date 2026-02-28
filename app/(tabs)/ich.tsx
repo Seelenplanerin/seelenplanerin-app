@@ -347,6 +347,23 @@ export default function IchScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Geben & Nehmen */}
+        <Text style={s.sec}>Geben & Nehmen</Text>
+        <View style={s.menuSection}>
+          <TouchableOpacity
+            style={s.menuItem}
+            onPress={() => router.push("/affiliate" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={s.menuEmoji}>🤝</Text>
+            <View style={s.menuTextWrap}>
+              <Text style={s.menuLabel}>Geben & Nehmen</Text>
+              <Text style={s.menuDesc}>Empfehle & erhalte 15% auf jeden Verkauf</Text>
+            </View>
+            <Text style={s.menuArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Über die App */}
         <View style={s.aboutCard}>
           <Text style={s.aboutTitle}>Über Die Seelenplanerin</Text>

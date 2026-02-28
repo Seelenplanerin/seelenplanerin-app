@@ -45,3 +45,63 @@ export const communityUsers = pgTable("community_users", {
 });
 export type CommunityUser = typeof communityUsers.$inferSelect;
 export type InsertCommunityUser = typeof communityUsers.$inferInsert;
+
+// ── Affiliate-System ──
+
+// Affiliate-Codes: Jeder Nutzer bekommt einen einzigartigen Empfehlungscode
+export const affiliateCodes = pgTable("affiliate_codes", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(), // Community-User E-Mail
+  code: varchar("code", { length: 20 }).notNull().unique(),    // z.B. "SP-7X3K9"
+  name: varchar("name", { length: 255 }).notNull(),            // Name des Affiliates
+  isActive: integer("isActive").default(1).notNull(),
+  totalClicks: integer("totalClicks").default(0).notNull(),
+  totalSales: integer("totalSales").default(0).notNull(),
+  totalEarnings: integer("totalEarnings").default(0).notNull(), // in Cent
+  totalPaid: integer("totalPaid").default(0).notNull(),         // in Cent
+  paypalEmail: varchar("paypalEmail", { length: 320 }),         // für Auszahlung
+  iban: varchar("iban", { length: 50 }),                        // alternativ IBAN
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AffiliateCode = typeof affiliateCodes.$inferSelect;
+export type InsertAffiliateCode = typeof affiliateCodes.$inferInsert;
+
+// Affiliate-Klicks: Jeder Klick auf einen Empfehlungslink
+export const affiliateClicks = pgTable("affiliate_clicks", {
+  id: serial("id").primaryKey(),
+  affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+  ipHash: varchar("ipHash", { length: 64 }),  // gehashte IP für Unique-Tracking
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AffiliateClick = typeof affiliateClicks.$inferSelect;
+
+// Affiliate-Verkäufe: Jeder Verkauf, der über einen Empfehlungslink kam
+export const affiliateSales = pgTable("affiliate_sales", {
+  id: serial("id").primaryKey(),
+  affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+  productName: varchar("productName", { length: 255 }).notNull(),
+  saleAmount: integer("saleAmount").notNull(),         // Verkaufsbetrag in Cent
+  commissionRate: integer("commissionRate").default(15).notNull(), // Prozent
+  commissionAmount: integer("commissionAmount").notNull(), // Provision in Cent
+  customerEmail: varchar("customerEmail", { length: 320 }),
+  customerName: varchar("customerName", { length: 255 }),
+  status: varchar("status", { length: 20 }).default("pending").notNull(), // pending, confirmed, paid
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AffiliateSale = typeof affiliateSales.$inferSelect;
+export type InsertAffiliateSale = typeof affiliateSales.$inferInsert;
+
+// Affiliate-Auszahlungen: Auszahlungshistorie
+export const affiliatePayouts = pgTable("affiliate_payouts", {
+  id: serial("id").primaryKey(),
+  affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+  amount: integer("amount").notNull(),  // Betrag in Cent
+  method: varchar("method", { length: 50 }).default("paypal").notNull(), // paypal, bank
+  reference: varchar("reference", { length: 255 }), // Überweisungsreferenz
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AffiliatePayout = typeof affiliatePayouts.$inferSelect;
+export type InsertAffiliatePayout = typeof affiliatePayouts.$inferInsert;

@@ -163,6 +163,45 @@ async function startServer() {
     }
   });
 
+  // Affiliate Referral-Link: /ref/:code -> trackt Klick und leitet weiter
+  app.get("/ref/:code", async (req, res) => {
+    const code = (req.params.code || "").toUpperCase();
+    try {
+      // Klick tracken via DB
+      const { createHash } = await import("crypto");
+      const ip = req.headers["x-forwarded-for"] as string || req.socket.remoteAddress || "";
+      const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 16);
+      const ua = req.headers["user-agent"] || "";
+      
+      // Import db functions
+      const dbMod = await import("../db");
+      const affiliate = await dbMod.getAffiliateByCode(code);
+      if (affiliate) {
+        await dbMod.recordAffiliateClick(code, ipHash, ua);
+      }
+    } catch (e) {
+      console.error("[Affiliate] Click tracking error:", e);
+    }
+    // Weiterleitung zur Hauptseite mit ref-Parameter (für Cookie-Tracking im Frontend)
+    res.redirect(`/?ref=${code}`);
+  });
+
+  // API-Endpunkt: Affiliate-Code validieren (für Frontend-Cookie)
+  app.get("/api/affiliate/validate/:code", async (req, res) => {
+    const code = (req.params.code || "").toUpperCase();
+    try {
+      const dbMod = await import("../db");
+      const affiliate = await dbMod.getAffiliateByCode(code);
+      if (affiliate) {
+        res.json({ valid: true, name: affiliate.name, code: affiliate.code });
+      } else {
+        res.json({ valid: false });
+      }
+    } catch (e) {
+      res.json({ valid: false });
+    }
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({

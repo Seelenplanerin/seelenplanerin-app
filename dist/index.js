@@ -1,73 +1,164 @@
-// server/_core/index.ts
-import "dotenv/config";
-import express from "express";
-import { createServer } from "http";
-import net from "net";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-
-// shared/const.ts
-var COOKIE_NAME = "app_session_id";
-var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
-var AXIOS_TIMEOUT_MS = 3e4;
-var UNAUTHED_ERR_MSG = "Please login (10001)";
-var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
-
-// server/db.ts
-import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
 
 // drizzle/schema.ts
 import { integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
-var roleEnum = pgEnum("role", ["user", "admin"]);
-var users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: roleEnum("role").default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
-});
-var meditations = pgTable("meditations", {
-  id: serial("id").primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: text("description"),
-  emoji: varchar("emoji", { length: 10 }).default("\u{1F9D8}\u200D\u2640\uFE0F"),
-  audioUrl: text("audioUrl").notNull(),
-  isPremium: integer("isPremium").default(1).notNull(),
-  isActive: integer("isActive").default(1).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
-});
-var communityUsers = pgTable("community_users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 320 }).notNull().unique(),
-  password: varchar("password", { length: 255 }).notNull(),
-  name: varchar("name", { length: 255 }).notNull(),
-  mustChangePassword: integer("mustChangePassword").default(0).notNull(),
-  isActive: integer("isActive").default(1).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull()
+var roleEnum, users, meditations, communityUsers, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts;
+var init_schema = __esm({
+  "drizzle/schema.ts"() {
+    "use strict";
+    roleEnum = pgEnum("role", ["user", "admin"]);
+    users = pgTable("users", {
+      id: serial("id").primaryKey(),
+      openId: varchar("openId", { length: 64 }).notNull().unique(),
+      name: text("name"),
+      email: varchar("email", { length: 320 }),
+      loginMethod: varchar("loginMethod", { length: 64 }),
+      role: roleEnum("role").default("user").notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+      lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull()
+    });
+    meditations = pgTable("meditations", {
+      id: serial("id").primaryKey(),
+      title: varchar("title", { length: 255 }).notNull(),
+      description: text("description"),
+      emoji: varchar("emoji", { length: 10 }).default("\u{1F9D8}\u200D\u2640\uFE0F"),
+      audioUrl: text("audioUrl").notNull(),
+      isPremium: integer("isPremium").default(1).notNull(),
+      isActive: integer("isActive").default(1).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    communityUsers = pgTable("community_users", {
+      id: serial("id").primaryKey(),
+      email: varchar("email", { length: 320 }).notNull().unique(),
+      password: varchar("password", { length: 255 }).notNull(),
+      name: varchar("name", { length: 255 }).notNull(),
+      mustChangePassword: integer("mustChangePassword").default(0).notNull(),
+      isActive: integer("isActive").default(1).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    affiliateCodes = pgTable("affiliate_codes", {
+      id: serial("id").primaryKey(),
+      email: varchar("email", { length: 320 }).notNull().unique(),
+      // Community-User E-Mail
+      code: varchar("code", { length: 20 }).notNull().unique(),
+      // z.B. "SP-7X3K9"
+      name: varchar("name", { length: 255 }).notNull(),
+      // Name des Affiliates
+      isActive: integer("isActive").default(1).notNull(),
+      totalClicks: integer("totalClicks").default(0).notNull(),
+      totalSales: integer("totalSales").default(0).notNull(),
+      totalEarnings: integer("totalEarnings").default(0).notNull(),
+      // in Cent
+      totalPaid: integer("totalPaid").default(0).notNull(),
+      // in Cent
+      paypalEmail: varchar("paypalEmail", { length: 320 }),
+      // für Auszahlung
+      iban: varchar("iban", { length: 50 }),
+      // alternativ IBAN
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    affiliateClicks = pgTable("affiliate_clicks", {
+      id: serial("id").primaryKey(),
+      affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+      ipHash: varchar("ipHash", { length: 64 }),
+      // gehashte IP für Unique-Tracking
+      userAgent: text("userAgent"),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    affiliateSales = pgTable("affiliate_sales", {
+      id: serial("id").primaryKey(),
+      affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+      productName: varchar("productName", { length: 255 }).notNull(),
+      saleAmount: integer("saleAmount").notNull(),
+      // Verkaufsbetrag in Cent
+      commissionRate: integer("commissionRate").default(15).notNull(),
+      // Prozent
+      commissionAmount: integer("commissionAmount").notNull(),
+      // Provision in Cent
+      customerEmail: varchar("customerEmail", { length: 320 }),
+      customerName: varchar("customerName", { length: 255 }),
+      status: varchar("status", { length: 20 }).default("pending").notNull(),
+      // pending, confirmed, paid
+      notes: text("notes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+    affiliatePayouts = pgTable("affiliate_payouts", {
+      id: serial("id").primaryKey(),
+      affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
+      amount: integer("amount").notNull(),
+      // Betrag in Cent
+      method: varchar("method", { length: 50 }).default("paypal").notNull(),
+      // paypal, bank
+      reference: varchar("reference", { length: 255 }),
+      // Überweisungsreferenz
+      notes: text("notes"),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
+  }
 });
 
 // server/_core/env.ts
-var ENV = {
-  appId: process.env.VITE_APP_ID ?? "",
-  cookieSecret: process.env.JWT_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "",
-  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
-  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
-  isProduction: process.env.NODE_ENV === "production",
-  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
-};
+var ENV;
+var init_env = __esm({
+  "server/_core/env.ts"() {
+    "use strict";
+    ENV = {
+      appId: process.env.VITE_APP_ID ?? "",
+      cookieSecret: process.env.JWT_SECRET ?? "",
+      databaseUrl: process.env.DATABASE_URL ?? "",
+      oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+      ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+      isProduction: process.env.NODE_ENV === "production",
+      forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+      forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? ""
+    };
+  }
+});
 
 // server/db.ts
-var _db = null;
+var db_exports = {};
+__export(db_exports, {
+  createAffiliate: () => createAffiliate,
+  createAffiliatePayout: () => createAffiliatePayout,
+  createAffiliateSale: () => createAffiliateSale,
+  createCommunityUser: () => createCommunityUser,
+  createMeditation: () => createMeditation,
+  deleteCommunityUser: () => deleteCommunityUser,
+  deleteMeditation: () => deleteMeditation,
+  generateAffiliateCode: () => generateAffiliateCode,
+  getActiveMeditations: () => getActiveMeditations,
+  getAffiliateByCode: () => getAffiliateByCode,
+  getAffiliateByEmail: () => getAffiliateByEmail,
+  getAffiliateClicks: () => getAffiliateClicks,
+  getAffiliatePayouts: () => getAffiliatePayouts,
+  getAffiliateSales: () => getAffiliateSales,
+  getAllAffiliatePayouts: () => getAllAffiliatePayouts,
+  getAllAffiliateSales: () => getAllAffiliateSales,
+  getAllAffiliates: () => getAllAffiliates,
+  getAllCommunityUsers: () => getAllCommunityUsers,
+  getAllMeditations: () => getAllMeditations,
+  getCommunityUserByEmail: () => getCommunityUserByEmail,
+  getDb: () => getDb,
+  getUserByOpenId: () => getUserByOpenId,
+  recordAffiliateClick: () => recordAffiliateClick,
+  updateAffiliate: () => updateAffiliate,
+  updateAffiliateSaleStatus: () => updateAffiliateSaleStatus,
+  updateCommunityUser: () => updateCommunityUser,
+  updateMeditation: () => updateMeditation,
+  upsertUser: () => upsertUser
+});
+import { eq, desc, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
@@ -196,6 +287,145 @@ async function deleteCommunityUser(email) {
   if (!db) throw new Error("Database not available");
   await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
 }
+async function generateAffiliateCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "SP-";
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+async function getAffiliateByEmail(email) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.email, email.toLowerCase())).limit(1);
+  return result.length > 0 ? result[0] : void 0;
+}
+async function getAffiliateByCode(code) {
+  const db = await getDb();
+  if (!db) return void 0;
+  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.code, code.toUpperCase())).limit(1);
+  return result.length > 0 ? result[0] : void 0;
+}
+async function getAllAffiliates() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateCodes).orderBy(desc(affiliateCodes.createdAt));
+}
+async function createAffiliate(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(affiliateCodes).values({
+    email: data.email.toLowerCase(),
+    name: data.name,
+    code: data.code.toUpperCase()
+  }).returning({ id: affiliateCodes.id });
+  return result[0].id;
+}
+async function updateAffiliate(code, data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.code, code.toUpperCase()));
+}
+async function recordAffiliateClick(code, ipHash, userAgent) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(affiliateClicks).values({
+    affiliateCode: code.toUpperCase(),
+    ipHash: ipHash || null,
+    userAgent: userAgent || null
+  });
+  await db.update(affiliateCodes).set({ totalClicks: sql`"totalClicks" + 1` }).where(eq(affiliateCodes.code, code.toUpperCase()));
+}
+async function getAffiliateClicks(code) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateClicks).where(eq(affiliateClicks.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateClicks.createdAt));
+}
+async function createAffiliateSale(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(affiliateSales).values({
+    affiliateCode: data.affiliateCode.toUpperCase(),
+    productName: data.productName,
+    saleAmount: data.saleAmount,
+    commissionRate: 15,
+    commissionAmount: data.commissionAmount,
+    customerEmail: data.customerEmail || null,
+    customerName: data.customerName || null,
+    notes: data.notes || null
+  }).returning({ id: affiliateSales.id });
+  await db.update(affiliateCodes).set({
+    totalSales: sql`"totalSales" + 1`,
+    totalEarnings: sql`"totalEarnings" + ${data.commissionAmount}`
+  }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+  return result[0].id;
+}
+async function getAffiliateSales(code) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateSales).where(eq(affiliateSales.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateSales.createdAt));
+}
+async function getAllAffiliateSales() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateSales).orderBy(desc(affiliateSales.createdAt));
+}
+async function updateAffiliateSaleStatus(id, status) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(affiliateSales).set({ status }).where(eq(affiliateSales.id, id));
+}
+async function createAffiliatePayout(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(affiliatePayouts).values({
+    affiliateCode: data.affiliateCode.toUpperCase(),
+    amount: data.amount,
+    method: data.method,
+    reference: data.reference || null,
+    notes: data.notes || null
+  }).returning({ id: affiliatePayouts.id });
+  await db.update(affiliateCodes).set({ totalPaid: sql`"totalPaid" + ${data.amount}` }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+  return result[0].id;
+}
+async function getAffiliatePayouts(code) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliatePayouts).where(eq(affiliatePayouts.affiliateCode, code.toUpperCase())).orderBy(desc(affiliatePayouts.createdAt));
+}
+async function getAllAffiliatePayouts() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+}
+var _db;
+var init_db = __esm({
+  "server/db.ts"() {
+    "use strict";
+    init_schema();
+    init_env();
+    _db = null;
+  }
+});
+
+// server/_core/index.ts
+import "dotenv/config";
+import express from "express";
+import { createServer } from "http";
+import net from "net";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+
+// shared/const.ts
+var COOKIE_NAME = "app_session_id";
+var ONE_YEAR_MS = 1e3 * 60 * 60 * 24 * 365;
+var AXIOS_TIMEOUT_MS = 3e4;
+var UNAUTHED_ERR_MSG = "Please login (10001)";
+var NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
+
+// server/_core/oauth.ts
+init_db();
 
 // server/_core/cookies.ts
 var LOCAL_HOSTS = /* @__PURE__ */ new Set(["localhost", "127.0.0.1", "::1"]);
@@ -243,6 +473,8 @@ var HttpError = class extends Error {
 var ForbiddenError = (msg) => new HttpError(403, msg);
 
 // server/_core/sdk.ts
+init_db();
+init_env();
 import axios from "axios";
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
@@ -583,6 +815,7 @@ import { z as z2 } from "zod";
 import { z } from "zod";
 
 // server/_core/notification.ts
+init_env();
 import { TRPCError } from "@trpc/server";
 var TITLE_MAX_LENGTH = 1200;
 var CONTENT_MAX_LENGTH = 2e4;
@@ -920,6 +1153,7 @@ async function verifySmtpConnection() {
 }
 
 // server/storage.ts
+init_env();
 function getStorageConfig() {
   const baseUrl = ENV.forgeApiUrl;
   const apiKey = ENV.forgeApiKey;
@@ -971,6 +1205,7 @@ async function storagePut(relKey, data, contentType = "application/octet-stream"
 }
 
 // server/routers.ts
+init_db();
 var appRouter = router({
   system: systemRouter,
   auth: router({
@@ -1103,6 +1338,113 @@ var appRouter = router({
       return { success: true };
     })
   }),
+  // ── Affiliate-System ──
+  affiliate: router({
+    // Affiliate-Code für einen Nutzer erstellen oder abrufen
+    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1) })).mutation(async ({ input }) => {
+      let affiliate = await getAffiliateByEmail(input.email);
+      if (affiliate) return { success: true, affiliate };
+      let code = await generateAffiliateCode();
+      let attempts = 0;
+      while (await getAffiliateByCode(code) && attempts < 10) {
+        code = await generateAffiliateCode();
+        attempts++;
+      }
+      const id = await createAffiliate({ email: input.email, name: input.name, code });
+      affiliate = await getAffiliateByEmail(input.email);
+      return { success: true, affiliate };
+    }),
+    // Affiliate-Daten per Code abrufen
+    getByCode: publicProcedure.input(z2.object({ code: z2.string().min(1) })).query(async ({ input }) => {
+      const affiliate = await getAffiliateByCode(input.code);
+      return affiliate || null;
+    }),
+    // Affiliate-Daten per E-Mail abrufen
+    getByEmail: publicProcedure.input(z2.object({ email: z2.string().email() })).query(async ({ input }) => {
+      const affiliate = await getAffiliateByEmail(input.email);
+      return affiliate || null;
+    }),
+    // Alle Affiliates laden (Admin)
+    list: publicProcedure.query(async () => {
+      return getAllAffiliates();
+    }),
+    // Klick tracken
+    trackClick: publicProcedure.input(z2.object({ code: z2.string().min(1), ipHash: z2.string().optional(), userAgent: z2.string().optional() })).mutation(async ({ input }) => {
+      const affiliate = await getAffiliateByCode(input.code);
+      if (!affiliate) return { success: false, error: "code_not_found" };
+      await recordAffiliateClick(input.code, input.ipHash, input.userAgent);
+      return { success: true };
+    }),
+    // Verkäufe eines Affiliates abrufen
+    getSales: publicProcedure.input(z2.object({ code: z2.string().min(1) })).query(async ({ input }) => {
+      return getAffiliateSales(input.code);
+    }),
+    // Alle Verkäufe (Admin)
+    listAllSales: publicProcedure.query(async () => {
+      return getAllAffiliateSales();
+    }),
+    // Verkauf eintragen (Admin)
+    createSale: publicProcedure.input(z2.object({
+      affiliateCode: z2.string().min(1),
+      productName: z2.string().min(1),
+      saleAmount: z2.number().min(1),
+      // in Cent
+      customerEmail: z2.string().optional(),
+      customerName: z2.string().optional(),
+      notes: z2.string().optional()
+    })).mutation(async ({ input }) => {
+      const affiliate = await getAffiliateByCode(input.affiliateCode);
+      if (!affiliate) return { success: false, error: "code_not_found" };
+      const commissionAmount = Math.round(input.saleAmount * 0.15);
+      const id = await createAffiliateSale({
+        affiliateCode: input.affiliateCode,
+        productName: input.productName,
+        saleAmount: input.saleAmount,
+        commissionAmount,
+        customerEmail: input.customerEmail,
+        customerName: input.customerName,
+        notes: input.notes
+      });
+      return { success: true, id, commissionAmount };
+    }),
+    // Verkaufsstatus ändern (Admin)
+    updateSaleStatus: publicProcedure.input(z2.object({ id: z2.number(), status: z2.string().min(1) })).mutation(async ({ input }) => {
+      await updateAffiliateSaleStatus(input.id, input.status);
+      return { success: true };
+    }),
+    // Auszahlung erstellen (Admin)
+    createPayout: publicProcedure.input(z2.object({
+      affiliateCode: z2.string().min(1),
+      amount: z2.number().min(1),
+      // in Cent
+      method: z2.string().default("paypal"),
+      reference: z2.string().optional(),
+      notes: z2.string().optional()
+    })).mutation(async ({ input }) => {
+      const id = await createAffiliatePayout(input);
+      return { success: true, id };
+    }),
+    // Auszahlungen eines Affiliates
+    getPayouts: publicProcedure.input(z2.object({ code: z2.string().min(1) })).query(async ({ input }) => {
+      return getAffiliatePayouts(input.code);
+    }),
+    // Alle Auszahlungen (Admin)
+    listAllPayouts: publicProcedure.query(async () => {
+      return getAllAffiliatePayouts();
+    }),
+    // Affiliate-Zahlungsdaten aktualisieren
+    updatePaymentInfo: publicProcedure.input(z2.object({
+      code: z2.string().min(1),
+      paypalEmail: z2.string().optional(),
+      iban: z2.string().optional()
+    })).mutation(async ({ input }) => {
+      const updateData = {};
+      if (input.paypalEmail !== void 0) updateData.paypalEmail = input.paypalEmail;
+      if (input.iban !== void 0) updateData.iban = input.iban;
+      await updateAffiliate(input.code, updateData);
+      return { success: true };
+    })
+  }),
   storage: router({
     uploadAudio: publicProcedure.input(z2.object({
       fileName: z2.string().min(1),
@@ -1194,7 +1536,58 @@ async function runMigrations() {
         "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `;
-    console.log("[db-migrate] All tables created/verified");
+    await sql2`
+      CREATE TABLE IF NOT EXISTS affiliate_codes (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(320) NOT NULL UNIQUE,
+        code VARCHAR(20) NOT NULL UNIQUE,
+        name VARCHAR(255) NOT NULL,
+        "isActive" INTEGER DEFAULT 1 NOT NULL,
+        "totalClicks" INTEGER DEFAULT 0 NOT NULL,
+        "totalSales" INTEGER DEFAULT 0 NOT NULL,
+        "totalEarnings" INTEGER DEFAULT 0 NOT NULL,
+        "totalPaid" INTEGER DEFAULT 0 NOT NULL,
+        "paypalEmail" VARCHAR(320),
+        iban VARCHAR(50),
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    await sql2`
+      CREATE TABLE IF NOT EXISTS affiliate_clicks (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        "ipHash" VARCHAR(64),
+        "userAgent" TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    await sql2`
+      CREATE TABLE IF NOT EXISTS affiliate_sales (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        "productName" VARCHAR(255) NOT NULL,
+        "saleAmount" INTEGER NOT NULL,
+        "commissionRate" INTEGER DEFAULT 15 NOT NULL,
+        "commissionAmount" INTEGER NOT NULL,
+        "customerEmail" VARCHAR(320),
+        "customerName" VARCHAR(255),
+        status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+        notes TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    await sql2`
+      CREATE TABLE IF NOT EXISTS affiliate_payouts (
+        id SERIAL PRIMARY KEY,
+        "affiliateCode" VARCHAR(20) NOT NULL,
+        amount INTEGER NOT NULL,
+        method VARCHAR(50) DEFAULT 'paypal' NOT NULL,
+        reference VARCHAR(255),
+        notes TEXT,
+        "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `;
+    console.log("[db-migrate] All tables created/verified (incl. affiliate)");
   } finally {
     await sql2.end();
   }
@@ -1314,6 +1707,37 @@ async function startServer() {
     } catch (err) {
       console.error("Upload error:", err);
       res.status(500).json({ success: false, error: err.message || "Upload fehlgeschlagen" });
+    }
+  });
+  app.get("/ref/:code", async (req, res) => {
+    const code = (req.params.code || "").toUpperCase();
+    try {
+      const { createHash } = await import("crypto");
+      const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "";
+      const ipHash = createHash("sha256").update(ip).digest("hex").slice(0, 16);
+      const ua = req.headers["user-agent"] || "";
+      const dbMod = await Promise.resolve().then(() => (init_db(), db_exports));
+      const affiliate = await dbMod.getAffiliateByCode(code);
+      if (affiliate) {
+        await dbMod.recordAffiliateClick(code, ipHash, ua);
+      }
+    } catch (e) {
+      console.error("[Affiliate] Click tracking error:", e);
+    }
+    res.redirect(`/?ref=${code}`);
+  });
+  app.get("/api/affiliate/validate/:code", async (req, res) => {
+    const code = (req.params.code || "").toUpperCase();
+    try {
+      const dbMod = await Promise.resolve().then(() => (init_db(), db_exports));
+      const affiliate = await dbMod.getAffiliateByCode(code);
+      if (affiliate) {
+        res.json({ valid: true, name: affiliate.name, code: affiliate.code });
+      } else {
+        res.json({ valid: false });
+      }
+    } catch (e) {
+      res.json({ valid: false });
     }
   });
   app.use(
