@@ -331,54 +331,67 @@ export default function AdminScreen() {
     }
   };
 
-  const handleDeleteMember = (email: string, name: string) => {
-    Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Entfernen", style: "destructive", onPress: async () => {
-        try {
-          const API_URL = getApiBaseUrl();
-          const res = await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ json: { email } }),
-          });
-          if (!res.ok) throw new Error("Server-Fehler");
-          const updatedUsers = await getUsers();
-          setMembers(updatedUsers);
-          Alert.alert("Entfernt ✓", `${name} wurde aus der Community entfernt.`);
-        } catch (e) {
-          Alert.alert("Fehler", "Mitglied konnte nicht entfernt werden. Bitte versuche es erneut.");
-        }
-      }},
-    ]);
+  const handleDeleteMember = async (email: string, name: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`${name} (${email}) wirklich entfernen?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Entfernen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    try {
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email } }),
+      });
+      if (!res.ok) throw new Error("Server-Fehler");
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+      if (Platform.OS === "web") { window.alert(`${name} wurde aus der Community entfernt.`); }
+      else { Alert.alert("Entfernt ✓", `${name} wurde aus der Community entfernt.`); }
+    } catch (e) {
+      if (Platform.OS === "web") { window.alert("Mitglied konnte nicht entfernt werden. Bitte versuche es erneut."); }
+      else { Alert.alert("Fehler", "Mitglied konnte nicht entfernt werden. Bitte versuche es erneut."); }
+    }
   };
 
-  const handleResetMemberPw = (email: string, name: string) => {
+  const handleResetMemberPw = async (email: string, name: string) => {
     const tempPw = generateTempPassword();
-    Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Zurücksetzen & senden", onPress: async () => {
-        try {
-          const API_URL = getApiBaseUrl();
-          await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ json: { email, password: tempPw, mustChangePassword: 1 } }),
-          });
-          const updatedUsers = await getUsers();
-          setMembers(updatedUsers);
-        } catch (e) {
-          const users = await getUsers();
-          const idx = users.findIndex(u => u.email === email);
-          if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
-        }
-        try {
-          const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
-          Alert.alert(result.success ? "Passwort zurückgesetzt ✨" : "Zurückgesetzt – E-Mail fehlgeschlagen",
-            result.success ? `E-Mail an ${email} gesendet.` : `Passwort: ${tempPw}\nBitte manuell senden.`);
-        } catch { Alert.alert("Zurückgesetzt", `E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`); }
-      }},
-    ]);
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`Neues Passwort für ${name} per E-Mail senden?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Zurücksetzen & senden", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    try {
+      const API_URL = getApiBaseUrl();
+      await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email, password: tempPw, mustChangePassword: 1 } }),
+      });
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+    } catch (e) {
+      const users = await getUsers();
+      const idx = users.findIndex(u => u.email === email);
+      if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
+    }
+    try {
+      const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
+      const msg = result.success ? `E-Mail an ${email} gesendet.` : `Passwort: ${tempPw}\nBitte manuell senden.`;
+      if (Platform.OS === "web") { window.alert(msg); } else { Alert.alert(result.success ? "Passwort zurückgesetzt \u2728" : "Zurückgesetzt", msg); }
+    } catch {
+      const msg = `E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`;
+      if (Platform.OS === "web") { window.alert(msg); } else { Alert.alert("Zurückgesetzt", msg); }
+    }
   };
 
   // ── Musik ──
@@ -522,14 +535,18 @@ export default function AdminScreen() {
     setShowAddSong(true);
   };
 
-  const handleDeleteSong = (id: string, titel: string) => {
-    Alert.alert("Song löschen", `"${titel}" wirklich löschen?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
-        const allSongs = (await getSongs()).filter(s => s.id !== id);
-        await saveSongs(allSongs); setSongs(allSongs);
-      }},
-    ]);
+  const handleDeleteSong = async (id: string, titel: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`"${titel}" wirklich löschen?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Song löschen", `"${titel}" wirklich löschen?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    const allSongs = (await getSongs()).filter(s => s.id !== id);
+    await saveSongs(allSongs); setSongs(allSongs);
   };
 
   // ── Tagesimpulse ──
@@ -545,14 +562,18 @@ export default function AdminScreen() {
     Alert.alert("Impuls gespeichert ✓", "Der neue Tagesimpuls ist jetzt aktiv.");
   };
 
-  const handleDeleteImpuls = (id: string) => {
-    Alert.alert("Impuls löschen", "Diesen Impuls wirklich löschen?", [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
-        const all = (await getImpulse()).filter(i => i.id !== id);
-        await saveImpulse(all); setImpulse(all);
-      }},
-    ]);
+  const handleDeleteImpuls = async (id: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm("Diesen Impuls wirklich löschen?")
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Impuls löschen", "Diesen Impuls wirklich löschen?", [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    const all = (await getImpulse()).filter(i => i.id !== id);
+    await saveImpulse(all); setImpulse(all);
   };
 
   const handleSetActiveImpuls = async (impuls: Tagesimpuls) => {
@@ -907,26 +928,29 @@ export default function AdminScreen() {
                   }} style={s.memberAction} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, color: C.gold }}>✏️</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
-                    Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
-                      { text: "Abbrechen", style: "cancel" },
-                      { text: "Löschen", style: "destructive", onPress: async () => {
-                        // Aus Datenbank löschen
-                        try {
-                          const API_URL = `${getApiBaseUrl()}/api/trpc`;
-                          const numId = parseInt(m.id);
-                          if (!isNaN(numId)) {
-                            await fetch(`${API_URL}/meditations.delete`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ json: { id: numId } }),
-                            });
-                          }
-                        } catch (e) { console.error("[Admin] DB-Löschen fehlgeschlagen:", e); }
-                        const all = (await getMeditationen()).filter(x => x.id !== m.id);
-                        await saveMeditationen(all); setMeditationen(all);
-                      }},
-                    ]);
+                  <TouchableOpacity onPress={async () => {
+                    const confirmed = Platform.OS === "web"
+                      ? window.confirm(`"${m.titel}" wirklich löschen?`)
+                      : await new Promise<boolean>((resolve) => {
+                          Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
+                            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+                            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+                          ]);
+                        });
+                    if (!confirmed) return;
+                    try {
+                      const API_URL = `${getApiBaseUrl()}/api/trpc`;
+                      const numId = parseInt(m.id);
+                      if (!isNaN(numId)) {
+                        await fetch(`${API_URL}/meditations.delete`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { id: numId } }),
+                        });
+                      }
+                    } catch (e) { console.error("[Admin] DB-Löschen fehlgeschlagen:", e); }
+                    const all = (await getMeditationen()).filter(x => x.id !== m.id);
+                    await saveMeditationen(all); setMeditationen(all);
                   }} style={s.memberAction} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
                   </TouchableOpacity>
