@@ -496,14 +496,14 @@
 - [ ] Mitglieder im Admin-Bereich löschen können
 
 ## Affiliate-System "Empfehlen & Verdienen" (28.02.2026)
-- [ ] Datenbank-Schema: Affiliate-Tabellen (referral_codes, referral_clicks, referral_sales, referral_payouts)
-- [ ] Server-API: Affiliate-Routen (Code generieren, Klicks tracken, Verkäufe eintragen, Provisionen berechnen)
-- [ ] Referral-Tracking: Landingpage mit Cookie-Tracking bei Link-Klick
-- [ ] App: "Empfehlen & Verdienen" Bereich im Ich-Tab
-- [ ] App: Persönlicher Empfehlungslink mit Kopier- und Teilen-Button
-- [ ] App: Affiliate-Dashboard (Klicks, Empfehlungen, Provisionen, Auszahlungen)
-- [ ] Admin: Affiliate-Verwaltung (alle Affiliates sehen, Verkäufe eintragen, Auszahlungen markieren)
-- [ ] Admin: Verkauf manuell eintragen (Betrag, Produkt, Referral-Code zuordnen)
-- [ ] Admin: Auszahlungen verwalten und als bezahlt markieren
-- [ ] Automatische 15% Provisionsberechnung auf alle Verkäufe
-- [ ] Web-Build mit Affiliate-System erstellen und deployen
+- [x] Datenbank-Schema: Affiliate-Tabellen (referral_codes, referral_clicks, referral_sales, referral_payouts)
+- [x] Server-API: Affiliate-Routen (Code generieren, Klicks tracken, Verkäufe eintragen, Provisionen berechnen)
+- [x] Referral-Tracking: Landingpage mit Cookie-Tracking bei Link-Klick
+- [x] App: "Geben & Nehmen" Bereich im Ich-Tab
+- [x] App: Persönlicher Empfehlungslink mit Kopier- und Teilen-Button
+- [x] App: Affiliate-Dashboard (Klicks, Empfehlungen, Provisionen, Auszahlungen)
+- [x] Admin: Affiliate-Verwaltung (alle Affiliates sehen, Verkäufe eintragen, Auszahlungen markieren)
+- [x] Admin: Verkauf manuell eintragen (Betrag, Produkt, Referral-Code zuordnen)
+- [x] Admin: Auszahlungen verwalten und als bezahlt markieren
+- [x] Automatische 15% Provisionsberechnung auf alle Verkäufe
+- [x] Web-Build mit Affiliate-System erstellen und deployen
