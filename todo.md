@@ -525,3 +525,5 @@
 - [x] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf über ihren Link
 - [x] "Geben & Nehmen" Karte auf Startseite nach unten verschieben (nicht als erstes)
 - [x] Neue Meditation "Mut" hochladen (ID: 2)
+- [ ] Kompletter Test aller App-Funktionen (API, UI, Affiliate, Shop, Meditationen, Admin)
+- [ ] Seelen Academy "Coming Soon" Button auf Startseite einbauen

@@ -315,6 +315,31 @@ export default function AktuellesScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* ══════════════════════════════════════════════════════════
+            SEELEN ACADEMY – COMING SOON
+            ══════════════════════════════════════════════════════════ */}
+        <View style={s.academyCard}>
+          <LinearGradient
+            colors={["#2C1810", "#3D2314", "#4A2A18"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.academyGradient}
+          >
+            <Text style={s.academyEmoji}>🎓</Text>
+            <Text style={s.academyTitle}>Seelen Academy</Text>
+            <Text style={s.academySubtitle}>Ich möchte ausbilden</Text>
+            <Text style={s.academyDesc}>
+              Lerne von der Seelenplanerin – tiefes Wissen über Runen, Mondrituale, Aura-Reading und spirituelle Begleitung. Werde selbst zur Seelenplanerin und begleite andere auf ihrem Weg.
+            </Text>
+            <View style={s.academyBadge}>
+              <Text style={s.academyBadgeText}>✨ Coming Soon ✨</Text>
+            </View>
+            <Text style={s.academyHint}>
+              Du möchtest als Erste erfahren, wenn die Academy startet? Folge mir auf Instagram!
+            </Text>
+          </LinearGradient>
+        </View>
+
         {/* ── INSTAGRAM ── */}
         <TouchableOpacity
           style={s.instaCard}
@@ -468,6 +493,42 @@ const s = StyleSheet.create({
   premiumDesc: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
   premiumBadge: { backgroundColor: C.gold, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
   premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
+
+  // Seelen Academy
+  academyCard: {
+    marginHorizontal: 16, marginTop: 16, marginBottom: 8,
+    borderRadius: 20, overflow: "hidden" as const,
+    borderWidth: 1, borderColor: "rgba(201,169,110,0.3)",
+  },
+  academyGradient: {
+    padding: 24, alignItems: "center" as const,
+  },
+  academyEmoji: { fontSize: 36, marginBottom: 10 },
+  academyTitle: {
+    fontSize: 26, fontWeight: "700" as any, color: C.goldLight,
+    marginBottom: 4, fontFamily: "DancingScript",
+  },
+  academySubtitle: {
+    fontSize: 15, fontWeight: "600" as any, color: C.gold,
+    marginBottom: 12, fontStyle: "italic" as const,
+  },
+  academyDesc: {
+    fontSize: 14, color: "rgba(255,255,255,0.75)", textAlign: "center" as const,
+    lineHeight: 22, marginBottom: 16, paddingHorizontal: 8,
+  },
+  academyBadge: {
+    backgroundColor: "rgba(201,169,110,0.2)", borderRadius: 14,
+    paddingVertical: 12, paddingHorizontal: 28,
+    borderWidth: 1, borderColor: "rgba(201,169,110,0.4)",
+    marginBottom: 12,
+  },
+  academyBadgeText: {
+    color: C.gold, fontSize: 16, fontWeight: "700" as any,
+  },
+  academyHint: {
+    fontSize: 12, color: "rgba(255,255,255,0.5)", textAlign: "center" as const,
+    lineHeight: 18,
+  },
 
   // Instagram
   instaCard: {
