@@ -507,3 +507,4 @@
 - [x] Admin: Auszahlungen verwalten und als bezahlt markieren
 - [x] Automatische 15% Provisionsberechnung auf alle Verkäufe
 - [x] Web-Build mit Affiliate-System erstellen und deployen
+- [x] IBAN-Option entfernen, nur PayPal als Auszahlungsmethode

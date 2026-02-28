@@ -23,7 +23,7 @@ interface AffiliateData {
   totalEarnings: number; // in Cent
   totalPaid: number; // in Cent
   paypalEmail?: string;
-  iban?: string;
+
 }
 
 interface SaleData {
@@ -49,7 +49,6 @@ export default function AffiliateScreen() {
   const [showRichtlinien, setShowRichtlinien] = useState(false);
   const [copied, setCopied] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
-  const [iban, setIban] = useState("");
   const [savingPayment, setSavingPayment] = useState(false);
 
   const baseUrl = "https://seelenplanerin-app.onrender.com";
@@ -81,7 +80,6 @@ export default function AffiliateScreen() {
         const aff = data.result.data.json.affiliate;
         setAffiliate(aff);
         setPaypalEmail(aff.paypalEmail || "");
-        setIban(aff.iban || "");
         setStep("dashboard");
         // Verkäufe laden
         loadSales(aff.code);
@@ -158,7 +156,7 @@ export default function AffiliateScreen() {
       await fetch(`${API_URL}/api/trpc/affiliate.updatePaymentInfo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { code: affiliate.code, paypalEmail: paypalEmail.trim(), iban: iban.trim() } }),
+        body: JSON.stringify({ json: { code: affiliate.code, paypalEmail: paypalEmail.trim() } }),
       });
       if (Platform.OS === "web") window.alert("Zahlungsdaten gespeichert!");
       else Alert.alert("Gespeichert", "Deine Zahlungsdaten wurden gespeichert.");
@@ -279,7 +277,7 @@ export default function AffiliateScreen() {
                 Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}
 
                 <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
-                Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal oder Banküberweisung – je nachdem, welche Zahlungsdaten du hinterlegst. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
+                Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal. Hinterlege dazu einfach deine PayPal-E-Mail-Adresse. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
 
                 <Text style={{ fontWeight: "700" }}>4. Zuordnung von Verkäufen{"\n"}</Text>
                 Ein Verkauf wird dir zugeordnet, wenn der Käufer über deinen persönlichen Empfehlungslink auf die Seite gelangt ist. Die Zuordnung erfolgt über einen Tracking-Code in deinem Link.{"\n\n"}
@@ -405,7 +403,7 @@ export default function AffiliateScreen() {
         {/* Zahlungsdaten */}
         <View style={s.paymentCard}>
           <Text style={s.paymentTitle}>Deine Zahlungsdaten</Text>
-          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen können, hinterlege bitte deine Zahlungsdaten.</Text>
+          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen können, hinterlege bitte deine PayPal-Adresse. Falls du noch kein PayPal hast, kannst du dir kostenlos ein Konto erstellen unter paypal.com.</Text>
           <Text style={s.inputLabel}>PayPal E-Mail</Text>
           <TextInput
             style={s.input}
@@ -416,15 +414,7 @@ export default function AffiliateScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <Text style={s.inputLabel}>oder IBAN</Text>
-          <TextInput
-            style={s.input}
-            placeholder="DE89 3704 0044 0532 0130 00"
-            placeholderTextColor={C.muted}
-            value={iban}
-            onChangeText={setIban}
-            autoCapitalize="characters"
-          />
+
           <TouchableOpacity
             style={[s.saveBtn, savingPayment && { opacity: 0.6 }]}
             onPress={handleSavePaymentInfo}
@@ -461,7 +451,7 @@ export default function AffiliateScreen() {
               Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}
 
               <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
-              Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal oder Banküberweisung – je nachdem, welche Zahlungsdaten du hinterlegst. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
+              Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal. Hinterlege dazu einfach deine PayPal-E-Mail-Adresse. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
 
               <Text style={{ fontWeight: "700" }}>4. Zuordnung von Verkäufen{"\n"}</Text>
               Ein Verkauf wird dir zugeordnet, wenn der Käufer über deinen persönlichen Empfehlungslink auf die Seite gelangt ist. Die Zuordnung erfolgt über einen Tracking-Code in deinem Link.{"\n\n"}

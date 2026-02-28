@@ -145,7 +145,7 @@ type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachricht
 interface AffiliateInfo {
   id: number; code: string; name: string; email: string;
   totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number;
-  paypalEmail?: string; iban?: string; isActive: number; createdAt: string;
+  paypalEmail?: string; isActive: number; createdAt: string;
 }
 interface AffiliateSaleInfo {
   id: number; affiliateCode: string; productName: string;
@@ -1384,9 +1384,9 @@ export default function AdminScreen() {
                         <Text style={{ fontSize: 10, color: C.muted }}>Bezahlt</Text>
                       </View>
                     </View>
-                    {(a.paypalEmail || a.iban) && (
+                    {a.paypalEmail && (
                       <Text style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
-                        Zahlung: {a.paypalEmail ? `PayPal: ${a.paypalEmail}` : `IBAN: ${a.iban}`}
+                        PayPal: {a.paypalEmail}
                       </Text>
                     )}
                   </View>
@@ -1477,16 +1477,7 @@ export default function AdminScreen() {
                   <TextInput style={s.formInput} placeholder="z.B. 25.50" placeholderTextColor={C.muted}
                     value={payoutAmount} onChangeText={setPayoutAmount} keyboardType="decimal-pad" />
                   <Text style={s.formLabel}>Methode</Text>
-                  <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-                    <TouchableOpacity style={[s.katBtn, payoutMethod === "paypal" && s.katBtnActive]}
-                      onPress={() => setPayoutMethod("paypal")} activeOpacity={0.8}>
-                      <Text style={[s.katText, payoutMethod === "paypal" && s.katTextActive]}>PayPal</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[s.katBtn, payoutMethod === "bank" && s.katBtnActive]}
-                      onPress={() => setPayoutMethod("bank")} activeOpacity={0.8}>
-                      <Text style={[s.katText, payoutMethod === "bank" && s.katTextActive]}>Überweisung</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Text style={{ fontSize: 13, color: C.muted, marginBottom: 8 }}>Methode: PayPal</Text>
                   <Text style={s.formLabel}>Referenz / Notiz (optional)</Text>
                   <TextInput style={s.formInput} placeholder="z.B. PayPal Transaktions-ID" placeholderTextColor={C.muted}
                     value={payoutRef} onChangeText={setPayoutRef} />
