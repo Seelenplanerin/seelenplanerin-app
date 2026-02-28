@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -192,6 +192,14 @@ export const appRouter = router({
         }
         const id = await db.createAffiliate({ email: input.email, name: input.name, code });
         affiliate = await db.getAffiliateByEmail(input.email);
+        // Willkommens-E-Mail senden (async, nicht blockierend)
+        const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;
+        sendAffiliateWelcomeEmail({
+          toEmail: input.email,
+          toName: input.name,
+          affiliateCode: code,
+          affiliateLink,
+        }).catch(err => console.error("[Affiliate] Willkommens-E-Mail Fehler:", err));
         return { success: true as const, affiliate };
       }),
 

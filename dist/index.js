@@ -1141,6 +1141,68 @@ async function sendBroadcastEmail(params) {
     return { success: false, sent: 0, failed: params.recipients.length, errors: [err.message] };
   }
 }
+async function sendAffiliateWelcomeEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei \u201EGeben & Nehmen\u201C, ${params.toName}! \u{1F91D}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Wie wundersch\xF6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>15% Provision</strong> auf jeden Verkauf \xFCber deinen pers\xF6nlichen Link.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\xF6nlicher Empfehlungslink</p>
+            <p style="margin:0 0 12px;font-size:16px;color:#C4826A;font-weight:700;word-break:break-all;">${params.affiliateLink}</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein Affiliate-Code</p>
+            <p style="margin:0;font-size:22px;color:#C9A96E;font-weight:700;letter-spacing:2px;">${params.affiliateCode}</p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert\u2019s \u2013 in 3 Schritten:</p>
+
+      <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
+        <li><strong>Teile deinen Link</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
+        <li><strong>Jemand kauft \xFCber deinen Link</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
+        <li><strong>Du erh\xE4ltst 15% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
+      </ol>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:16px;">
+            <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele \u2013 was du verdienen kannst:</p>
+            <table width="100%" style="font-size:13px;color:#8B5E3C;">
+              <tr><td style="padding:4px 0;">Seelenimpuls (17 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">2,55 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Armband (29 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,35 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Aura Reading (89 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">13,35 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Soul Talk (149 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">22,35 \u20AC</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>Wichtig:</strong> Bitte hinterlege deine <strong>PayPal-E-Mail</strong> in der App unter \u201EGeben & Nehmen\u201C \u2192 \u201EDeine Zahlungsdaten\u201C, damit wir dir deine Provision auszahlen k\xF6nnen. Es gibt <strong>keinen Mindestbetrag</strong> \u2013 jeder Cent wird ausgezahlt!
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        \u201ETeile, was dir am Herzen liegt \u2013 und die F\xFClle kommt zu dir zur\xFCck.\u201C \u{1F319}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F91D} Willkommen bei \u201EGeben & Nehmen\u201C \u2013 Dein Empfehlungslink ist da, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Willkommen Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
 async function verifySmtpConnection() {
   try {
     const transporter = createTransporter();
@@ -1352,6 +1414,13 @@ var appRouter = router({
       }
       const id = await createAffiliate({ email: input.email, name: input.name, code });
       affiliate = await getAffiliateByEmail(input.email);
+      const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;
+      sendAffiliateWelcomeEmail({
+        toEmail: input.email,
+        toName: input.name,
+        affiliateCode: code,
+        affiliateLink
+      }).catch((err) => console.error("[Affiliate] Willkommens-E-Mail Fehler:", err));
       return { success: true, affiliate };
     }),
     // Affiliate-Daten per Code abrufen

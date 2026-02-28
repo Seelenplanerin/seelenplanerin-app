@@ -429,6 +429,106 @@ export default function AffiliateScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Social-Media-Vorlagen */}
+        <View style={s.paymentCard}>
+          <Text style={s.paymentTitle}>📱 Fertige Vorlagen zum Teilen</Text>
+          <Text style={s.paymentDesc}>Kopiere eine Vorlage und teile sie direkt auf deinem Kanal. Dein persönlicher Link wird automatisch eingefügt!</Text>
+
+          {/* Instagram */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>📷 Instagram Story / Post</Text>
+            <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
+              <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
+                ✨ Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin 🌙{"\n\n"}
+                Rituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche nach einem Ort bist, der sich wie Zuhause anfühlt – schau mal vorbei!{"\n\n"}
+                🔗 {getLink(affiliate?.code || "")}{"\n\n"}
+                #DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{ marginTop: 8, backgroundColor: C.gold, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
+              onPress={() => {
+                const text = `✨ Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin 🌙\n\nRituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche nach einem Ort bist, der sich wie Zuhause anfühlt – schau mal vorbei!\n\n🔗 ${getLink(affiliate?.code || "")}\n\n#DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität`;
+                if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+                else Share.share({ message: text });
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>📋 Vorlage kopieren</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* WhatsApp */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>💬 WhatsApp-Nachricht</Text>
+            <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
+              <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
+                Hey 🌸 ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin ✨{"\n\n"}
+                Das ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Ich bin total begeistert davon!{"\n\n"}
+                Schau mal hier: {getLink(affiliate?.code || "")}{"\n\n"}
+                Wenn du magst, kannst du dich dort für den Seelenimpuls anmelden oder einfach mal stöbern. Ich freu mich, wenn dir das genauso gut gefällt wie mir! 🌙
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{ marginTop: 8, backgroundColor: "#25D366", borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
+              onPress={() => {
+                const text = `Hey 🌸 ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin ✨\n\nDas ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Ich bin total begeistert davon!\n\nSchau mal hier: ${getLink(affiliate?.code || "")}\n\nWenn du magst, kannst du dich dort für den Seelenimpuls anmelden oder einfach mal stöbern. Ich freu mich, wenn dir das genauso gut gefällt wie mir! 🌙`;
+                if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+                else Share.share({ message: text });
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>💬 WhatsApp-Vorlage kopieren</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Facebook */}
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>👍 Facebook-Post</Text>
+            <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
+              <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
+                🌙✨ Empfehlung von Herzen: Die Seelenplanerin{"\n\n"}
+                Ich bin seit einiger Zeit Teil dieser wundervollen Community und möchte sie euch nicht vorenthalten. Rituale, Mondenergie, tägliche Impulse, Meditationen und so viel mehr – alles an einem Ort.{"\n\n"}
+                🔗 {getLink(affiliate?.code || "")}{"\n\n"}
+                #DieSeelenplanerin #Spiritualität #Mondenergie #GebenUndNehmen
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{ marginTop: 8, backgroundColor: "#1877F2", borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
+              onPress={() => {
+                const text = `🌙✨ Empfehlung von Herzen: Die Seelenplanerin\n\nIch bin seit einiger Zeit Teil dieser wundervollen Community und möchte sie euch nicht vorenthalten. Rituale, Mondenergie, tägliche Impulse, Meditationen und so viel mehr – alles an einem Ort.\n\n🔗 ${getLink(affiliate?.code || "")}\n\n#DieSeelenplanerin #Spiritualität #Mondenergie #GebenUndNehmen`;
+                if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+                else Share.share({ message: text });
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>👍 Facebook-Vorlage kopieren</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Kurz-Vorlage */}
+          <View>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>⚡ Kurze Empfehlung (universal)</Text>
+            <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
+              <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
+                Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele 🌙✨{"\n"}
+                Entdecke alles über meinen Link: {getLink(affiliate?.code || "")}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={{ marginTop: 8, backgroundColor: C.rose, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
+              onPress={() => {
+                const text = `Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele 🌙✨\nEntdecke alles über meinen Link: ${getLink(affiliate?.code || "")}`;
+                if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+                else Share.share({ message: text });
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>⚡ Kurz-Vorlage kopieren</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Richtlinien */}
         <TouchableOpacity
           style={s.richtlinienToggle}

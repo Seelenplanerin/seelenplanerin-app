@@ -508,3 +508,10 @@
 - [x] Automatische 15% Provisionsberechnung auf alle Verkäufe
 - [x] Web-Build mit Affiliate-System erstellen und deployen
 - [x] IBAN-Option entfernen, nur PayPal als Auszahlungsmethode
+
+## Affiliate-Erweiterungen (28.02.2026)
+- [x] PDF-Dokument: Affiliate-Willkommens-E-Mail Vorlage & Anleitung
+- [x] PDF-Dokument: Social-Media-Vorlagen (Instagram, WhatsApp, Facebook)
+- [x] PDF-Dokument: Tentary-Anbindungskonzept
+- [x] Automatische Willkommens-E-Mail bei Affiliate-Registrierung implementieren
+- [x] Social-Media-Vorlagen direkt im "Geben & Nehmen" Bereich der App einbauen
