@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -269,6 +269,16 @@ export const appRouter = router({
           customerName: input.customerName,
           notes: input.notes,
         });
+        // E-Mail-Benachrichtigung an Affiliate senden (async, nicht blockierend)
+        sendAffiliateSaleNotification({
+          toEmail: affiliate.email,
+          toName: affiliate.name,
+          product: input.productName,
+          amount: (input.saleAmount / 100).toFixed(2).replace(".", ","),
+          commission: (commissionAmount / 100).toFixed(2).replace(".", ","),
+          affiliateCode: input.affiliateCode,
+          customerName: input.customerName || "Unbekannt",
+        }).catch(err => console.error("[Affiliate] Verkaufs-E-Mail Fehler:", err));
         return { success: true as const, id, commissionAmount };
       }),
 

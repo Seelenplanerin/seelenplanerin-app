@@ -296,6 +296,64 @@ export async function sendAffiliateWelcomeEmail(params: {
   }
 }
 
+export async function sendAffiliateSaleNotification(params: {
+  toEmail: string;
+  toName: string;
+  product: string;
+  amount: string;
+  commission: string;
+  affiliateCode: string;
+  customerName: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neuer Verkauf über deinen Link! 🎉</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Hallo ${params.toName}, großartige Neuigkeiten! Es wurde gerade ein Verkauf über deinen Empfehlungslink getätigt.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0FFF0;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Produkt:</td><td style="text-align:right;">${params.product}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Verkaufsbetrag:</td><td style="text-align:right;">${params.amount} €</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Käufer:</td><td style="text-align:right;">${params.customerName}</td></tr>
+              <tr style="border-top:1px solid #C8E6C9;"><td style="padding:10px 0 6px;font-weight:700;font-size:16px;color:#4CAF50;">Deine Provision (20%):</td><td style="text-align:right;font-weight:700;font-size:16px;color:#4CAF50;">${params.commission} €</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Die Provision wird dir ausgezahlt, sobald die Zahlung positiv eingegangen ist. Du kannst deinen aktuellen Stand jederzeit in der App unter <strong>„Geben & Nehmen“</strong> einsehen.
+      </p>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>Dein Affiliate-Code:</strong> ${params.affiliateCode}
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        Weiter so – du baust dir etwas Wunderschönes auf! 🌙✨
+      </p>`;
+
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `🎉 Neuer Verkauf! Du hast ${params.commission} € Provision verdient, ${params.toName}!`,
+      html: emailTemplate(content),
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("[Email] Affiliate-Sale-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+
 export async function verifySmtpConnection(): Promise<{ success: boolean; error?: string }> {
   try {
     const transporter = createTransporter();

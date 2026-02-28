@@ -1206,6 +1206,52 @@ async function sendAffiliateWelcomeEmail(params) {
     return { success: false, error: err.message || "Unbekannter Fehler" };
   }
 }
+async function sendAffiliateSaleNotification(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neuer Verkauf \xFCber deinen Link! \u{1F389}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Hallo ${params.toName}, gro\xDFartige Neuigkeiten! Es wurde gerade ein Verkauf \xFCber deinen Empfehlungslink get\xE4tigt.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0FFF0;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Produkt:</td><td style="text-align:right;">${params.product}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Verkaufsbetrag:</td><td style="text-align:right;">${params.amount} \u20AC</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">K\xE4ufer:</td><td style="text-align:right;">${params.customerName}</td></tr>
+              <tr style="border-top:1px solid #C8E6C9;"><td style="padding:10px 0 6px;font-weight:700;font-size:16px;color:#4CAF50;">Deine Provision (20%):</td><td style="text-align:right;font-weight:700;font-size:16px;color:#4CAF50;">${params.commission} \u20AC</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Die Provision wird dir ausgezahlt, sobald die Zahlung positiv eingegangen ist. Du kannst deinen aktuellen Stand jederzeit in der App unter <strong>\u201EGeben & Nehmen\u201C</strong> einsehen.
+      </p>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>Dein Affiliate-Code:</strong> ${params.affiliateCode}
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        Weiter so \u2013 du baust dir etwas Wundersch\xF6nes auf! \u{1F319}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F389} Neuer Verkauf! Du hast ${params.commission} \u20AC Provision verdient, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Sale-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
 async function verifySmtpConnection() {
   try {
     const transporter = createTransporter();
@@ -1477,6 +1523,15 @@ var appRouter = router({
         customerName: input.customerName,
         notes: input.notes
       });
+      sendAffiliateSaleNotification({
+        toEmail: affiliate.email,
+        toName: affiliate.name,
+        product: input.productName,
+        amount: (input.saleAmount / 100).toFixed(2).replace(".", ","),
+        commission: (commissionAmount / 100).toFixed(2).replace(".", ","),
+        affiliateCode: input.affiliateCode,
+        customerName: input.customerName || "Unbekannt"
+      }).catch((err) => console.error("[Affiliate] Verkaufs-E-Mail Fehler:", err));
       return { success: true, id, commissionAmount };
     }),
     // Verkaufsstatus ändern (Admin)
