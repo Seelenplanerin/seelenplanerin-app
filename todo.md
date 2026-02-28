@@ -505,7 +505,7 @@
 - [x] Admin: Affiliate-Verwaltung (alle Affiliates sehen, Verkäufe eintragen, Auszahlungen markieren)
 - [x] Admin: Verkauf manuell eintragen (Betrag, Produkt, Referral-Code zuordnen)
 - [x] Admin: Auszahlungen verwalten und als bezahlt markieren
-- [x] Automatische 15% Provisionsberechnung auf alle Verkäufe
+- [x] Automatische 20% Provisionsberechnung auf alle Verkäufe
 - [x] Web-Build mit Affiliate-System erstellen und deployen
 - [x] IBAN-Option entfernen, nur PayPal als Auszahlungsmethode
 
@@ -517,7 +517,7 @@
 - [x] Social-Media-Vorlagen direkt im "Geben & Nehmen" Bereich der App einbauen
 - [x] "Geben & Nehmen" prominent auf Startbildschirm platzieren mit detaillierter Erklärung
 - [x] Direktes Anmelde-Formular auf dem Startbildschirm für Affiliate-Registrierung
-- [ ] Provision von 15% auf 20% ändern (überall: Server, App, Admin, Richtlinien, E-Mails)
-- [ ] Korrekte Produktpreise recherchieren und in App/Dokumentation einpflegen
+- [x] Provision von 15% auf 20% ändern (überall: Server, App, Admin, Richtlinien, E-Mails)
+- [x] Korrekte Produktpreise recherchieren und in App/Dokumentation einpflegen
 - [ ] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf implementieren
 - [ ] Tracking-Lösung für Tentary-Verkäufe klären
