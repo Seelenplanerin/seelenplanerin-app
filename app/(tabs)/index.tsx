@@ -134,47 +134,6 @@ export default function AktuellesScreen() {
           </Text>
         </LinearGradient>
 
-        {/* ══════════════════════════════════════════════════════════
-            GEBEN & NEHMEN – AFFILIATE DIREKT AUF DEM STARTSCREEN
-            ══════════════════════════════════════════════════════════ */}
-        <TouchableOpacity
-          onPress={() => router.push("/affiliate" as any)}
-          activeOpacity={0.85}
-        >
-          <LinearGradient
-            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              marginHorizontal: 16, marginTop: 16, borderRadius: 20,
-              padding: 20, borderWidth: 1, borderColor: "#E8D5B0",
-              overflow: "hidden" as const,
-            }}
-          >
-            <Text style={{ fontSize: 32, textAlign: "center", marginBottom: 8 }}>🤝</Text>
-            <Text style={{
-              fontSize: 20, fontWeight: "700", color: C.brown,
-              textAlign: "center", marginBottom: 8, fontFamily: "serif",
-            }}>Geben & Nehmen</Text>
-            <Text style={{
-              fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center", marginBottom: 12,
-            }}>
-              Empfiehl Die Seelenplanerin und verdiene <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf – auf alles, was über deinen persönlichen Link gekauft wird.
-            </Text>
-            <Text style={{
-              fontSize: 13, color: C.brownMid, lineHeight: 20, textAlign: "center", marginBottom: 16,
-            }}>
-              Egal ob Armbänder, Kerzen, Aura Readings, Soul Talks oder der Seelenimpuls – du verdienst auf alles mit. Kein Mindestbetrag, keine versteckten Bedingungen. Einfach Name und E-Mail eingeben, sofort deinen Link bekommen und loslegen.
-            </Text>
-            <View style={{
-              backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
-              alignItems: "center", marginTop: 4,
-            }}>
-              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 15 }}>Jetzt anmelden & Link holen →</Text>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
         {/* ── TAGESIMPULS ── */}
         <LinearGradient
           colors={["#FAF3E7", "#F5E6D0", "#F0D9BC"]}
@@ -311,6 +270,47 @@ export default function AktuellesScreen() {
             </Text>
             <View style={s.premiumBadge}>
               <Text style={s.premiumBadgeText}>17 € / Monat · Jetzt entdecken →</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* ══════════════════════════════════════════════════════════
+            GEBEN & NEHMEN – AFFILIATE
+            ══════════════════════════════════════════════════════════ */}
+        <TouchableOpacity
+          onPress={() => router.push("/affiliate" as any)}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              marginHorizontal: 16, marginTop: 16, borderRadius: 20,
+              padding: 20, borderWidth: 1, borderColor: "#E8D5B0",
+              overflow: "hidden" as const,
+            }}
+          >
+            <Text style={{ fontSize: 32, textAlign: "center", marginBottom: 8 }}>🤝</Text>
+            <Text style={{
+              fontSize: 20, fontWeight: "700", color: C.brown,
+              textAlign: "center", marginBottom: 8, fontFamily: "serif",
+            }}>Geben & Nehmen</Text>
+            <Text style={{
+              fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center", marginBottom: 12,
+            }}>
+              Empfiehl Die Seelenplanerin und verdiene <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf – auf alles, was über deinen persönlichen Link gekauft wird.
+            </Text>
+            <Text style={{
+              fontSize: 13, color: C.brownMid, lineHeight: 20, textAlign: "center", marginBottom: 16,
+            }}>
+              Egal ob Armbänder, Kerzen, Aura Readings, Soul Talks oder der Seelenimpuls – du verdienst auf alles mit. Kein Mindestbetrag, keine versteckten Bedingungen. Einfach Name und E-Mail eingeben, sofort deinen Link bekommen und loslegen.
+            </Text>
+            <View style={{
+              backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+              alignItems: "center", marginTop: 4,
+            }}>
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 15 }}>Jetzt anmelden & Link holen →</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>

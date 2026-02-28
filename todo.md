@@ -523,3 +523,5 @@
 - [ ] Tracking-Lösung für Tentary-Verkäufe klären
 - [x] Deep Talk alle 4 Preisstufen als einzelne Produkte im Shop (111€, 222€, 444€, 888€)
 - [x] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf über ihren Link
+- [x] "Geben & Nehmen" Karte auf Startseite nach unten verschieben (nicht als erstes)
+- [x] Neue Meditation "Mut" hochladen (ID: 2)
