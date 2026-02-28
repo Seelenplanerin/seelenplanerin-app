@@ -515,3 +515,5 @@
 - [x] PDF-Dokument: Tentary-Anbindungskonzept
 - [x] Automatische Willkommens-E-Mail bei Affiliate-Registrierung implementieren
 - [x] Social-Media-Vorlagen direkt im "Geben & Nehmen" Bereich der App einbauen
+- [x] "Geben & Nehmen" prominent auf Startbildschirm platzieren mit detaillierter Erklärung
+- [x] Direktes Anmelde-Formular auf dem Startbildschirm für Affiliate-Registrierung
