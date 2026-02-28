@@ -159,7 +159,7 @@ export default function AktuellesScreen() {
             <Text style={{
               fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center", marginBottom: 12,
             }}>
-              Empfiehl Die Seelenplanerin und verdiene <Text style={{ fontWeight: "700", color: C.gold }}>15% Provision</Text> auf jeden Verkauf – auf alles, was über deinen persönlichen Link gekauft wird.
+              Empfiehl Die Seelenplanerin und verdiene <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf – auf alles, was über deinen persönlichen Link gekauft wird.
             </Text>
             <Text style={{
               fontSize: 13, color: C.brownMid, lineHeight: 20, textAlign: "center", marginBottom: 16,

@@ -358,7 +358,7 @@ export default function IchScreen() {
             <Text style={s.menuEmoji}>🤝</Text>
             <View style={s.menuTextWrap}>
               <Text style={s.menuLabel}>Geben & Nehmen</Text>
-              <Text style={s.menuDesc}>Empfehle & erhalte 15% auf jeden Verkauf</Text>
+              <Text style={s.menuDesc}>Empfehle & erhalte 20% auf jeden Verkauf</Text>
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>

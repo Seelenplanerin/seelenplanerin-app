@@ -259,7 +259,7 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const affiliate = await db.getAffiliateByCode(input.affiliateCode);
         if (!affiliate) return { success: false as const, error: "code_not_found" };
-        const commissionAmount = Math.round(input.saleAmount * 0.15);
+        const commissionAmount = Math.round(input.saleAmount * 0.20);
         const id = await db.createAffiliateSale({
           affiliateCode: input.affiliateCode,
           productName: input.productName,

@@ -347,7 +347,7 @@ async function createAffiliateSale(data) {
     affiliateCode: data.affiliateCode.toUpperCase(),
     productName: data.productName,
     saleAmount: data.saleAmount,
-    commissionRate: 15,
+    commissionRate: 20,
     commissionAmount: data.commissionAmount,
     customerEmail: data.customerEmail || null,
     customerName: data.customerName || null,
@@ -1148,7 +1148,7 @@ async function sendAffiliateWelcomeEmail(params) {
     const content = `
       <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei \u201EGeben & Nehmen\u201C, ${params.toName}! \u{1F91D}</h2>
       <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Wie wundersch\xF6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>15% Provision</strong> auf jeden Verkauf \xFCber deinen pers\xF6nlichen Link.
+        Wie wundersch\xF6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>20% Provision</strong> auf jeden Verkauf \xFCber deinen pers\xF6nlichen Link (nur auf den Produktpreis, nicht auf Versandkosten).
       </p>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
@@ -1167,7 +1167,7 @@ async function sendAffiliateWelcomeEmail(params) {
       <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
         <li><strong>Teile deinen Link</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
         <li><strong>Jemand kauft \xFCber deinen Link</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
-        <li><strong>Du erh\xE4ltst 15% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
+        <li><strong>Du erh\xE4ltst 20% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
       </ol>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
@@ -1175,10 +1175,13 @@ async function sendAffiliateWelcomeEmail(params) {
           <td style="padding:16px;">
             <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele \u2013 was du verdienen kannst:</p>
             <table width="100%" style="font-size:13px;color:#8B5E3C;">
-              <tr><td style="padding:4px 0;">Seelenimpuls (17 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">2,55 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Armband (29 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,35 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Aura Reading (89 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">13,35 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Soul Talk (149 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">22,35 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Seelenimpuls (17 \u20AC/Monat)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Schutzarmband Mariposa (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Runen-Charm einzeln (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Meditationskerze (17 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Aura Reading (77 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">15,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Runen-Armband (94 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">18,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Deep Talk (ab 111 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">ab 22,20 \u20AC</td></tr>
             </table>
           </td>
         </tr>
@@ -1464,7 +1467,7 @@ var appRouter = router({
     })).mutation(async ({ input }) => {
       const affiliate = await getAffiliateByCode(input.affiliateCode);
       if (!affiliate) return { success: false, error: "code_not_found" };
-      const commissionAmount = Math.round(input.saleAmount * 0.15);
+      const commissionAmount = Math.round(input.saleAmount * 0.2);
       const id = await createAffiliateSale({
         affiliateCode: input.affiliateCode,
         productName: input.productName,
@@ -1636,7 +1639,7 @@ async function runMigrations() {
         "affiliateCode" VARCHAR(20) NOT NULL,
         "productName" VARCHAR(255) NOT NULL,
         "saleAmount" INTEGER NOT NULL,
-        "commissionRate" INTEGER DEFAULT 15 NOT NULL,
+        "commissionRate" INTEGER DEFAULT 20 NOT NULL,
         "commissionAmount" INTEGER NOT NULL,
         "customerEmail" VARCHAR(320),
         "customerName" VARCHAR(255),

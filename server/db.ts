@@ -238,7 +238,7 @@ export async function createAffiliateSale(data: { affiliateCode: string; product
     affiliateCode: data.affiliateCode.toUpperCase(),
     productName: data.productName,
     saleAmount: data.saleAmount,
-    commissionRate: 15,
+    commissionRate: 20,
     commissionAmount: data.commissionAmount,
     customerEmail: data.customerEmail || null,
     customerName: data.customerName || null,

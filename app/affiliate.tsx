@@ -188,7 +188,7 @@ export default function AffiliateScreen() {
             <Text style={s.introTitle}>Empfehle Die Seelenplanerin{"\n"}und verdiene mit</Text>
             <Text style={s.introText}>
               Du liebst Die Seelenplanerin? Dann teile sie mit deinen Freundinnen, deiner Familie oder deiner Community – und erhalte{" "}
-              <Text style={{ fontWeight: "700", color: C.gold }}>15% Provision</Text> auf jeden Verkauf, der über deinen persönlichen Link zustande kommt.
+              <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf, der über deinen persönlichen Link zustande kommt.
             </Text>
             <Text style={[s.introText, { marginTop: 8 }]}>
               Egal ob Armbänder, Kerzen, Aura Readings, Soul Talks oder der Seelenimpuls – du verdienst auf alles mit. Kein Mindestbetrag, keine versteckten Bedingungen.
@@ -212,7 +212,7 @@ export default function AffiliateScreen() {
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>4</Text></View>
-              <Text style={s.stepText}>Sobald jemand über deinen Link kauft und die Zahlung eingegangen ist, erhältst du 15% Provision</Text>
+              <Text style={s.stepText}>Sobald jemand über deinen Link kauft und die Zahlung eingegangen ist, erhältst du 20% Provision</Text>
             </View>
           </View>
 
@@ -271,7 +271,7 @@ export default function AffiliateScreen() {
               <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
               <Text style={s.richtlinienText}>
                 <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
-                Du erhältst 15% Provision auf den Netto-Verkaufspreis aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden.{"\n\n"}
+                Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden. Auf Versandkosten (4,90 €) wird keine Provision berechnet.{"\n\n"}
 
                 <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision fällig?{"\n"}</Text>
                 Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}
@@ -319,7 +319,7 @@ export default function AffiliateScreen() {
         <View style={s.welcomeCard}>
           <Text style={s.welcomeEmoji}>🌸</Text>
           <Text style={s.welcomeName}>Hallo {affiliate?.name}!</Text>
-          <Text style={s.welcomeText}>Hier ist dein persönlicher Empfehlungslink. Teile ihn und verdiene 15% auf jeden Verkauf.</Text>
+          <Text style={s.welcomeText}>Hier ist dein persönlicher Empfehlungslink. Teile ihn und verdiene 20% auf jeden Verkauf.</Text>
         </View>
 
         {/* Dein Link */}
@@ -545,7 +545,7 @@ export default function AffiliateScreen() {
             <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
             <Text style={s.richtlinienText}>
               <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
-              Du erhältst 15% Provision auf den Netto-Verkaufspreis aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden.{"\n\n"}
+              Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden. Auf Versandkosten (4,90 €) wird keine Provision berechnet.{"\n\n"}
 
               <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision fällig?{"\n"}</Text>
               Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}

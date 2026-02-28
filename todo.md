@@ -517,3 +517,7 @@
 - [x] Social-Media-Vorlagen direkt im "Geben & Nehmen" Bereich der App einbauen
 - [x] "Geben & Nehmen" prominent auf Startbildschirm platzieren mit detaillierter Erklärung
 - [x] Direktes Anmelde-Formular auf dem Startbildschirm für Affiliate-Registrierung
+- [ ] Provision von 15% auf 20% ändern (überall: Server, App, Admin, Richtlinien, E-Mails)
+- [ ] Korrekte Produktpreise recherchieren und in App/Dokumentation einpflegen
+- [ ] E-Mail-Benachrichtigung an Affiliate bei neuem Verkauf implementieren
+- [ ] Tracking-Lösung für Tentary-Verkäufe klären

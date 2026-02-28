@@ -101,7 +101,7 @@ export async function runMigrations(): Promise<void> {
         "affiliateCode" VARCHAR(20) NOT NULL,
         "productName" VARCHAR(255) NOT NULL,
         "saleAmount" INTEGER NOT NULL,
-        "commissionRate" INTEGER DEFAULT 15 NOT NULL,
+        "commissionRate" INTEGER DEFAULT 20 NOT NULL,
         "commissionAmount" INTEGER NOT NULL,
         "customerEmail" VARCHAR(320),
         "customerName" VARCHAR(255),

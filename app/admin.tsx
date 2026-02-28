@@ -1399,7 +1399,7 @@ export default function AdminScreen() {
               {/* Verkauf eintragen */}
               <View style={s.section}>
                 <Text style={s.sectionTitle}>💰 Verkauf eintragen</Text>
-                <Text style={s.sectionHint}>Trage einen Verkauf ein, der über einen Affiliate-Link zustande kam. Die 15% Provision wird automatisch berechnet.</Text>
+                <Text style={s.sectionHint}>Trage einen Verkauf ein, der über einen Affiliate-Link zustande kam. Die 20% Provision wird automatisch berechnet (nur auf Produktpreis, nicht auf Versand).</Text>
                 <View style={s.formBox}>
                   <Text style={s.formLabel}>Affiliate-Code (z.B. SP-7X3K9)</Text>
                   <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
@@ -1415,7 +1415,7 @@ export default function AdminScreen() {
                     value={saleCustomer} onChangeText={setSaleCustomer} />
                   {saleAmount ? (
                     <Text style={{ fontSize: 13, color: "#4CAF50", fontWeight: "600", marginBottom: 8 }}>
-                      Provision: {(parseFloat(saleAmount.replace(",", ".")) * 0.15).toFixed(2)} € (15%)
+                      Provision: {(parseFloat(saleAmount.replace(",", ".")) * 0.20).toFixed(2)} € (20%)
                     </Text>
                   ) : null}
                   <TouchableOpacity style={[s.submitBtn, saleAdding && { opacity: 0.6 }]} onPress={async () => {
