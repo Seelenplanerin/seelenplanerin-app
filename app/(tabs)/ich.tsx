@@ -299,13 +299,13 @@ export default function IchScreen() {
         <View style={s.menuSection}>
           <TouchableOpacity
             style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/qnl3vN")}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>✨</Text>
             <View style={s.menuTextWrap}>
               <Text style={s.menuLabel}>Zum Shop</Text>
-              <Text style={s.menuDesc}>Armbänder, Kerzen & mehr</Text>
+              <Text style={s.menuDesc}>Ritual-Sets, Kerzen & mehr</Text>
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>

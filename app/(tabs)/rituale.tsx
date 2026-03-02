@@ -250,16 +250,16 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
 
         {/* Produkt-CTA */}
         <View style={s.ctaCard}>
-          <Text style={s.ctaTitle}>✨ Passende Produkte von der Seelenplanerin</Text>
+          <Text style={s.ctaTitle}>✨ Dein Ritual-Set bestellen</Text>
           <Text style={s.ctaText}>
-            Alle Materialien für dieses Ritual findest du im Shop der Seelenplanerin – handgravierte Runen-Armbänder, Schutzarmbänder mit schwarzem Turmalin, Räucherwerk und mehr. Mit Energie und Liebe gefertigt.
+            Alle Materialien für dieses Ritual bekommst du als fertiges Set von der Seelenplanerin – Heilsteine, Räucherwerk und Kerze, mit Liebe zusammengestellt. Ein Klick, alles dabei.
           </Text>
           <TouchableOpacity
             style={s.ctaBtn}
             onPress={() => Linking.openURL(ritual.shopUrl)}
             activeOpacity={0.85}
           >
-            <Text style={s.ctaBtnText}>Jetzt im Shop bestellen →</Text>
+            <Text style={s.ctaBtnText}>Ritual-Set bestellen →</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[s.ctaBtn, { backgroundColor: C.roseLight, marginTop: 10 }]}
