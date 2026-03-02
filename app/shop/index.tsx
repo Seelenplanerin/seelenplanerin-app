@@ -100,7 +100,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Handgefertigte Kerze mit deinem pers\u00f6nlichen Heilstein. Jede Kerze ist ein Unikat \u2013 w\u00e4hle deinen Stein im Quiz.",
     emoji: "\ud83d\udd6f\ufe0f",
     highlight: "Individuell mit Heilstein",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/YQLsh3",
     badge: "Neu",
   },
   {

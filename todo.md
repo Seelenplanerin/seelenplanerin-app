@@ -534,3 +534,11 @@
 - [x] Academy-Warteliste im Admin-Panel anzeigen (wer hat sich eingetragen)
 - [x] Affiliate-Tracking komplett: Immer sichtbar wer was über welchen Link verkauft hat
 - [x] Prüfen warum Academy auf Render nicht sichtbar ist (Academy-Tab im Admin-Panel hinzugefügt)
+- [ ] Tentary-Shop: Recherche zu Varianten, Kategorien, Bildanforderungen
+- [ ] Tentary-Shop: Alle Ritual-Sets und Heilsteine aus App auslesen
+- [ ] Tentary-Shop: Übersichtliche Shop-Struktur planen (Oberkategorie + Varianten)
+- [ ] Tentary-Shop: Produktbilder für alle Ritual-Sets und Heilsteine generieren
+- [ ] Tentary-Shop: Produkttexte und Beschreibungen verfassen
+- [ ] Tentary-Shop: Fertiges Copy-Paste-Dokument mit allem zusammenstellen
+- [x] Bug: Meditationskerze Tentary-Link (https://dieseelenplanerin.tentary.com/p/YQLsh3) in der App einbauen
+- [x] Bug: Vollmond-Anzeige im Mondkalender zeigt VM an mehreren Tagen statt nur am exakten Vollmond-Tag (HALF_DAY Toleranz statt ONE_DAY)

@@ -355,12 +355,12 @@ function getPhaseForDate(date: Date): MoonPhase {
   const ONE_DAY = 24 * 60 * 60 * 1000;
   const HALF_DAY = 12 * 60 * 60 * 1000;
 
-  // Prüfe ob wir nahe an einer Hauptphase sind (innerhalb 1 Tag)
+  // Prüfe ob wir nahe an einer Hauptphase sind (innerhalb 12 Stunden = nur am exakten Tag)
   for (const vm of VOLLMONDE_2026) {
-    if (Math.abs(vm.getTime() - now) < ONE_DAY) return MOON_PHASES[4]; // Vollmond
+    if (Math.abs(vm.getTime() - now) < HALF_DAY) return MOON_PHASES[4]; // Vollmond
   }
   for (const nm of NEUMONDE_2026) {
-    if (Math.abs(nm.getTime() - now) < ONE_DAY) return MOON_PHASES[0]; // Neumond
+    if (Math.abs(nm.getTime() - now) < HALF_DAY) return MOON_PHASES[0]; // Neumond
   }
   for (const ev of ERSTES_VIERTEL_2026) {
     if (Math.abs(ev.getTime() - now) < HALF_DAY) return MOON_PHASES[2]; // Erstes Viertel
