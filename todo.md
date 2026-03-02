@@ -555,3 +555,8 @@
 - [x] Ritual-Sets als eigene Kategorie im Shop-Tab mit Bildern und Direktlinks
 - [x] Push-Benachrichtigungen für anstehende Rituale (Vollmond, Neumond, Jahreskreisfeste)
 - [x] Einzelne Heilsteine Copy-Paste-Liste für Tentary (10 Steine, Preise, Beschreibungen)
+
+## Affiliate-Programm: Vollständiger Audit (02.03.2026)
+- [x] Affiliate: Code-Audit aller Screens, Logik, Links, Provisionsberechnung
+- [x] Affiliate: Unit-Tests für alle Funktionen und Edge Cases
+- [x] Affiliate: Gefundene Fehler beheben (2 Bugs gefixt: fehlende Route + Schema-Default)

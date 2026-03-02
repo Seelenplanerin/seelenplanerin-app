@@ -113,6 +113,7 @@ export default function RootLayout() {
             <Stack.Screen name="runen/set/[id]" options={{ presentation: "card" }} />
             <Stack.Screen name="runen-screen" options={{ presentation: "card" }} />
             <Stack.Screen name="admin" options={{ presentation: "card" }} />
+            <Stack.Screen name="affiliate" options={{ presentation: "card" }} />
             <Stack.Screen name="journal/write" options={{ presentation: "card" }} />
             <Stack.Screen name="kerzen-quiz" options={{ presentation: "card" }} />
             <Stack.Screen name="musik" options={{ presentation: "card" }} />

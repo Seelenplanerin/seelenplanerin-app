@@ -82,7 +82,7 @@ export const affiliateSales = pgTable("affiliate_sales", {
   affiliateCode: varchar("affiliateCode", { length: 20 }).notNull(),
   productName: varchar("productName", { length: 255 }).notNull(),
   saleAmount: integer("saleAmount").notNull(),         // Verkaufsbetrag in Cent
-  commissionRate: integer("commissionRate").default(15).notNull(), // Prozent
+  commissionRate: integer("commissionRate").default(20).notNull(), // Prozent
   commissionAmount: integer("commissionAmount").notNull(), // Provision in Cent
   customerEmail: varchar("customerEmail", { length: 320 }),
   customerName: varchar("customerName", { length: 255 }),

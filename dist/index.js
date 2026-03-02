@@ -80,7 +80,7 @@ var init_schema = __esm({
       productName: varchar("productName", { length: 255 }).notNull(),
       saleAmount: integer("saleAmount").notNull(),
       // Verkaufsbetrag in Cent
-      commissionRate: integer("commissionRate").default(15).notNull(),
+      commissionRate: integer("commissionRate").default(20).notNull(),
       // Prozent
       commissionAmount: integer("commissionAmount").notNull(),
       // Provision in Cent
