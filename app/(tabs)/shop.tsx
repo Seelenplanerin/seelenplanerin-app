@@ -11,7 +11,7 @@ import { Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-type ShopCategory = "alle" | "armb\u00e4nder" | "sessions" | "digital" | "kerzen";
+type ShopCategory = "alle" | "ritual-sets" | "armbänder" | "sessions" | "digital" | "kerzen";
 
 interface Product {
   id: string;
@@ -28,6 +28,128 @@ interface Product {
 }
 
 const PRODUCTS: Product[] = [
+  // === RITUAL-SETS ===
+  {
+    id: "set-schutz",
+    name: "Schutz & Reinigung",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Schwarzer Turmalin, Bergkristall, Weißer Salbei & schwarze Kerze – alles was du für dein Schutzritual brauchst.",
+    emoji: "🛡️",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-selbstliebe",
+    name: "Selbstliebe & Herzöffnung",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Rosenquarz, Mondstein, Myrrhe & rosa Kerze – öffne dein Herz und stärke die Liebe zu dir selbst.",
+    emoji: "💗",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-fuelle",
+    name: "Fülle & Manifestation",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Citrin, Pyrit, Weihrauch & goldene Kerze – manifestiere Fülle und Wohlstand in deinem Leben.",
+    emoji: "✨",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-transformation",
+    name: "Transformation & Loslassen",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Labradorit, Amethyst, Palo Santo & violette Kerze – lass los, was dich nicht mehr dient.",
+    emoji: "🦋",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-kraft",
+    name: "Kraft & Mut",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Karneol, Sonnenstein, Weihrauch & rote Kerze – entfache dein inneres Feuer und finde deinen Mut.",
+    emoji: "🔥",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-intuition",
+    name: "Intuition & Spiritualität",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Amethyst, Mondstein, Myrrhe & weiße Kerze – stärke deine Intuition und spirituelle Verbindung.",
+    emoji: "🔮",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-neuanfang",
+    name: "Neuanfang & Klarheit",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Bergkristall, Citrin, Weißer Salbei & gelbe Kerze – für einen klaren Neustart voller Klarheit.",
+    emoji: "🌅",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-erdung",
+    name: "Erdung & Stabilität",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Schwarzer Turmalin, Karneol, Palo Santo & braune Kerze – finde Halt und innere Stabilität.",
+    emoji: "🌿",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-lebensfreude",
+    name: "Lebensfreude & Energie",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Sonnenstein, Karneol, Weihrauch & orange Kerze – bringe Freude und Energie in deinen Alltag.",
+    emoji: "☀️",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
+    badge: "Ritual-Set",
+  },
+  {
+    id: "set-heilung",
+    name: "Heilung & Balance",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Rosenquarz, Amethyst, Palo Santo & grüne Kerze – bringe Körper, Geist und Seele in Einklang.",
+    emoji: "💚",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
+    badge: "Ritual-Set",
+  },
+  // === ARMBÄNDER ===
   {
     id: "runen-armband",
     name: "Themen-Armband",
@@ -64,6 +186,7 @@ const PRODUCTS: Product[] = [
     emoji: "✦",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
   },
+  // === SESSIONS ===
   {
     id: "aura-reading",
     name: "Aura Reading",
@@ -126,7 +249,7 @@ const PRODUCTS: Product[] = [
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
     badge: "Premium",
   },
-
+  // === KERZEN ===
   {
     id: "meditationskerze",
     name: "Meditationskerze",
@@ -134,12 +257,13 @@ const PRODUCTS: Product[] = [
     kategorie: "kerzen",
     preis: 17.00,
     preisDisplay: "17,00 €",
-    beschreibung: "Handgefertigte Kerze mit deinem pers\u00f6nlichen Heilstein. Jede Kerze ist ein Unikat \u2013 w\u00e4hle deinen Stein im Quiz.",
-    emoji: "\ud83d\udd6f\ufe0f",
+    beschreibung: "Handgefertigte Kerze mit deinem persönlichen Heilstein. Jede Kerze ist ein Unikat – wähle deinen Stein im Quiz.",
+    emoji: "🕯️",
     highlight: "Individuell mit Heilstein",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/YQLsh3",
     badge: "Neu",
   },
+  // === DIGITAL ===
   {
     id: "seelenimpuls",
     name: "Seelenimpuls",
@@ -167,10 +291,11 @@ const PRODUCTS: Product[] = [
 
 const CATEGORIES: { id: ShopCategory; label: string; emoji: string }[] = [
   { id: "alle", label: "Alle", emoji: "✨" },
+  { id: "ritual-sets", label: "Ritual-Sets", emoji: "🌙" },
   { id: "armbänder", label: "Armbänder", emoji: "ᚱ" },
-  { id: "sessions", label: "Sessions", emoji: "\ud83d\udcab" },
-  { id: "kerzen", label: "Kerzen", emoji: "\ud83d\udd6f\ufe0f" },
-  { id: "digital", label: "Digital", emoji: "\ud83d\udcbf" },
+  { id: "sessions", label: "Sessions", emoji: "💫" },
+  { id: "kerzen", label: "Kerzen", emoji: "🕯️" },
+  { id: "digital", label: "Digital", emoji: "💿" },
 ];
 
 export default function ShopScreen() {
@@ -226,7 +351,7 @@ export default function ShopScreen() {
     },
     runenBanner: {
       backgroundColor: colors.primary + "15", borderRadius: 20, padding: 20,
-      marginHorizontal: 16, marginBottom: 16, borderWidth: 1, borderColor: colors.primary + "30",
+      marginHorizontal: 0, marginBottom: 16, borderWidth: 1, borderColor: colors.primary + "30",
       alignItems: "center",
     },
     runenBannerTitle: { fontSize: 18, fontWeight: "700", color: colors.foreground, marginBottom: 4 },
@@ -249,7 +374,7 @@ export default function ShopScreen() {
           <Text style={s.backText}>←</Text>
         </TouchableOpacity>
         <Text style={s.title}>Shop ✨</Text>
-        <Text style={s.subtitle}>Handgefertigte Runen-Armbänder & spirituelle Sessions</Text>
+        <Text style={s.subtitle}>Ritual-Sets, Runen-Armbänder & spirituelle Sessions</Text>
       </View>
 
       {/* Kategorie-Filter */}

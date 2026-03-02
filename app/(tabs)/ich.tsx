@@ -281,7 +281,7 @@ export default function IchScreen() {
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={s.menuItem}
+            style={[s.menuItem, s.menuItemBorder]}
             onPress={() => router.push("/(tabs)/rituale" as any)}
             activeOpacity={0.8}
           >
@@ -289,6 +289,18 @@ export default function IchScreen() {
             <View style={s.menuTextWrap}>
               <Text style={s.menuLabel}>Rituale-Kalender</Text>
               <Text style={s.menuDesc}>51 Rituale für 2026</Text>
+            </View>
+            <Text style={s.menuArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.menuItem}
+            onPress={() => router.push("/benachrichtigungen" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={s.menuEmoji}>🔔</Text>
+            <View style={s.menuTextWrap}>
+              <Text style={s.menuLabel}>Benachrichtigungen</Text>
+              <Text style={s.menuDesc}>Erinnerungen für Vollmond, Neumond & Feste</Text>
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>

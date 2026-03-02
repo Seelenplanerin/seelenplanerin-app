@@ -11,7 +11,7 @@ import { Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-type ShopCategory = "alle" | "armb\u00e4nder" | "sessions" | "digital" | "kerzen";
+type ShopCategory = "alle" | "ritual-sets" | "armbänder" | "sessions" | "digital" | "kerzen";
 
 interface Product {
   id: string;
@@ -28,6 +28,123 @@ interface Product {
 }
 
 const PRODUCTS: Product[] = [
+  // ═══════════════════════════════════════════════
+  // RITUAL-SETS (10 Sets à 29,90 €)
+  // ═══════════════════════════════════════════════
+  {
+    id: "set-schutz",
+    name: "Schutz-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Schwarzer Turmalin, Bergkristall, Weißer Salbei & Schwarze Kerze. Für alle Schutzrituale und energetische Reinigung.",
+    emoji: "🛡️",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
+    badge: "Bestseller",
+  },
+  {
+    id: "set-selbstliebe",
+    name: "Selbstliebe-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Rosenquarz, Mondstein, Myrrhe & Rosa Kerze. Öffne dein Herz für bedingungslose Selbstliebe.",
+    emoji: "💗",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
+  },
+  {
+    id: "set-fuelle",
+    name: "Fülle-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Citrin, Pyrit, Weihrauch & Goldene Kerze. Manifestiere Wohlstand und Überfluss in deinem Leben.",
+    emoji: "✨",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
+  },
+  {
+    id: "set-transformation",
+    name: "Transformations-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Labradorit, Amethyst, Palo Santo & Violette Kerze. Für tiefe Veränderung und Loslassen.",
+    emoji: "🦋",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
+  },
+  {
+    id: "set-kraft",
+    name: "Kraft-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Karneol, Sonnenstein, Weihrauch & Rote Kerze. Entfache dein inneres Feuer und finde Stärke.",
+    emoji: "🔥",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
+  },
+  {
+    id: "set-intuition",
+    name: "Intuitions-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Amethyst, Mondstein, Myrrhe & Weiße Kerze. Stärke dein Drittes Auge und vertraue deiner inneren Stimme.",
+    emoji: "🔮",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
+  },
+  {
+    id: "set-neuanfang",
+    name: "Neuanfang-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Bergkristall, Citrin, Weißer Salbei & Gelbe Kerze. Für frische Starts und neue Kapitel.",
+    emoji: "🌱",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
+  },
+  {
+    id: "set-erdung",
+    name: "Erdungs-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Schwarzer Turmalin, Karneol, Palo Santo & Braune Kerze. Verbinde dich mit der Kraft der Erde.",
+    emoji: "🌍",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
+  },
+  {
+    id: "set-lebensfreude",
+    name: "Lebensfreude-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Sonnenstein, Karneol, Weihrauch & Orange Kerze. Bringe Leichtigkeit und Freude in deinen Alltag.",
+    emoji: "🌻",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
+  },
+  {
+    id: "set-heilung",
+    name: "Heilungs-Ritual-Set",
+    kategorie: "ritual-sets",
+    preis: 29.90,
+    preisDisplay: "29,90 €",
+    beschreibung: "Rosenquarz, Amethyst, Palo Santo & Grüne Kerze. Für emotionale und energetische Heilung.",
+    emoji: "💚",
+    highlight: "Inkl. Versand",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
+  },
+  // ═══════════════════════════════════════════════
+  // ARMBÄNDER
+  // ═══════════════════════════════════════════════
   {
     id: "runen-armband",
     name: "Themen-Armband",
@@ -47,7 +164,7 @@ const PRODUCTS: Product[] = [
     nameEn: "Protection Bracelet Mariposa",
     kategorie: "armbänder",
     preis: 28.90,
-    preisDisplay: "28,90 \u20ac",
+    preisDisplay: "28,90 €",
     beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
     emoji: "🖤",
     highlight: "Schwarzer Turmalin",
@@ -64,6 +181,9 @@ const PRODUCTS: Product[] = [
     emoji: "✦",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
   },
+  // ═══════════════════════════════════════════════
+  // SESSIONS
+  // ═══════════════════════════════════════════════
   {
     id: "aura-reading",
     name: "Aura Reading",
@@ -89,7 +209,9 @@ const PRODUCTS: Product[] = [
     highlight: "1:1 mit der Seelenplanerin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
   },
-
+  // ═══════════════════════════════════════════════
+  // KERZEN
+  // ═══════════════════════════════════════════════
   {
     id: "meditationskerze",
     name: "Meditationskerze",
@@ -97,12 +219,15 @@ const PRODUCTS: Product[] = [
     kategorie: "kerzen",
     preis: 0,
     preisDisplay: "",
-    beschreibung: "Handgefertigte Kerze mit deinem pers\u00f6nlichen Heilstein. Jede Kerze ist ein Unikat \u2013 w\u00e4hle deinen Stein im Quiz.",
-    emoji: "\ud83d\udd6f\ufe0f",
+    beschreibung: "Handgefertigte Kerze mit deinem persönlichen Heilstein. Jede Kerze ist ein Unikat – wähle deinen Stein im Quiz.",
+    emoji: "🕯️",
     highlight: "Individuell mit Heilstein",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/YQLsh3",
     badge: "Neu",
   },
+  // ═══════════════════════════════════════════════
+  // DIGITAL
+  // ═══════════════════════════════════════════════
   {
     id: "seelenimpuls",
     name: "Seelenimpuls",
@@ -130,10 +255,11 @@ const PRODUCTS: Product[] = [
 
 const CATEGORIES: { id: ShopCategory; label: string; emoji: string }[] = [
   { id: "alle", label: "Alle", emoji: "✨" },
+  { id: "ritual-sets", label: "Ritual-Sets", emoji: "🕯️" },
   { id: "armbänder", label: "Armbänder", emoji: "ᚱ" },
-  { id: "sessions", label: "Sessions", emoji: "\ud83d\udcab" },
-  { id: "kerzen", label: "Kerzen", emoji: "\ud83d\udd6f\ufe0f" },
-  { id: "digital", label: "Digital", emoji: "\ud83d\udcbf" },
+  { id: "sessions", label: "Sessions", emoji: "💫" },
+  { id: "kerzen", label: "Kerzen", emoji: "🕯️" },
+  { id: "digital", label: "Digital", emoji: "💿" },
 ];
 
 export default function ShopScreen() {
@@ -198,6 +324,14 @@ export default function ShopScreen() {
       backgroundColor: colors.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10,
     },
     runenBannerBtnText: { color: "#fff", fontSize: 15, fontWeight: "700" },
+    ritualSetsBanner: {
+      backgroundColor: "#FAF3E7", borderRadius: 20, padding: 20,
+      marginBottom: 16, borderWidth: 1, borderColor: "#C9A96E40",
+      alignItems: "center",
+    },
+    ritualSetsBannerTitle: { fontSize: 18, fontWeight: "700", color: "#3D2B1F", marginBottom: 4 },
+    ritualSetsBannerText: { fontSize: 14, color: "#9C7B6E", textAlign: "center", marginBottom: 4 },
+    ritualSetsBannerPrice: { fontSize: 16, fontWeight: "700", color: "#C9A96E", marginBottom: 12 },
   });
 
   const handleBuy = (product: Product) => {
@@ -212,7 +346,7 @@ export default function ShopScreen() {
           <Text style={s.backText}>←</Text>
         </TouchableOpacity>
         <Text style={s.title}>Shop ✨</Text>
-        <Text style={s.subtitle}>Handgefertigte Runen-Armbänder & spirituelle Sessions</Text>
+        <Text style={s.subtitle}>Ritual-Sets, Runen-Armbänder & spirituelle Sessions</Text>
       </View>
 
       {/* Kategorie-Filter */}
@@ -237,16 +371,28 @@ export default function ShopScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={s.list}
         ListHeaderComponent={
-          (activeCategory === "alle" || activeCategory === "armbänder") ? (
-            <TouchableOpacity style={s.runenBanner} onPress={() => router.push("/runen-quiz" as any)} activeOpacity={0.8}>
-              <Text style={{ fontSize: 32, marginBottom: 8 }}>ᚱ</Text>
-              <Text style={s.runenBannerTitle}>Finde dein Runen-Set</Text>
-              <Text style={s.runenBannerText}>Gib dein Geburtsdatum ein und beantworte 5 Fragen – wir empfehlen dir das perfekte Runen-Armband.</Text>
-              <View style={s.runenBannerBtn}>
-                <Text style={s.runenBannerBtnText}>Zum Runen-Quiz →</Text>
+          <>
+            {(activeCategory === "alle" || activeCategory === "ritual-sets") && (
+              <View style={s.ritualSetsBanner}>
+                <Text style={{ fontSize: 32, marginBottom: 8 }}>🕯️</Text>
+                <Text style={s.ritualSetsBannerTitle}>Ritual-Sets für deine Praxis</Text>
+                <Text style={s.ritualSetsBannerText}>
+                  10 handkuratierte Sets mit Heilsteinen, Räucherwerk & Kerzen – passend zu den Ritualen in der App.
+                </Text>
+                <Text style={s.ritualSetsBannerPrice}>Je 29,90 € inkl. Versand</Text>
               </View>
-            </TouchableOpacity>
-          ) : null
+            )}
+            {(activeCategory === "alle" || activeCategory === "armbänder") && (
+              <TouchableOpacity style={s.runenBanner} onPress={() => router.push("/runen-quiz" as any)} activeOpacity={0.8}>
+                <Text style={{ fontSize: 32, marginBottom: 8 }}>ᚱ</Text>
+                <Text style={s.runenBannerTitle}>Finde dein Runen-Set</Text>
+                <Text style={s.runenBannerText}>Gib dein Geburtsdatum ein und beantworte 5 Fragen – wir empfehlen dir das perfekte Runen-Armband.</Text>
+                <View style={s.runenBannerBtn}>
+                  <Text style={s.runenBannerBtnText}>Zum Runen-Quiz →</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </>
         }
         renderItem={({ item }) => (
           <View style={s.card}>

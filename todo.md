@@ -552,3 +552,6 @@
 - [x] Bug: Mondphasen-Anzeige: 2. März zeigt Vollmond statt zunehmend – Vollmond ist erst am 3. März (Kalendertag-basierte Erkennung)
 - [x] Bug: Ritual-Links nicht alle korrekt verlinkt – alle 51 geprüft, 7 Zuordnungen korrigiert
 - [x] Bug: Alle Links in gesamter App geprüft – Ritual-CTA Text korrigiert, Ich-Tab Shop-Link auf Hauptshop geändert, Runen-Links korrekt bei Runen-Produkten belassen
+- [x] Ritual-Sets als eigene Kategorie im Shop-Tab mit Bildern und Direktlinks
+- [x] Push-Benachrichtigungen für anstehende Rituale (Vollmond, Neumond, Jahreskreisfeste)
+- [x] Einzelne Heilsteine Copy-Paste-Liste für Tentary (10 Steine, Preise, Beschreibungen)
