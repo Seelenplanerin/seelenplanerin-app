@@ -542,3 +542,10 @@
 - [ ] Tentary-Shop: Fertiges Copy-Paste-Dokument mit allem zusammenstellen
 - [x] Bug: Meditationskerze Tentary-Link (https://dieseelenplanerin.tentary.com/p/YQLsh3) in der App einbauen
 - [x] Bug: Vollmond-Anzeige im Mondkalender zeigt VM an mehreren Tagen statt nur am exakten Vollmond-Tag (HALF_DAY Toleranz statt ONE_DAY)
+- [x] 10 allgemeine Themen-Ritual-Sets erstellen (Copy-Paste für Tentary)
+- [x] Rituale in der App überarbeiten – jedes Ritual einem der 10 Sets zuordnen
+- [x] 10 Produktbilder für Ritual-Sets generieren (Tentary)
+- [x] Verkaufstexte für alle 10 Ritual-Sets schreiben (nicht nur Danke-Mails)
+- [x] Preis auf 29,90€ inkl. Versand anpassen
+- [x] Alle 51 Rituale: Materialien an die 10 Sets anpassen
+- [x] Alle 51 Rituale: Tentary-Links für das passende Set hinterlegen
