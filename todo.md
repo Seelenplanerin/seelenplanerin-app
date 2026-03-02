@@ -549,3 +549,5 @@
 - [x] Preis auf 29,90€ inkl. Versand anpassen
 - [x] Alle 51 Rituale: Materialien an die 10 Sets anpassen
 - [x] Alle 51 Rituale: Tentary-Links für das passende Set hinterlegen
+- [x] Bug: Mondphasen-Anzeige: 2. März zeigt Vollmond statt zunehmend – Vollmond ist erst am 3. März (Kalendertag-basierte Erkennung)
+- [x] Bug: Ritual-Links nicht alle korrekt verlinkt – alle 51 geprüft, 7 Zuordnungen korrigiert

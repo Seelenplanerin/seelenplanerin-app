@@ -350,56 +350,83 @@ export function getMoonZodiac(date: Date): ZodiacSign {
  * Verwendet alle 4 Hauptphasen (Neumond, Erstes Viertel, Vollmond, Letztes Viertel)
  * für maximale Genauigkeit.
  */
-function getPhaseForDate(date: Date): MoonPhase {
-  const now = date.getTime();
-  const ONE_DAY = 24 * 60 * 60 * 1000;
-  const HALF_DAY = 12 * 60 * 60 * 1000;
+/**
+ * Hilfsfunktion: Prüft ob zwei Daten am selben Kalendertag liegen (MEZ/MESZ).
+ */
+function isSameCalendarDay(a: Date, b: Date): boolean {
+  const optsBerlin: Intl.DateTimeFormatOptions = { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit" };
+  const dayA = a.toLocaleDateString("de-DE", optsBerlin);
+  const dayB = b.toLocaleDateString("de-DE", optsBerlin);
+  return dayA === dayB;
+}
 
-  // Prüfe ob wir nahe an einer Hauptphase sind (innerhalb 12 Stunden = nur am exakten Tag)
+function getPhaseForDate(date: Date): MoonPhase {
+  // 1) Prüfe ob der Kalendertag (MEZ) exakt auf eine Hauptphase fällt
+  //    → Vollmond/Neumond/Viertel NUR am exakten Kalendertag anzeigen
   for (const vm of VOLLMONDE_2026) {
-    if (Math.abs(vm.getTime() - now) < HALF_DAY) return MOON_PHASES[4]; // Vollmond
+    if (isSameCalendarDay(date, vm)) return MOON_PHASES[4]; // Vollmond
   }
   for (const nm of NEUMONDE_2026) {
-    if (Math.abs(nm.getTime() - now) < HALF_DAY) return MOON_PHASES[0]; // Neumond
+    if (isSameCalendarDay(date, nm)) return MOON_PHASES[0]; // Neumond
   }
   for (const ev of ERSTES_VIERTEL_2026) {
-    if (Math.abs(ev.getTime() - now) < HALF_DAY) return MOON_PHASES[2]; // Erstes Viertel
+    if (isSameCalendarDay(date, ev)) return MOON_PHASES[2]; // Erstes Viertel
   }
   for (const lv of LETZTES_VIERTEL_2026) {
-    if (Math.abs(lv.getTime() - now) < HALF_DAY) return MOON_PHASES[6]; // Letztes Viertel
+    if (isSameCalendarDay(date, lv)) return MOON_PHASES[6]; // Letztes Viertel
   }
 
-  // Finde den letzten Neumond VOR dem Datum
-  let lastNeumond = NEUMONDE_2026[0];
+  // 2) Kein Hauptphasen-Tag → Zwischenphase berechnen
+  //    Bestimme ob wir zwischen Neumond→Vollmond (zunehmend) oder Vollmond→Neumond (abnehmend) sind
+  const now = date.getTime();
+
+  // Finde den letzten und nächsten Vollmond
+  let lastVollmond: Date | null = null;
+  let nextVollmond: Date | null = null;
+  for (const vm of VOLLMONDE_2026) {
+    if (vm.getTime() <= now) lastVollmond = vm;
+  }
+  for (const vm of VOLLMONDE_2026) {
+    if (vm.getTime() > now) { nextVollmond = vm; break; }
+  }
+
+  // Finde den letzten und nächsten Neumond
+  let lastNeumond: Date | null = null;
+  let nextNeumond: Date | null = null;
   for (const nm of NEUMONDE_2026) {
     if (nm.getTime() <= now) lastNeumond = nm;
-    else break;
   }
-
-  // Finde den nächsten Neumond NACH dem Datum
-  let nextNeumond = NEUMONDE_2026[NEUMONDE_2026.length - 1];
   for (const nm of NEUMONDE_2026) {
-    if (nm.getTime() > now) {
-      nextNeumond = nm;
-      break;
-    }
+    if (nm.getTime() > now) { nextNeumond = nm; break; }
   }
 
-  // Berechne Position im Zyklus (0-1)
-  const cycleLength = nextNeumond.getTime() - lastNeumond.getTime();
-  const elapsed = now - lastNeumond.getTime();
-  const position = cycleLength > 0 ? elapsed / cycleLength : 0;
+  // Bestimme ob zunehmend oder abnehmend:
+  // Zunehmend = letzter Neumond ist neuer als letzter Vollmond (oder kein Vollmond davor)
+  const isWaxing = !lastVollmond || (lastNeumond && lastNeumond.getTime() > lastVollmond.getTime());
 
-  // Mappe auf 8 Phasen
-  if (position < 0.0625) return MOON_PHASES[0]; // Neumond
-  if (position < 0.1875) return MOON_PHASES[1]; // Zunehmende Sichel
-  if (position < 0.3125) return MOON_PHASES[2]; // Erstes Viertel
-  if (position < 0.4375) return MOON_PHASES[3]; // Zunehmender Mond
-  if (position < 0.5625) return MOON_PHASES[4]; // Vollmond
-  if (position < 0.6875) return MOON_PHASES[5]; // Abnehmender Mond
-  if (position < 0.8125) return MOON_PHASES[6]; // Letztes Viertel
-  if (position < 0.9375) return MOON_PHASES[7]; // Abnehmende Sichel
-  return MOON_PHASES[0]; // Neumond (Ende des Zyklus)
+  if (isWaxing) {
+    // Zwischen Neumond und Vollmond: Zunehmende Sichel → Zunehmender Mond
+    if (lastNeumond && nextVollmond) {
+      const span = nextVollmond.getTime() - lastNeumond.getTime();
+      const elapsed = now - lastNeumond.getTime();
+      const pos = span > 0 ? elapsed / span : 0.5;
+      if (pos < 0.33) return MOON_PHASES[1]; // Zunehmende Sichel
+      if (pos < 0.66) return MOON_PHASES[2]; // Erstes Viertel (Näherung)
+      return MOON_PHASES[3]; // Zunehmender Mond
+    }
+    return MOON_PHASES[3]; // Zunehmender Mond (Fallback)
+  } else {
+    // Zwischen Vollmond und Neumond: Abnehmender Mond → Abnehmende Sichel
+    if (lastVollmond && nextNeumond) {
+      const span = nextNeumond.getTime() - lastVollmond.getTime();
+      const elapsed = now - lastVollmond.getTime();
+      const pos = span > 0 ? elapsed / span : 0.5;
+      if (pos < 0.33) return MOON_PHASES[5]; // Abnehmender Mond
+      if (pos < 0.66) return MOON_PHASES[6]; // Letztes Viertel (Näherung)
+      return MOON_PHASES[7]; // Abnehmende Sichel
+    }
+    return MOON_PHASES[5]; // Abnehmender Mond (Fallback)
+  }
 }
 
 /**
