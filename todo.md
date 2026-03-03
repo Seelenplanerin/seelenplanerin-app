@@ -598,3 +598,10 @@
 - [ ] Ritual-Detail-Screen: "Bei Lara kaufen"-Button verlinkt auf falsches Produkt (Runen-Armband statt Ritual-Set)
 - [ ] Alle Ritual-Detail-Screens korrigieren
 - [x] Falschen Schutzarmband-Button (gGmtFy) aus Ritual-Detail-Screen entfernen
+- [ ] Meditationskerze: Falscher allgemeiner Link → korrekten Tentary-Direktlink einsetzen
+- [ ] ALLE Produkt-Links in ALLEN Dateien einzeln im Browser verifizieren und korrigieren
+
+## KRITISCH: Finale Korrekturen (03.03.2026)
+- [ ] Runen-Quiz: Runen-Sets-Liste aus PDF korrekt im Quiz-Ergebnis anzeigen
+- [ ] Meditationskerze: Direkten Tentary-Link prüfen und korrigieren
+- [ ] Alle Ritual-Detail-Screens: Shop-Links im Browser verifizieren
