@@ -589,3 +589,7 @@
 - [x] ALLE Links in Runen-Screens prüfen und korrigieren
 - [x] ALLE Links in Seelenimpuls/Abo-Screens prüfen und korrigieren
 - [x] 11 Rituale: Materialien + shopUrl an Ritual-Thema anpassen (10 korrigiert + nov-3)
+
+## KRITISCH: Jedes einzelne Ritual prüfen (03.03.2026)
+- [x] Alle 51 Rituale: shopUrl im Browser geöffnet + Materialien vs. Thema geprüft (51/51 OK)
+- [x] 3 letzte Zuordnungen korrigiert (mar-4, apr-2, jun-2)

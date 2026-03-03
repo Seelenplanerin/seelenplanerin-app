@@ -213,8 +213,8 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "schritt", text: "4. Drei Atemzüge\nAtme dreimal tief ein und aus. Bei jedem Ausatmen lässt du Anspannung los. Bei jedem Einatmen nimmst du Klarheit auf." },
       { typ: "affirmation", text: "\"Ich beginne diesen Tag mit Klarheit, Freude und Intention.\"" },
     ],
-    materialien: ["Bergkristall", "Citrin", "Weißer Salbei", "Gelbe Kerze"],
-    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
+    materialien: ["Amethyst", "Mondstein", "Myrrhe", "Weiße Kerze"],
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich beginne diesen Tag mit Klarheit, Freude und Intention.",
   },
 
@@ -267,8 +267,8 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "schritt", text: "4. Intention setzen\nFalte das Papier und lege es unter deine Kerze. Zünde sie an: \"Mit diesem Licht entzünde ich meine Intention.\"" },
       { typ: "affirmation", text: "\"Ich bin offen für neue Anfänge. Meine Wünsche wachsen mit dem Mond.\"" },
     ],
-    materialien: ["Sonnenstein", "Karneol", "Weihrauch", "Orange Kerze"],
-    shopUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
+    materialien: ["Amethyst", "Mondstein", "Myrrhe", "Weiße Kerze"],
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich bin offen für neue Anfänge. Meine Wünsche wachsen mit dem Mond.",
   },
   {
@@ -427,8 +427,8 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "schritt", text: "5. Johanniskraut sammeln\nSammle Johanniskraut und hänge es zum Trocknen auf. Es schützt und bringt Licht in dunkle Zeiten." },
       { typ: "affirmation", text: "\"Ich strahle wie die Sonne. Mein Licht ist kraftvoll und warm.\"" },
     ],
-    materialien: ["Amethyst", "Mondstein", "Myrrhe", "Weiße Kerze"],
-    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
+    materialien: ["Karneol", "Sonnenstein", "Weihrauch", "Rote Kerze"],
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
     affirmation: "Ich strahle wie die Sonne. Mein Licht ist kraftvoll und warm.",
   },
   {
