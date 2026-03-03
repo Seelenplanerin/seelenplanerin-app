@@ -363,7 +363,7 @@ export const MOND_ARCHETYP_RESULTS: Record<MondArchetyp, MondArchetypResult> = {
     challenges: "Du wirst ungeduldig, wenn Ergebnisse auf sich warten lassen, und verlierst manchmal den Genuss am Prozess.",
     ritual:
       "Schreibe drei konkrete Ziele auf, die du im nächsten Mondmonat erreichen möchtest. Zünde eine grüne Kerze an und visualisiere, wie du diese Ziele bereits erreicht hast.",
-    kristall: "Grüner Aventurin – zieht Wachstum, Glück und neue Chancen an",
+    kristall: "Citrin – zieht Wachstum, Glück und neue Chancen an",
     raeucherwerk: "Palo Santo – bringt positive Energie und Klarheit für deinen Weg",
     affirmation: "Ich wachse jeden Tag. Jeder Schritt bringt mich näher zu dem, was ich mir wünsche.",
     color: "#2d5a27",

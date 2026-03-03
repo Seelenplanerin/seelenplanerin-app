@@ -1,111 +1,39 @@
 import { describe, it, expect } from "vitest";
 
-// Zuordnungstabelle: Materialien → Ritual-Set → shopUrl
+// Die 10 verfügbaren Heilsteine
+const VERFUEGBARE_STEINE = [
+  "Bergkristall", "Amethyst", "Rosenquarz", "Mondstein",
+  "Schwarzer Turmalin", "Citrin", "Karneol", "Obsidian",
+  "Labradorit", "Sodalith",
+];
+
+// Zuordnungstabelle: Materialien → Ritual-Set → shopUrl (KORRIGIERT – nur verfügbare Steine)
 const MATERIAL_TO_SET: Record<string, { set: string; code: string }> = {
-  "Schwarzer Turmalin,Bergkristall,Weißer Salbei,Schwarze Kerze": { set: "Schutz", code: "OX0aPw" },
+  "Schwarzer Turmalin,Obsidian,Weißer Salbei,Schwarze Kerze": { set: "Schutz", code: "OX0aPw" },
   "Rosenquarz,Mondstein,Myrrhe,Rosa Kerze": { set: "Selbstliebe", code: "QtLnrA" },
-  "Citrin,Pyrit,Weihrauch,Goldene Kerze": { set: "Fülle", code: "QjvV1I" },
+  "Citrin,Bergkristall,Weihrauch,Goldene Kerze": { set: "Fülle", code: "QjvV1I" },
   "Labradorit,Amethyst,Palo Santo,Violette Kerze": { set: "Transformation", code: "sGn2aD" },
-  "Karneol,Sonnenstein,Weihrauch,Rote Kerze": { set: "Kraft", code: "BQ7sqg" },
+  "Karneol,Bergkristall,Weihrauch,Rote Kerze": { set: "Kraft", code: "BQ7sqg" },
   "Amethyst,Mondstein,Myrrhe,Weiße Kerze": { set: "Intuition", code: "tfehqK" },
   "Bergkristall,Citrin,Weißer Salbei,Gelbe Kerze": { set: "Neuanfang", code: "QFEH0i" },
   "Schwarzer Turmalin,Karneol,Palo Santo,Braune Kerze": { set: "Erdung", code: "VN9WOT" },
-  "Sonnenstein,Karneol,Weihrauch,Orange Kerze": { set: "Lebensfreude", code: "gFloc9" },
+  "Karneol,Rosenquarz,Weihrauch,Orange Kerze": { set: "Lebensfreude", code: "gFloc9" },
   "Rosenquarz,Amethyst,Palo Santo,Grüne Kerze": { set: "Heilung", code: "f9A55Q" },
 };
 
-// Thema-zu-passende-Sets Zuordnung (welche Sets passen zu welchem Ritual-Thema)
-const THEMA_PASSENDE_SETS: Record<string, string[]> = {
-  // Reinigung/Schutz-Rituale → Schutz-Set
-  "Reinigung": ["Schutz", "Erdung"],
-  "Schutz": ["Schutz"],
-  "Abendritual": ["Intuition", "Schutz", "Selbstliebe"],
-  // Meditation/Balance → Intuition
-  "Meditation": ["Intuition", "Heilung"],
-  "Balance": ["Transformation", "Heilung", "Intuition"],
-  // Kommunikation/Innere Stimme → Intuition
-  "Kommunikation": ["Intuition", "Kraft"],
-  // Loslassen → Transformation
-  "Loslassen": ["Transformation", "Schutz"],
-  // Transformation → Transformation
-  "Transformation": ["Transformation"],
-  // Dankbarkeit → Fülle
-  "Dankbarkeit": ["Fülle", "Lebensfreude"],
-  // Selbstbewusstsein/Kraft → Kraft
-  "Selbstbewusstsein": ["Kraft", "Schutz"],
-  // Loslösung → Transformation
-  "Loslösung": ["Transformation", "Selbstliebe"],
-  // Herbst-Balance → Transformation
-  "Herbst-Balance": ["Transformation", "Heilung"],
-};
+// NICHT erlaubte Steine (haben wir nicht)
+const VERBOTENE_STEINE = [
+  "Pyrit", "Sonnenstein", "Roter Jaspis", "Lapislazuli", "Feueropal",
+  "Aquamarin", "Granat", "Tigerauge", "Malachit", "Aventurin",
+  "Calcit", "Moosachat", "Rauchquarz", "Bernstein",
+];
 
-describe("Ritual-Link Korrekturen", () => {
-  it("Alle Materialien haben einen gültigen Tentary-Code", () => {
+describe("Ritual-Sets Korrekturen (10 Heilsteine)", () => {
+  it("Alle 10 Sets haben gültige Tentary-Codes", () => {
     for (const [materials, info] of Object.entries(MATERIAL_TO_SET)) {
       expect(info.code).toBeTruthy();
       expect(info.set).toBeTruthy();
     }
-  });
-
-  it("Korrigierte Rituale: mai-2 (Reinigung) → Schutz-Set (OX0aPw)", () => {
-    // Reinigungsritual sollte Schutz-Materialien haben
-    const expected = MATERIAL_TO_SET["Schwarzer Turmalin,Bergkristall,Weißer Salbei,Schwarze Kerze"];
-    expect(expected.set).toBe("Schutz");
-    expect(expected.code).toBe("OX0aPw");
-  });
-
-  it("Korrigierte Rituale: mai-3 (Meditation) → Intuition-Set (tfehqK)", () => {
-    const expected = MATERIAL_TO_SET["Amethyst,Mondstein,Myrrhe,Weiße Kerze"];
-    expect(expected.set).toBe("Intuition");
-    expect(expected.code).toBe("tfehqK");
-  });
-
-  it("Korrigierte Rituale: jun-1 (Kommunikation/Inner Voice) → Intuition-Set (tfehqK)", () => {
-    const expected = MATERIAL_TO_SET["Amethyst,Mondstein,Myrrhe,Weiße Kerze"];
-    expect(expected.set).toBe("Intuition");
-    expect(expected.code).toBe("tfehqK");
-  });
-
-  it("Korrigierte Rituale: jun-3 (Raumreinigung) → Schutz-Set (OX0aPw)", () => {
-    const expected = MATERIAL_TO_SET["Schwarzer Turmalin,Bergkristall,Weißer Salbei,Schwarze Kerze"];
-    expect(expected.set).toBe("Schutz");
-    expect(expected.code).toBe("OX0aPw");
-  });
-
-  it("Korrigierte Rituale: okt-2 (Loslassen) → Transformation-Set (sGn2aD)", () => {
-    const expected = MATERIAL_TO_SET["Labradorit,Amethyst,Palo Santo,Violette Kerze"];
-    expect(expected.set).toBe("Transformation");
-    expect(expected.code).toBe("sGn2aD");
-  });
-
-  it("Korrigierte Rituale: nov-1 (Transformation) → Transformation-Set (sGn2aD)", () => {
-    const expected = MATERIAL_TO_SET["Labradorit,Amethyst,Palo Santo,Violette Kerze"];
-    expect(expected.set).toBe("Transformation");
-    expect(expected.code).toBe("sGn2aD");
-  });
-
-  it("Korrigierte Rituale: nov-2 (Dankbarkeit) → Fülle-Set (QjvV1I)", () => {
-    const expected = MATERIAL_TO_SET["Citrin,Pyrit,Weihrauch,Goldene Kerze"];
-    expect(expected.set).toBe("Fülle");
-    expect(expected.code).toBe("QjvV1I");
-  });
-
-  it("Korrigierte Rituale: nov-3 (Abendritual) → Intuition-Set (tfehqK)", () => {
-    const expected = MATERIAL_TO_SET["Amethyst,Mondstein,Myrrhe,Weiße Kerze"];
-    expect(expected.set).toBe("Intuition");
-    expect(expected.code).toBe("tfehqK");
-  });
-
-  it("Korrigierte Rituale: feb-4 (Selbstbewusstsein) → Kraft-Set (BQ7sqg)", () => {
-    const expected = MATERIAL_TO_SET["Karneol,Sonnenstein,Weihrauch,Rote Kerze"];
-    expect(expected.set).toBe("Kraft");
-    expect(expected.code).toBe("BQ7sqg");
-  });
-
-  it("Korrigierte Rituale: sep-5 (Herbst-Balance) → Transformation-Set (sGn2aD)", () => {
-    const expected = MATERIAL_TO_SET["Labradorit,Amethyst,Palo Santo,Violette Kerze"];
-    expect(expected.set).toBe("Transformation");
-    expect(expected.code).toBe("sGn2aD");
   });
 
   it("Alle 10 Ritual-Sets haben eindeutige Tentary-Codes", () => {
@@ -119,5 +47,56 @@ describe("Ritual-Link Korrekturen", () => {
       const url = `https://dieseelenplanerin.tentary.com/p/${info.code}`;
       expect(url).toMatch(/^https:\/\/dieseelenplanerin\.tentary\.com\/p\/[A-Za-z0-9]+$/);
     }
+  });
+
+  it("Alle Steine in den Sets sind aus den 10 verfügbaren Steinen", () => {
+    for (const [materials] of Object.entries(MATERIAL_TO_SET)) {
+      const items = materials.split(",");
+      // Nur die Steine prüfen (nicht Räucherwerk und Kerzen)
+      const steine = items.filter(item =>
+        !item.includes("Salbei") && !item.includes("Myrrhe") &&
+        !item.includes("Palo Santo") && !item.includes("Weihrauch") &&
+        !item.includes("Kerze")
+      );
+      for (const stein of steine) {
+        expect(VERFUEGBARE_STEINE).toContain(stein);
+      }
+    }
+  });
+
+  it("Keine verbotenen Steine in den Sets", () => {
+    for (const [materials] of Object.entries(MATERIAL_TO_SET)) {
+      for (const verboten of VERBOTENE_STEINE) {
+        expect(materials).not.toContain(verboten);
+      }
+    }
+  });
+
+  it("Schutz-Set enthält Schwarzer Turmalin + Obsidian (nicht Bergkristall)", () => {
+    const schutz = MATERIAL_TO_SET["Schwarzer Turmalin,Obsidian,Weißer Salbei,Schwarze Kerze"];
+    expect(schutz).toBeDefined();
+    expect(schutz.set).toBe("Schutz");
+    expect(schutz.code).toBe("OX0aPw");
+  });
+
+  it("Fülle-Set enthält Citrin + Bergkristall (nicht Pyrit)", () => {
+    const fuelle = MATERIAL_TO_SET["Citrin,Bergkristall,Weihrauch,Goldene Kerze"];
+    expect(fuelle).toBeDefined();
+    expect(fuelle.set).toBe("Fülle");
+    expect(fuelle.code).toBe("QjvV1I");
+  });
+
+  it("Kraft-Set enthält Karneol + Bergkristall (nicht Sonnenstein)", () => {
+    const kraft = MATERIAL_TO_SET["Karneol,Bergkristall,Weihrauch,Rote Kerze"];
+    expect(kraft).toBeDefined();
+    expect(kraft.set).toBe("Kraft");
+    expect(kraft.code).toBe("BQ7sqg");
+  });
+
+  it("Lebensfreude-Set enthält Karneol + Rosenquarz (nicht Sonnenstein)", () => {
+    const freude = MATERIAL_TO_SET["Karneol,Rosenquarz,Weihrauch,Orange Kerze"];
+    expect(freude).toBeDefined();
+    expect(freude.set).toBe("Lebensfreude");
+    expect(freude.code).toBe("gFloc9");
   });
 });

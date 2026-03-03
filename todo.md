@@ -605,3 +605,14 @@
 - [ ] Runen-Quiz: Runen-Sets-Liste aus PDF korrekt im Quiz-Ergebnis anzeigen
 - [ ] Meditationskerze: Direkten Tentary-Link prüfen und korrigieren
 - [ ] Alle Ritual-Detail-Screens: Shop-Links im Browser verifizieren
+
+## KRITISCH: Alle 51 Rituale – Materialien an die 10 Ritual-Sets anpassen (03.03.2026)
+- [ ] Jedes Ritual bekommt NUR Materialien die im zugehörigen Ritual-Set tatsächlich enthalten sind
+- [ ] Nur die 5 verfügbaren Heilsteine verwenden: Mondstein, Bergkristall, Amethyst, Rosenquarz, Schwarzer Turmalin
+- [ ] Keine erfundenen Steine mehr (kein Roter Jaspis, kein Karneol, kein Citrin, kein Sodalith etc.)
+
+## Korrektur Runde - Heilsteine & Ritual-Sets (03.03.2026)
+- [x] Shop-Beschreibungen der 10 Ritual-Sets korrigieren: Pyrit, Sonnenstein entfernen, nur die 10 verfügbaren Steine verwenden
+- [x] Alle 51 Ritual-Materialien korrigieren: Nur die 10 verfügbaren Heilsteine (Bergkristall, Amethyst, Rosenquarz, Mondstein, Schwarzer Turmalin, Citrin, Karneol, Obsidian, Labradorit, Sodalith)
+- [x] Alle shopUrl-Links in Ritualen verifizieren und korrigieren
+- [x] Tests schreiben um alle Korrekturen zu verifizieren

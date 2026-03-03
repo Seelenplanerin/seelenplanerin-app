@@ -121,7 +121,7 @@ const MONDTYPEN: Record<string, {
     beschreibung: "Du bist eine Macherin und Erschafferin. Voller Energie, Ideen und dem Willen, deine Träume in die Realität zu bringen. Du wächst, du blühst, du entfaltest dich – und du inspirierst andere, dasselbe zu tun.",
     staerken: ["Tatkraft & Energie", "Kreativität", "Manifestationskraft", "Inspirierende Präsenz"],
     ritual: "Schreibe drei Ziele auf, die du in diesem Mondmonat erreichen möchtest. Lege einen Citrin dazu und visualisiere, wie du sie bereits erlebt hast.",
-    heilstein: "Citrin oder Tigerauge",
+    heilstein: "Citrin oder Karneol",
     affirmation: "Ich wachse mit jeder Atemzug. Meine Träume werden Wirklichkeit.",
   },
   A: {
@@ -132,7 +132,7 @@ const MONDTYPEN: Record<string, {
     beschreibung: "Du bist eine Meisterin des Loslassens und der Weisheit. Du weißt, dass wahre Stärke darin liegt, Altes zu verabschieden und Raum für Neues zu schaffen. Deine Tiefe und Reife sind ein Geschenk für alle, die dich kennen.",
     staerken: ["Weisheit & Reife", "Loslassen können", "Tiefe Reflexion", "Heilsame Präsenz"],
     ritual: "Schreibe auf, was du loslassen möchtest – Gedanken, Beziehungen, Gewohnheiten. Lege das Papier unter deinen Kopfkissen und lass es in der Nacht los.",
-    heilstein: "Amethyst oder Rauchquarz",
+    heilstein: "Amethyst oder Obsidian",
     affirmation: "Ich lasse los, was mich nicht mehr dient. Im Loslassen finde ich Frieden.",
   },
 };
