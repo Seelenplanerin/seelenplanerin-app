@@ -573,3 +573,10 @@
 - [x] Admin: Affiliate aktivieren/deaktivieren Toggle-Button
 - [x] Admin: Verkaufsstatus ändern (Bestätigen/Ausgezahlt markieren)
 - [x] Automatische E-Mail an Affiliate bei Auszahlung
+
+## Runen-Quiz Überarbeitung (03.03.2026)
+- [x] Runen-Quiz: Alle 40 Sets aus PDF einbauen (8 Kategorien à 5 Sets)
+- [x] Runen-Quiz: Ergebnis = Schutzrune + 2 Themenrunen (immer 3 Runen)
+- [x] Runen-Quiz: Heilsteine auf 5 verfügbare anpassen (Mondstein, Bergkristall, Amethyst, Rosenquarz, Schwarzer Turmalin)
+- [x] Runen-Quiz: Verlinkung zum Armband-Shop prüfen und korrigieren
+- [x] Runen-Quiz: Alle Kombinationen aus PDF korrekt übernehmen

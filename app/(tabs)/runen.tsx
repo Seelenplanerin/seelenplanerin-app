@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Linking, Platform,
+  StyleSheet, Linking,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
+import { RUNEN_SETS, getSetsByKategorie, type RunenSet } from "@/lib/runen-sets";
+import { type RunenCategory } from "@/lib/quiz-data";
 
 // ─── Farben ───────────────────────────────────────────────────────────────────
 const C = {
@@ -20,7 +22,7 @@ const C = {
   text: "#3D2314",
 };
 
-// ─── Runen-Daten ──────────────────────────────────────────────────────────────
+// ─── Runen-Daten (24 Elder Futhark) ──────────────────────────────────────────
 const RUNEN = [
   { name: "Fehu", symbol: "ᚠ", thema: "Wohlstand & Fülle", energie: "Überfluss, Erfolg, materielle Sicherheit", affirmation: "Ich bin offen für Fülle in allen Formen." },
   { name: "Uruz", symbol: "ᚢ", thema: "Kraft & Gesundheit", energie: "Urkraft, Vitalität, körperliche Stärke", affirmation: "Meine Lebenskraft ist unerschöpflich." },
@@ -39,7 +41,7 @@ const RUNEN = [
   { name: "Algiz", symbol: "ᛉ", thema: "Schutz & Intuition", energie: "Schutzschild, Verbindung zum Göttlichen", affirmation: "Ich bin von göttlichem Licht umgeben." },
   { name: "Sowilo", symbol: "ᛋ", thema: "Erfolg & Sonne", energie: "Siegeskraft, Lebensenergie, Klarheit", affirmation: "Ich strahle Licht und Erfolg aus." },
   { name: "Tiwaz", symbol: "ᛏ", thema: "Gerechtigkeit & Mut", energie: "Kriegsgott, Ehre, Opferbereitschaft", affirmation: "Ich handle mit Integrität und Mut." },
-  { name: "Berkano", symbol: "ᛒ", thema: "Geburt & Wachstum", energie: "Birke, Fruchtbarkeit, Fürsorge", affirmation: "Ich pflege mein Wachstum liebevoll." },
+  { name: "Berkana", symbol: "ᛒ", thema: "Geburt & Wachstum", energie: "Birke, Fruchtbarkeit, Fürsorge", affirmation: "Ich pflege mein Wachstum liebevoll." },
   { name: "Ehwaz", symbol: "ᛖ", thema: "Vertrauen & Partnerschaft", energie: "Pferd, Bewegung, Zusammenarbeit", affirmation: "Ich vertraue meinen Beziehungen." },
   { name: "Mannaz", symbol: "ᛗ", thema: "Selbsterkenntnis & Humanität", energie: "Mensch, Gemeinschaft, Selbstbewusstsein", affirmation: "Ich kenne und liebe mich selbst." },
   { name: "Laguz", symbol: "ᛚ", thema: "Intuition & Gefühle", energie: "Wasser, Unterbewusstsein, Fluss", affirmation: "Ich fließe mit dem Strom des Lebens." },
@@ -48,19 +50,19 @@ const RUNEN = [
   { name: "Othala", symbol: "ᛟ", thema: "Heimat & Erbe", energie: "Ahnen, Heimat, Geborgenheit", affirmation: "Ich bin verwurzelt in meinem Erbe." },
 ];
 
-const THEMEN = [
-  { id: "liebe", label: "Liebe & Beziehung", emoji: "💗", runen: ["Gebo", "Wunjo", "Berkano", "Ehwaz", "Laguz"] },
-  { id: "schutz", label: "Schutz & Sicherheit", emoji: "🛡️", runen: ["Thurisaz", "Algiz", "Eihwaz", "Isa", "Othala"] },
-  { id: "erfolg", label: "Erfolg & Karriere", emoji: "✨", runen: ["Fehu", "Sowilo", "Tiwaz", "Raidho", "Kenaz"] },
-  { id: "heilung", label: "Heilung & Gesundheit", emoji: "🌿", runen: ["Uruz", "Berkano", "Laguz", "Ingwaz", "Jera"] },
-  { id: "intuition", label: "Intuition & Weisheit", emoji: "🔮", runen: ["Ansuz", "Perthro", "Laguz", "Mannaz", "Dagaz"] },
-  { id: "kraft", label: "Kraft & Transformation", emoji: "🔥", runen: ["Hagalaz", "Nauthiz", "Uruz", "Dagaz", "Sowilo"] },
-  { id: "fulle", label: "Fülle & Manifestation", emoji: "🌕", runen: ["Fehu", "Jera", "Ingwaz", "Wunjo", "Othala"] },
-  { id: "frieden", label: "Frieden & Harmonie", emoji: "🕊️", runen: ["Wunjo", "Isa", "Gebo", "Mannaz", "Othala"] },
+// ─── 8 Themen-Kategorien (aus dem PDF) ───────────────────────────────────────
+const THEMEN: { id: RunenCategory; label: string; emoji: string; heilstein: string }[] = [
+  { id: "liebe", label: "Liebe & Beziehungen", emoji: "💗", heilstein: "Rosenquarz" },
+  { id: "fuelle", label: "Fülle & Finanzen", emoji: "✨", heilstein: "Bergkristall" },
+  { id: "gesundheit", label: "Gesundheit & Vitalität", emoji: "🌿", heilstein: "Amethyst" },
+  { id: "transformation", label: "Transformation & Neuanfang", emoji: "🦋", heilstein: "Mondstein" },
+  { id: "selbstvertrauen", label: "Selbstvertrauen & Stärke", emoji: "🔥", heilstein: "Schwarzer Turmalin" },
+  { id: "spirituell", label: "Spirituelle Entwicklung", emoji: "🔮", heilstein: "Amethyst" },
+  { id: "familie", label: "Familie & Zuhause", emoji: "🏡", heilstein: "Rosenquarz" },
+  { id: "kommunikation", label: "Kommunikation & Klarheit", emoji: "🗝️", heilstein: "Bergkristall" },
 ];
 
 // Klassische Lebensweg-Numerologie: alle Ziffern addieren bis 1-9
-// Lebensweg 1-9 entspricht den ersten 9 Runen des Elder Futhark
 const LEBENSWEG_RUNEN = [
   { lebensweg: 1, name: "Fehu", symbol: "ᚠ", thema: "Fülle & Wohlstand", energie: "Überfluss, Erfolg, materielle Sicherheit, neue Anfänge", affirmation: "Ich bin offen für Fülle in allen Formen des Lebens." },
   { lebensweg: 2, name: "Uruz", symbol: "ᚢ", thema: "Kraft & Vitalität", energie: "Urkraft, Gesundheit, Ausdauer, wilde Stärke", affirmation: "Meine Lebenskraft ist unerschöpflich und stark." },
@@ -74,15 +76,12 @@ const LEBENSWEG_RUNEN = [
 ];
 
 function berechneSchutzrune(geburtsdatum: string): typeof LEBENSWEG_RUNEN[0] | null {
-  // Format: DD.MM.YYYY
   const parts = geburtsdatum.split(".");
   if (parts.length !== 3) return null;
   const [day, month, year] = parts.map(Number);
   if (!day || !month || !year || year < 1900 || year > 2100) return null;
-  // Klassische Numerologie: alle Ziffern addieren und auf 1-9 reduzieren
   const allDigits = `${day}${month}${year}`.split("").map(Number);
   let sum = allDigits.reduce((a, b) => a + b, 0);
-  // Wiederholt reduzieren bis 1-9 (Meisterzahlen 11, 22 werden auch reduziert)
   while (sum > 9) {
     sum = sum.toString().split("").map(Number).reduce((a, b) => a + b, 0);
   }
@@ -96,7 +95,7 @@ export default function RunenScreen() {
   const [schutzrune, setSchutzrune] = useState<typeof LEBENSWEG_RUNEN[0] | null>(null);
   const [fehler, setFehler] = useState("");
   const [selectedThema, setSelectedThema] = useState<typeof THEMEN[0] | null>(null);
-  const [armband, setArmband] = useState<string[]>([]);
+  const [selectedSet, setSelectedSet] = useState<RunenSet | null>(null);
 
   function handleBerechnen() {
     setFehler("");
@@ -110,41 +109,44 @@ export default function RunenScreen() {
 
   function handleThemaWaehlen(thema: typeof THEMEN[0]) {
     setSelectedThema(thema);
-    // Automatisch die ersten 3 Runen des Themas als Armband vorschlagen
-    const runenFuerThema = thema.runen
-      .map(name => RUNEN.find(r => r.name === name))
-      .filter(Boolean) as typeof RUNEN;
-    setArmband(runenFuerThema.slice(0, 3).map(r => r.name));
+    // Erstes Set der Kategorie vorauswählen
+    const sets = getSetsByKategorie(thema.id);
+    if (sets.length > 0) setSelectedSet(sets[0]);
+  }
+
+  function handleSetWaehlen(set: RunenSet) {
+    setSelectedSet(set);
   }
 
   function handleShopOeffnen() {
-    Linking.openURL("https://dieseelenplanerin.tentary.com/p/qnl3vN");
+    const url = selectedSet?.tentaryUrl || "https://dieseelenplanerin.tentary.com/p/qnl3vN";
+    Linking.openURL(url);
   }
 
   return (
     <ScreenContainer containerClassName="bg-background">
-      <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView style={st.scroll} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={s.header}>
-          <Text style={s.headerSymbol}>ᚱ</Text>
-          <Text style={s.headerTitle}>Runen</Text>
-          <Text style={s.headerSub}>Entdecke deine Runenenergie</Text>
+        <View style={st.header}>
+          <Text style={st.headerSymbol}>ᚱ</Text>
+          <Text style={st.headerTitle}>Runen</Text>
+          <Text style={st.headerSub}>Entdecke deine Runenenergie</Text>
         </View>
 
         {/* Section Tabs */}
-        <View style={s.sectionTabs}>
-          {[
-            { id: "schutz", label: "Schutzrune" },
-            { id: "thema", label: "Themen-Armband" },
-            { id: "uebersicht", label: "Alle Runen" },
-          ].map(tab => (
+        <View style={st.sectionTabs}>
+          {([
+            { id: "schutz" as const, label: "Schutzrune" },
+            { id: "thema" as const, label: "Themen-Armband" },
+            { id: "uebersicht" as const, label: "Alle Runen" },
+          ]).map(tab => (
             <TouchableOpacity
               key={tab.id}
-              style={[s.sectionTab, activeSection === tab.id && s.sectionTabActive]}
-              onPress={() => setActiveSection(tab.id as any)}
+              style={[st.sectionTab, activeSection === tab.id && st.sectionTabActive]}
+              onPress={() => setActiveSection(tab.id)}
               activeOpacity={0.8}
             >
-              <Text style={[s.sectionTabText, activeSection === tab.id && s.sectionTabTextActive]}>
+              <Text style={[st.sectionTabText, activeSection === tab.id && st.sectionTabTextActive]}>
                 {tab.label}
               </Text>
             </TouchableOpacity>
@@ -153,14 +155,14 @@ export default function RunenScreen() {
 
         {/* ── SCHUTZRUNE ── */}
         {activeSection === "schutz" && (
-          <View style={s.section}>
-            <View style={s.card}>
-              <Text style={s.cardTitle}>🌙 Deine persönliche Schutzrune</Text>
-              <Text style={s.cardDesc}>
-                Gib dein Geburtsdatum ein und entdecke die Rune, die dich seit deiner Geburt begleitet und schützt.
+          <View style={st.section}>
+            <View style={st.card}>
+              <Text style={st.cardTitle}>🌙 Deine persönliche Schutzrune</Text>
+              <Text style={st.cardDesc}>
+                Gib dein Geburtsdatum ein und entdecke die Rune, die dich seit deiner Geburt begleitet und schützt. Sie ist der erste Charm auf deinem Armband.
               </Text>
               <TextInput
-                style={s.input}
+                style={st.input}
                 placeholder="TT.MM.JJJJ (z.B. 15.03.1990)"
                 placeholderTextColor={C.muted}
                 value={geburtsdatum}
@@ -169,27 +171,27 @@ export default function RunenScreen() {
                 returnKeyType="done"
                 onSubmitEditing={handleBerechnen}
               />
-              {fehler ? <Text style={s.fehler}>{fehler}</Text> : null}
-              <TouchableOpacity style={s.btn} onPress={handleBerechnen} activeOpacity={0.85}>
-                <Text style={s.btnText}>✨ Meine Schutzrune berechnen</Text>
+              {fehler ? <Text style={st.fehler}>{fehler}</Text> : null}
+              <TouchableOpacity style={st.btn} onPress={handleBerechnen} activeOpacity={0.85}>
+                <Text style={st.btnText}>✨ Meine Schutzrune berechnen</Text>
               </TouchableOpacity>
             </View>
 
             {schutzrune && (
-              <View style={s.runeResult}>
-                <Text style={s.runeSymbolBig}>{schutzrune.symbol}</Text>
-                <Text style={s.runeName}>{schutzrune.name}</Text>
-                <Text style={s.runeThema}>{schutzrune.thema}</Text>
-                <Text style={s.runeEnergie}>{schutzrune.energie}</Text>
-                <View style={s.affirmationBox}>
-                  <Text style={s.affirmationLabel}>Deine Affirmation</Text>
-                  <Text style={s.affirmationText}>"{schutzrune.affirmation}"</Text>
+              <View style={st.runeResult}>
+                <Text style={st.runeSymbolBig}>{schutzrune.symbol}</Text>
+                <Text style={st.runeName}>{schutzrune.name}</Text>
+                <Text style={st.runeThema}>{schutzrune.thema}</Text>
+                <Text style={st.runeEnergie}>{schutzrune.energie}</Text>
+                <View style={st.affirmationBox}>
+                  <Text style={st.affirmationLabel}>Deine Affirmation</Text>
+                  <Text style={st.affirmationText}>"{schutzrune.affirmation}"</Text>
                 </View>
-                <Text style={s.shopHint}>
-                  Möchtest du deine Schutzrune als handgraviertes Armband mit Heilstein-Pulver tragen?
+                <Text style={st.shopHint}>
+                  Deine Schutzrune {schutzrune.name} wird als erster Charm auf dein Armband graviert – mit Heilstein-Pulver veredelt.
                 </Text>
-                <TouchableOpacity style={s.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
-                  <Text style={s.shopBtnText}>🛍️ Jetzt im Shop bestellen</Text>
+                <TouchableOpacity style={st.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
+                  <Text style={st.shopBtnText}>🛍️ Runen-Armband bestellen</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -198,58 +200,110 @@ export default function RunenScreen() {
 
         {/* ── THEMA-ARMBAND ── */}
         {activeSection === "thema" && (
-          <View style={s.section}>
-            <View style={s.card}>
-              <Text style={s.cardTitle}>✨ Themen-Armband gestalten</Text>
-              <Text style={s.cardDesc}>
-                Wähle ein Thema das dich gerade bewegt. Ich stelle dir 3 passende Runen-Charms zusammen – handgraviert mit Heilstein-Pulver.
+          <View style={st.section}>
+            <View style={st.card}>
+              <Text style={st.cardTitle}>✨ Dein Themen-Armband</Text>
+              <Text style={st.cardDesc}>
+                Wähle ein Thema das dich gerade bewegt. Dein Armband besteht aus 3 Charms:{"\n"}
+                1. Deine Schutzrune (nach Geburtsdatum){"\n"}
+                2. + 3. Zwei Themenrunen für dein Seelenthema{"\n\n"}
+                Jeder Charm wird auf einem Heilstein-Plättchen graviert:{"\n"}
+                Mondstein · Bergkristall · Amethyst · Rosenquarz · Schwarzer Turmalin
               </Text>
             </View>
 
-            <View style={s.themenGrid}>
+            {/* Themen-Auswahl */}
+            <View style={st.themenGrid}>
               {THEMEN.map(thema => (
                 <TouchableOpacity
                   key={thema.id}
-                  style={[s.themaCard, selectedThema?.id === thema.id && s.themaCardActive]}
+                  style={[st.themaCard, selectedThema?.id === thema.id && st.themaCardActive]}
                   onPress={() => handleThemaWaehlen(thema)}
                   activeOpacity={0.8}
                 >
-                  <Text style={s.themaEmoji}>{thema.emoji}</Text>
-                  <Text style={[s.themaLabel, selectedThema?.id === thema.id && s.themaLabelActive]}>
+                  <Text style={st.themaEmoji}>{thema.emoji}</Text>
+                  <Text style={[st.themaLabel, selectedThema?.id === thema.id && st.themaLabelActive]}>
                     {thema.label}
                   </Text>
+                  <Text style={st.themaStein}>{thema.heilstein}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {selectedThema && armband.length > 0 && (
-              <View style={s.armbandResult}>
-                <Text style={s.armbandTitle}>Dein {selectedThema.label}-Armband</Text>
-                <Text style={s.armbandDesc}>
-                  Diese 3 Runen-Charms + 1 Silberarmband ergeben dein persönliches Energiearmband:
+            {/* Set-Auswahl innerhalb des Themas */}
+            {selectedThema && (
+              <View style={st.card}>
+                <Text style={st.cardTitle}>
+                  {selectedThema.emoji} {selectedThema.label} – Wähle dein Set
                 </Text>
-                <View style={s.charmRow}>
-                  {armband.map(runeName => {
-                    const rune = RUNEN.find(r => r.name === runeName);
-                    if (!rune) return null;
-                    return (
-                      <View key={runeName} style={s.charm}>
-                        <Text style={s.charmSymbol}>{rune.symbol}</Text>
-                        <Text style={s.charmName}>{rune.name}</Text>
-                        <Text style={s.charmThema}>{rune.thema}</Text>
+                <Text style={[st.cardDesc, { marginBottom: 12 }]}>
+                  5 verschiedene Runen-Kombinationen für dein Thema. Jedes Set hat eine andere Wirkung:
+                </Text>
+                {getSetsByKategorie(selectedThema.id).map(set => (
+                  <TouchableOpacity
+                    key={set.id}
+                    style={[
+                      st.setOption,
+                      selectedSet?.id === set.id && { borderColor: C.rose, backgroundColor: C.roseLight },
+                    ]}
+                    onPress={() => handleSetWaehlen(set)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={st.setHeader}>
+                      <View style={st.setRunenRow}>
+                        <Text style={st.setRuneSymbol}>✦</Text>
+                        <Text style={[st.setRuneSymbol, { color: C.rose }]}>{set.runenSymbole[1]}</Text>
+                        <Text style={[st.setRuneSymbol, { color: C.rose }]}>{set.runenSymbole[2]}</Text>
                       </View>
-                    );
-                  })}
+                      {selectedSet?.id === set.id && (
+                        <Text style={{ fontSize: 18, color: C.rose, fontWeight: "700" }}>✓</Text>
+                      )}
+                    </View>
+                    <Text style={st.setName}>{set.name}</Text>
+                    <Text style={st.setWirkung}>{set.wirkung}</Text>
+                    <Text style={st.setRunenNames}>
+                      Schutzrune + {set.runen[1]} + {set.runen[2]}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Gewähltes Set Detail */}
+            {selectedSet && (
+              <View style={[st.card, { backgroundColor: C.roseLight }]}>
+                <Text style={[st.cardTitle, { color: C.rose }]}>
+                  {selectedSet.runenSymbole[1]} {selectedSet.runenSymbole[2]} {selectedSet.name}
+                </Text>
+                <Text style={st.cardDesc}>{selectedSet.beschreibung}</Text>
+                <View style={st.charmRow}>
+                  <View style={st.charm}>
+                    <Text style={st.charmSymbol}>✦</Text>
+                    <Text style={st.charmName}>Schutzrune</Text>
+                    <Text style={st.charmThema}>Persönlicher Anker</Text>
+                  </View>
+                  <View style={st.charm}>
+                    <Text style={[st.charmSymbol, { color: C.rose }]}>{selectedSet.runenSymbole[1]}</Text>
+                    <Text style={st.charmName}>{selectedSet.runen[1]}</Text>
+                    <Text style={st.charmThema}>Themenrune 1</Text>
+                  </View>
+                  <View style={st.charm}>
+                    <Text style={[st.charmSymbol, { color: C.rose }]}>{selectedSet.runenSymbole[2]}</Text>
+                    <Text style={st.charmName}>{selectedSet.runen[2]}</Text>
+                    <Text style={st.charmThema}>Themenrune 2</Text>
+                  </View>
                 </View>
-                <View style={s.armbandInfo}>
-                  <Text style={s.armbandInfoText}>
-                    🪨 Jedes Plättchen ist handgraviert von der Seelenplanerin{"\n"}
-                    ✨ Mit kraftvollem Heilstein-Pulver befüllt{"\n"}
-                    💫 Ein Unikat – nur für dich gemacht
+                <View style={st.armbandInfo}>
+                  <Text style={st.armbandInfoText}>
+                    💎 Heilstein: {selectedThema?.heilstein}{"\n"}
+                    🪨 Handgraviert von der Seelenplanerin{"\n"}
+                    ✨ Mit Heilstein-Pulver befüllt{"\n"}
+                    💫 Ein Unikat – nur für dich
                   </Text>
                 </View>
-                <TouchableOpacity style={s.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
-                  <Text style={s.shopBtnText}>🛍️ Armband bestellen →</Text>
+                <Text style={st.preisText}>49,90 € inkl. Versand</Text>
+                <TouchableOpacity style={st.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
+                  <Text style={st.shopBtnText}>🛍️ Armband bestellen →</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -258,15 +312,15 @@ export default function RunenScreen() {
 
         {/* ── ALLE RUNEN ── */}
         {activeSection === "uebersicht" && (
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>Die 24 Elder Futhark Runen</Text>
+          <View style={st.section}>
+            <Text style={st.sectionTitle}>Die 24 Elder Futhark Runen</Text>
             {RUNEN.map(rune => (
-              <View key={rune.name} style={s.runeRow}>
-                <Text style={s.runeSymbolSmall}>{rune.symbol}</Text>
-                <View style={s.runeInfo}>
-                  <Text style={s.runeRowName}>{rune.name}</Text>
-                  <Text style={s.runeRowThema}>{rune.thema}</Text>
-                  <Text style={s.runeRowEnergie}>{rune.energie}</Text>
+              <View key={rune.name} style={st.runeRow}>
+                <Text style={st.runeSymbolSmall}>{rune.symbol}</Text>
+                <View style={st.runeInfo}>
+                  <Text style={st.runeRowName}>{rune.name}</Text>
+                  <Text style={st.runeRowThema}>{rune.thema}</Text>
+                  <Text style={st.runeRowEnergie}>{rune.energie}</Text>
                 </View>
               </View>
             ))}
@@ -275,16 +329,16 @@ export default function RunenScreen() {
 
         {/* Runen-Quiz Banner */}
         <TouchableOpacity
-          style={{marginHorizontal:16,marginTop:20,backgroundColor:C.brown,borderRadius:16,padding:18,flexDirection:"row",alignItems:"center"}}
-          onPress={()=>router.push("/runen-quiz" as any)}
+          style={{ marginHorizontal: 16, marginTop: 20, backgroundColor: C.brown, borderRadius: 16, padding: 18, flexDirection: "row", alignItems: "center" }}
+          onPress={() => router.push("/runen-quiz" as any)}
           activeOpacity={0.85}
         >
-          <Text style={{fontSize:36,marginRight:14,color:C.gold}}>ᚱ</Text>
-          <View style={{flex:1}}>
-            <Text style={{fontSize:16,fontWeight:"700",color:"#FFF",marginBottom:3}}>Welche Rune führt dich?</Text>
-            <Text style={{fontSize:13,color:"rgba(255,255,255,0.75)"}}>8 Fragen · Entdecke deine persönliche Seelenrune</Text>
+          <Text style={{ fontSize: 36, marginRight: 14, color: C.gold }}>ᚱ</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#FFF", marginBottom: 3 }}>Welches Runen-Set begleitet dich?</Text>
+            <Text style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>9 Fragen · Entdecke dein Seelenthema & deine Runen</Text>
           </View>
-          <Text style={{fontSize:20,color:C.gold}}>→</Text>
+          <Text style={{ fontSize: 20, color: C.gold }}>→</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -293,7 +347,7 @@ export default function RunenScreen() {
   );
 }
 
-const s = StyleSheet.create({
+const st = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: C.bg },
   header: { alignItems: "center", paddingTop: 32, paddingBottom: 20, backgroundColor: C.roseLight },
   headerSymbol: { fontSize: 48, color: C.rose, marginBottom: 4 },
@@ -308,7 +362,7 @@ const s = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 12, marginTop: 4 },
   card: { backgroundColor: C.card, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: C.border },
   cardTitle: { fontSize: 17, fontWeight: "700", color: C.brown, marginBottom: 8 },
-  cardDesc: { fontSize: 14, color: C.muted, lineHeight: 20, marginBottom: 16 },
+  cardDesc: { fontSize: 14, color: C.muted, lineHeight: 22, marginBottom: 16 },
   input: { borderWidth: 1.5, borderColor: C.border, borderRadius: 12, padding: 14, fontSize: 16, color: C.text, backgroundColor: C.bg, marginBottom: 8 },
   fehler: { color: "#C0392B", fontSize: 13, marginBottom: 8 },
   btn: { backgroundColor: C.rose, borderRadius: 14, paddingVertical: 14, alignItems: "center", marginTop: 4 },
@@ -330,16 +384,22 @@ const s = StyleSheet.create({
   themaEmoji: { fontSize: 28, marginBottom: 6 },
   themaLabel: { fontSize: 12, fontWeight: "600", color: C.muted, textAlign: "center" },
   themaLabelActive: { color: C.rose },
-  armbandResult: { backgroundColor: C.card, borderRadius: 20, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: C.border },
-  armbandTitle: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 6, textAlign: "center" },
-  armbandDesc: { fontSize: 13, color: C.muted, textAlign: "center", marginBottom: 16, lineHeight: 18 },
-  charmRow: { flexDirection: "row", justifyContent: "space-around", marginBottom: 16 },
+  themaStein: { fontSize: 10, color: C.gold, marginTop: 4, fontWeight: "600" },
+  setOption: { backgroundColor: C.bg, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1.5, borderColor: C.border },
+  setHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  setRunenRow: { flexDirection: "row", gap: 8 },
+  setRuneSymbol: { fontSize: 22, color: C.gold },
+  setName: { fontSize: 15, fontWeight: "700", color: C.brown, marginBottom: 2 },
+  setWirkung: { fontSize: 13, color: C.muted, marginBottom: 4 },
+  setRunenNames: { fontSize: 12, color: C.gold, fontWeight: "600" },
+  charmRow: { flexDirection: "row", justifyContent: "space-around", marginVertical: 16 },
   charm: { alignItems: "center", flex: 1 },
-  charmSymbol: { fontSize: 36, color: C.rose, marginBottom: 4 },
+  charmSymbol: { fontSize: 36, color: C.gold, marginBottom: 4 },
   charmName: { fontSize: 13, fontWeight: "700", color: C.brown },
   charmThema: { fontSize: 10, color: C.muted, textAlign: "center" },
   armbandInfo: { backgroundColor: C.goldLight, borderRadius: 12, padding: 14, marginBottom: 16 },
   armbandInfoText: { fontSize: 13, color: C.brown, lineHeight: 22 },
+  preisText: { fontSize: 20, fontWeight: "700", color: C.rose, textAlign: "center", marginBottom: 16 },
   runeRow: { flexDirection: "row", backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.border, alignItems: "center" },
   runeSymbolSmall: { fontSize: 32, color: C.rose, width: 50, textAlign: "center" },
   runeInfo: { flex: 1, marginLeft: 10 },
