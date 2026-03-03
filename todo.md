@@ -593,3 +593,8 @@
 ## KRITISCH: Jedes einzelne Ritual prüfen (03.03.2026)
 - [x] Alle 51 Rituale: shopUrl im Browser geöffnet + Materialien vs. Thema geprüft (51/51 OK)
 - [x] 3 letzte Zuordnungen korrigiert (mar-4, apr-2, jun-2)
+
+## KRITISCH: Ritual-Detail-Screens verlinken auf Runen-Armband statt Ritual-Set (03.03.2026)
+- [ ] Ritual-Detail-Screen: "Bei Lara kaufen"-Button verlinkt auf falsches Produkt (Runen-Armband statt Ritual-Set)
+- [ ] Alle Ritual-Detail-Screens korrigieren
+- [x] Falschen Schutzarmband-Button (gGmtFy) aus Ritual-Detail-Screen entfernen

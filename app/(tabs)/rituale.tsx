@@ -261,13 +261,7 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
           >
             <Text style={s.ctaBtnText}>Ritual-Set bestellen →</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[s.ctaBtn, { backgroundColor: C.roseLight, marginTop: 10 }]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/gGmtFy")}
-            activeOpacity={0.85}
-          >
-            <Text style={[s.ctaBtnText, { color: C.brown }]}>Schutzarmband ansehen →</Text>
-          </TouchableOpacity>
+
         </View>
 
         {/* Seelenimpuls CTA */}
