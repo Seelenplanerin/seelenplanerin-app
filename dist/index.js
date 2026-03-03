@@ -1178,10 +1178,10 @@ async function sendAffiliateWelcomeEmail(params) {
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
         <tr>
           <td style="padding:20px;text-align:center;">
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\xF6nlicher Empfehlungslink</p>
-            <p style="margin:0 0 12px;font-size:16px;color:#C4826A;font-weight:700;word-break:break-all;">${params.affiliateLink}</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein Affiliate-Code</p>
-            <p style="margin:0;font-size:22px;color:#C9A96E;font-weight:700;letter-spacing:2px;">${params.affiliateCode}</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\xF6nlicher Empfehlungscode</p>
+            <p style="margin:0 0 16px;font-size:28px;color:#C9A96E;font-weight:700;letter-spacing:3px;">${params.affiliateCode}</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;">Der K\xE4ufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.</p>
+            <p style="margin:0;font-size:12px;color:#A08070;">Dein Link: <a href="${params.affiliateLink}" style="color:#C4826A;">${params.affiliateLink}</a></p>
           </td>
         </tr>
       </table>
@@ -1189,8 +1189,8 @@ async function sendAffiliateWelcomeEmail(params) {
       <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert\u2019s \u2013 in 3 Schritten:</p>
 
       <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
-        <li><strong>Teile deinen Link</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
-        <li><strong>Jemand kauft \xFCber deinen Link</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
+        <li><strong>Teile deinen Code</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
+        <li><strong>Der K\xE4ufer gibt deinen Code bei der Bestellung ein</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
         <li><strong>Du erh\xE4ltst 20% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
       </ol>
 
@@ -1322,6 +1322,88 @@ async function verifySmtpConnection() {
   } catch (err) {
     console.error("[Email] SMTP-Verbindung fehlgeschlagen:", err);
     return { success: false, error: err.message || "Verbindung fehlgeschlagen" };
+  }
+}
+async function sendAffiliateAdminNotification(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neue Affiliate-Anmeldung! \u{1F91D}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Es hat sich eine neue Person f\xFCr das Empfehlungsprogramm \u201EGeben & Nehmen" angemeldet.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Name:</td><td style="text-align:right;">${params.affiliateName}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">E-Mail:</td><td style="text-align:right;">${params.affiliateEmail}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Gew\xE4hlter Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <div style="background-color:#FFF3E0;border-radius:12px;padding:16px;border:1px solid #FFE0B2;margin:0 0 16px;">
+        <p style="margin:0;font-size:14px;color:#E65100;font-weight:700;">\u26A0\uFE0F N\xE4chster Schritt:</p>
+        <p style="margin:8px 0 0;font-size:14px;color:#8B5E3C;line-height:22px;">
+          Bitte lege den Gutscheincode <strong style="color:#C9A96E;">${params.affiliateCode}</strong> auf Tentary an, damit K\xE4ufer ihn bei der Bestellung eingeben k\xF6nnen.
+        </p>
+      </div>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: config.user,
+      // An Admin (= SMTP-User)
+      subject: `\u{1F91D} Neue Affiliate-Anmeldung: ${params.affiliateName} (Code: ${params.affiliateCode})`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Admin-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendAffiliatePayoutEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Deine Provision wurde ausgezahlt! \u{1F4B8}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Hallo ${params.toName}, wir haben dir soeben deine Provision \xFCberwiesen!
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#E8F5E9;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Betrag:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#4CAF50;">${params.amount} \u20AC</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Methode:</td><td style="text-align:right;">PayPal</td></tr>
+              ${params.reference ? `<tr><td style="padding:6px 0;font-weight:600;">Referenz:</td><td style="text-align:right;">${params.reference}</td></tr>` : ""}
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Bitte pr\xFCfe dein PayPal-Konto \u2013 der Betrag sollte in K\xFCrze dort eingehen. Falls du Fragen hast, melde dich gerne bei uns.
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        Danke, dass du Die Seelenplanerin weiterempfiehlst! \u{1F338}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F4B8} Auszahlung: ${params.amount} \u20AC wurden an dich \xFCberwiesen, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Auszahlungs-E-Mail Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
   }
 }
 
@@ -1514,14 +1596,21 @@ var appRouter = router({
   // ── Affiliate-System ──
   affiliate: router({
     // Affiliate-Code für einen Nutzer erstellen oder abrufen
-    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1) })).mutation(async ({ input }) => {
+    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), wunschCode: z2.string().min(2).optional() })).mutation(async ({ input }) => {
       let affiliate = await getAffiliateByEmail(input.email);
       if (affiliate) return { success: true, affiliate };
-      let code = await generateAffiliateCode();
-      let attempts = 0;
-      while (await getAffiliateByCode(code) && attempts < 10) {
+      let code;
+      if (input.wunschCode) {
+        code = input.wunschCode.toUpperCase().replace(/[^A-Z\u00C4\u00D6\u00DC0-9]/g, "").slice(0, 20);
+        const existing = await getAffiliateByCode(code);
+        if (existing) return { success: false, error: "code_taken" };
+      } else {
         code = await generateAffiliateCode();
-        attempts++;
+        let attempts = 0;
+        while (await getAffiliateByCode(code) && attempts < 10) {
+          code = await generateAffiliateCode();
+          attempts++;
+        }
       }
       const id = await createAffiliate({ email: input.email, name: input.name, code });
       affiliate = await getAffiliateByEmail(input.email);
@@ -1532,6 +1621,11 @@ var appRouter = router({
         affiliateCode: code,
         affiliateLink
       }).catch((err) => console.error("[Affiliate] Willkommens-E-Mail Fehler:", err));
+      sendAffiliateAdminNotification({
+        affiliateName: input.name,
+        affiliateEmail: input.email,
+        affiliateCode: code
+      }).catch((err) => console.error("[Affiliate] Admin-Benachrichtigung Fehler:", err));
       return { success: true, affiliate };
     }),
     // Affiliate-Daten per Code abrufen
@@ -1611,6 +1705,16 @@ var appRouter = router({
       notes: z2.string().optional()
     })).mutation(async ({ input }) => {
       const id = await createAffiliatePayout(input);
+      const affiliate = await getAffiliateByCode(input.affiliateCode);
+      if (affiliate) {
+        sendAffiliatePayoutEmail({
+          toEmail: affiliate.email,
+          toName: affiliate.name,
+          amount: (input.amount / 100).toFixed(2).replace(".", ","),
+          method: input.method,
+          reference: input.reference
+        }).catch((err) => console.error("[Affiliate] Auszahlungs-E-Mail Fehler:", err));
+      }
       return { success: true, id };
     }),
     // Auszahlungen eines Affiliates
@@ -1620,6 +1724,11 @@ var appRouter = router({
     // Alle Auszahlungen (Admin)
     listAllPayouts: publicProcedure.query(async () => {
       return getAllAffiliatePayouts();
+    }),
+    // Affiliate aktivieren/deaktivieren (Admin)
+    toggleActive: publicProcedure.input(z2.object({ code: z2.string().min(1), isActive: z2.number() })).mutation(async ({ input }) => {
+      await updateAffiliate(input.code, { isActive: input.isActive });
+      return { success: true };
     }),
     // Affiliate-Zahlungsdaten aktualisieren
     updatePaymentInfo: publicProcedure.input(z2.object({

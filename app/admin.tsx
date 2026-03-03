@@ -1386,16 +1386,33 @@ export default function AdminScreen() {
                   </View>
                 )}
 
-                {affiliates.length > 0 && affiliates.map(a => (
-                  <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
+                    {affiliates.length > 0 && affiliates.map(a => (
+                  <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch", opacity: a.isActive ? 1 : 0.5 }]}>
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
-                      <View style={[s.memberAvatar, { backgroundColor: C.gold }]}>
+                      <View style={[s.memberAvatar, { backgroundColor: a.isActive ? C.gold : C.muted }]}>
                         <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{a.name.charAt(0)}</Text>
                       </View>
                       <View style={{ flex: 1 }}>
                         <Text style={s.memberName}>{a.name}</Text>
                         <Text style={s.memberEmail}>{a.email}</Text>
                       </View>
+                      <TouchableOpacity
+                        style={{ backgroundColor: a.isActive ? "#E8F5E9" : "#FFEBEE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginRight: 6 }}
+                        onPress={async () => {
+                          try {
+                            const API = getApiBaseUrl();
+                            await fetch(`${API}/api/trpc/affiliate.toggleActive`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ json: { code: a.code, isActive: a.isActive ? 0 : 1 } }),
+                            });
+                            setAffiliates(prev => prev.map(af => af.code === a.code ? { ...af, isActive: af.isActive ? 0 : 1 } : af));
+                          } catch (e) { console.error(e); }
+                        }} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: a.isActive ? "#4CAF50" : "#F44336" }}>
+                          {a.isActive ? "Aktiv" : "Inaktiv"}
+                        </Text>
+                      </TouchableOpacity>
                       <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
                         <Text style={{ fontSize: 12, fontWeight: "700", color: C.gold }}>{a.code}</Text>
                       </View>
@@ -1449,7 +1466,7 @@ export default function AdminScreen() {
                       </View>
                     </ScrollView>
                   ) : (
-                    <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
+                    <TextInput style={s.formInput} placeholder="Code eingeben" placeholderTextColor={C.muted}
                       value={saleCode} onChangeText={setSaleCode} autoCapitalize="characters" />
                   )}
                   <Text style={s.formLabel}>Produkt auswählen</Text>
@@ -1466,6 +1483,16 @@ export default function AdminScreen() {
                         { name: "Deep Talk Vertiefung", price: "222.00" },
                         { name: "Deep Talk Intensiv", price: "444.00" },
                         { name: "Deep Talk Premium", price: "888.00" },
+                        { name: "Vollmond Ritual-Set", price: "29.90" },
+                        { name: "Neumond Ritual-Set", price: "29.90" },
+                        { name: "Imbolc Ritual-Set", price: "29.90" },
+                        { name: "Ostara Ritual-Set", price: "29.90" },
+                        { name: "Beltane Ritual-Set", price: "29.90" },
+                        { name: "Litha Ritual-Set", price: "29.90" },
+                        { name: "Lammas Ritual-Set", price: "29.90" },
+                        { name: "Mabon Ritual-Set", price: "29.90" },
+                        { name: "Samhain Ritual-Set", price: "29.90" },
+                        { name: "Yule Ritual-Set", price: "29.90" },
                       ].map(p => (
                         <TouchableOpacity key={p.name}
                           style={[s.katBtn, saleProduct === p.name && s.katBtnActive, { marginBottom: 4 }]}
@@ -1542,8 +1569,22 @@ export default function AdminScreen() {
                 <Text style={s.sectionHint}>Wenn du eine Provision ausgezahlt hast, trage es hier ein.</Text>
                 <View style={s.formBox}>
                   <Text style={s.formLabel}>Affiliate-Code</Text>
-                  <TextInput style={s.formInput} placeholder="SP-XXXXX" placeholderTextColor={C.muted}
-                    value={payoutCode} onChangeText={setPayoutCode} autoCapitalize="characters" />
+                  {affiliates.length > 0 ? (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                      <View style={{ flexDirection: "row", gap: 6 }}>
+                        {affiliates.map(a => (
+                          <TouchableOpacity key={a.code}
+                            style={[s.katBtn, payoutCode === a.code && s.katBtnActive]}
+                            onPress={() => setPayoutCode(a.code)} activeOpacity={0.8}>
+                            <Text style={[s.katText, payoutCode === a.code && s.katTextActive]}>{a.name} ({a.code})</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  ) : (
+                    <TextInput style={s.formInput} placeholder="Code eingeben" placeholderTextColor={C.muted}
+                      value={payoutCode} onChangeText={setPayoutCode} autoCapitalize="characters" />
+                  )}
                   <Text style={s.formLabel}>Betrag in Euro</Text>
                   <TextInput style={s.formInput} placeholder="z.B. 25.50" placeholderTextColor={C.muted}
                     value={payoutAmount} onChangeText={setPayoutAmount} keyboardType="decimal-pad" />
@@ -1621,14 +1662,30 @@ export default function AdminScreen() {
                           <Text style={{ fontSize: 12, fontWeight: "600", color: C.brownMid }}>Empfohlen von: {affName}</Text>
                         </View>
                         {affEmail ? <Text style={{ fontSize: 10, color: C.muted, marginBottom: 3 }}>{affEmail}</Text> : null}
-                        {/* Zeile 3: Betrag + Status + Datum */}
-                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                          <Text style={{ fontSize: 12, color: C.muted }}>Betrag: {(sale.saleAmount / 100).toFixed(2)} € · 20% = {(sale.commissionAmount / 100).toFixed(2)} €</Text>
-                          <View style={{ backgroundColor: sale.status === "paid" ? "#E8F5E9" : sale.status === "confirmed" ? C.goldLight : C.surface, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-                            <Text style={{ fontSize: 10, fontWeight: "700", color: sale.status === "paid" ? "#4CAF50" : sale.status === "confirmed" ? C.gold : C.muted }}>
-                              {sale.status === "paid" ? "✓ Bezahlt" : sale.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
-                            </Text>
-                          </View>
+                        {/* Zeile 3: Betrag */}
+                        <Text style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>Betrag: {(sale.saleAmount / 100).toFixed(2)} € · 20% = {(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                        {/* Zeile 3b: Status-Buttons */}
+                        <View style={{ flexDirection: "row", gap: 6, marginBottom: 2 }}>
+                          {["pending", "confirmed", "paid"].map(st => (
+                            <TouchableOpacity key={st}
+                              style={{ flex: 1, backgroundColor: sale.status === st ? (st === "paid" ? "#E8F5E9" : st === "confirmed" ? C.goldLight : C.surface) : "#F5F5F5", borderRadius: 8, paddingVertical: 6, alignItems: "center", borderWidth: sale.status === st ? 1.5 : 0.5, borderColor: sale.status === st ? (st === "paid" ? "#4CAF50" : st === "confirmed" ? C.gold : C.muted) : C.border }}
+                              onPress={async () => {
+                                if (sale.status === st) return;
+                                try {
+                                  const API = getApiBaseUrl();
+                                  await fetch(`${API}/api/trpc/affiliate.updateSaleStatus`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ json: { id: sale.id, status: st } }),
+                                  });
+                                  setAffSales(prev => prev.map(s2 => s2.id === sale.id ? { ...s2, status: st } : s2));
+                                } catch (e) { console.error(e); }
+                              }} activeOpacity={0.7}>
+                              <Text style={{ fontSize: 10, fontWeight: "700", color: sale.status === st ? (st === "paid" ? "#4CAF50" : st === "confirmed" ? C.gold : C.muted) : "#999" }}>
+                                {st === "paid" ? "✓ Bezahlt" : st === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
                         </View>
                         {/* Zeile 4: Kunde + Datum */}
                         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 3 }}>

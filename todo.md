@@ -560,3 +560,16 @@
 - [x] Affiliate: Code-Audit aller Screens, Logik, Links, Provisionsberechnung
 - [x] Affiliate: Unit-Tests für alle Funktionen und Edge Cases
 - [x] Affiliate: Gefundene Fehler beheben (2 Bugs gefixt: fehlende Route + Schema-Default)
+
+## Sofort-Umsetzung (02.03.2026)
+- [ ] Push-Notifications: Komplett prüfen, testen, sicherstellen dass alles funktioniert
+- [ ] Passwort-Reset: Funktion prüfen und sicherstellen dass E-Mails korrekt versendet werden
+- [ ] Ritual-Sets: Echte Tentary-Links in der App hinterlegen
+
+## Affiliate-Verbesserungen (03.03.2026)
+- [x] Affiliate-Code: Nutzerin wählt eigenen Wunschcode (z.B. SARAH) statt kryptischer SP-XXXXX
+- [x] Admin-Benachrichtigungs-E-Mail bei neuer Affiliate-Anmeldung (damit Code auf Tentary angelegt werden kann)
+- [x] Affiliate-Screen: Erklärung wie der Code bei Tentary als Gutscheincode funktioniert
+- [x] Admin: Affiliate aktivieren/deaktivieren Toggle-Button
+- [x] Admin: Verkaufsstatus ändern (Bestätigen/Ausgezahlt markieren)
+- [x] Automatische E-Mail an Affiliate bei Auszahlung

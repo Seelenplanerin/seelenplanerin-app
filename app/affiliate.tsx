@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import { getApiBaseUrl } from "@/constants/oauth";
-// Clipboard: Platform-basiert (kein expo-clipboard nötig)
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -20,10 +19,9 @@ interface AffiliateData {
   email: string;
   totalClicks: number;
   totalSales: number;
-  totalEarnings: number; // in Cent
-  totalPaid: number; // in Cent
+  totalEarnings: number;
+  totalPaid: number;
   paypalEmail?: string;
-
 }
 
 interface SaleData {
@@ -43,6 +41,8 @@ export default function AffiliateScreen() {
   const [step, setStep] = useState<"form" | "dashboard">("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [wunschCode, setWunschCode] = useState("");
+  const [codeError, setCodeError] = useState("");
   const [loading, setLoading] = useState(false);
   const [affiliate, setAffiliate] = useState<AffiliateData | null>(null);
   const [sales, setSales] = useState<SaleData[]>([]);
@@ -52,45 +52,64 @@ export default function AffiliateScreen() {
   const [savingPayment, setSavingPayment] = useState(false);
 
   const baseUrl = "https://seelenplanerin-app.onrender.com";
-
   const getLink = (code: string) => `${baseUrl}/ref/${code}`;
+
+  // Wunschcode formatieren: nur Buchstaben, keine Sonderzeichen, Großbuchstaben
+  function formatCode(text: string): string {
+    return text.replace(/[^a-zA-ZäöüÄÖÜ0-9]/g, "").toUpperCase().slice(0, 20);
+  }
 
   async function handleGetCode() {
     if (!name.trim() || !email.trim()) {
-      if (Platform.OS === "web") window.alert("Bitte gib deinen Namen und deine E-Mail ein.");
-      else Alert.alert("Fehler", "Bitte gib deinen Namen und deine E-Mail ein.");
+      const msg = "Bitte gib deinen Namen und deine E-Mail ein.";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Fehler", msg);
       return;
     }
-    // Einfache E-Mail-Validierung
     if (!email.includes("@") || !email.includes(".")) {
-      if (Platform.OS === "web") window.alert("Bitte gib eine gültige E-Mail-Adresse ein.");
-      else Alert.alert("Fehler", "Bitte gib eine gültige E-Mail-Adresse ein.");
+      const msg = "Bitte gib eine gültige E-Mail-Adresse ein.";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Fehler", msg);
       return;
     }
+    if (!wunschCode.trim() || wunschCode.trim().length < 2) {
+      const msg = "Bitte gib einen Wunschcode ein (mindestens 2 Zeichen).";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Fehler", msg);
+      return;
+    }
+    setCodeError("");
     setLoading(true);
     try {
       const API_URL = getApiBaseUrl();
       const res = await fetch(`${API_URL}/api/trpc/affiliate.getOrCreate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), name: name.trim() } }),
+        body: JSON.stringify({ json: {
+          email: email.trim().toLowerCase(),
+          name: name.trim(),
+          wunschCode: wunschCode.trim().toUpperCase(),
+        } }),
       });
       const data = await res.json();
-      if (data?.result?.data?.json?.success && data.result.data.json.affiliate) {
-        const aff = data.result.data.json.affiliate;
-        setAffiliate(aff);
-        setPaypalEmail(aff.paypalEmail || "");
+      const result = data?.result?.data?.json;
+      if (result?.success && result.affiliate) {
+        setAffiliate(result.affiliate);
+        setPaypalEmail(result.affiliate.paypalEmail || "");
         setStep("dashboard");
-        // Verkäufe laden
-        loadSales(aff.code);
+        loadSales(result.affiliate.code);
+      } else if (result?.error === "code_taken") {
+        setCodeError("Dieser Code ist leider schon vergeben. Bitte wähle einen anderen.");
       } else {
-        if (Platform.OS === "web") window.alert("Fehler beim Erstellen deines Codes. Bitte versuche es erneut.");
-        else Alert.alert("Fehler", "Fehler beim Erstellen deines Codes. Bitte versuche es erneut.");
+        const msg = "Fehler beim Erstellen deines Codes. Bitte versuche es erneut.";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("Fehler", msg);
       }
     } catch (e) {
       console.error("[Affiliate] Error:", e);
-      if (Platform.OS === "web") window.alert("Verbindungsfehler. Bitte versuche es erneut.");
-      else Alert.alert("Fehler", "Verbindungsfehler. Bitte versuche es erneut.");
+      const msg = "Verbindungsfehler. Bitte versuche es erneut.";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Fehler", msg);
     }
     setLoading(false);
   }
@@ -100,52 +119,42 @@ export default function AffiliateScreen() {
       const API_URL = getApiBaseUrl();
       const res = await fetch(`${API_URL}/api/trpc/affiliate.getSales?input=${encodeURIComponent(JSON.stringify({ json: { code } }))}`);
       const data = await res.json();
-      if (data?.result?.data?.json) {
-        setSales(data.result.data.json);
-      }
+      if (data?.result?.data?.json) setSales(data.result.data.json);
     } catch (e) {
       console.error("[Affiliate] Load sales error:", e);
     }
   }
 
-  async function handleCopyLink() {
+  async function handleCopyCode() {
     if (!affiliate) return;
-    const link = getLink(affiliate.code);
     try {
       if (Platform.OS === "web" && navigator.clipboard) {
-        await navigator.clipboard.writeText(link);
+        await navigator.clipboard.writeText(affiliate.code);
       } else {
-        // Fallback: Share-API oder Prompt
-        await Share.share({ message: link });
+        await Share.share({ message: `Mein Empfehlungscode für Die Seelenplanerin: ${affiliate.code}` });
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
-      // Letzter Fallback
-      if (Platform.OS === "web") {
-        window.prompt("Link kopieren:", link);
-      }
+      if (Platform.OS === "web") window.prompt("Code kopieren:", affiliate.code);
     }
   }
 
-  async function handleShareLink() {
+  async function handleShareCode() {
     if (!affiliate) return;
-    const link = getLink(affiliate.code);
-    const message = `Schau dir Die Seelenplanerin an – Rituale, Meditationen & spirituelle Begleitung für deine Seele 🌸\n\n${link}`;
+    const message = `Schau dir Die Seelenplanerin an – Rituale, Meditationen & spirituelle Begleitung für deine Seele 🌸\n\nGib bei deiner Bestellung meinen Code ein: ${affiliate.code}\n\n${getLink(affiliate.code)}`;
     try {
       if (Platform.OS === "web") {
         if (navigator.share) {
-          await navigator.share({ title: "Die Seelenplanerin", text: message, url: link });
+          await navigator.share({ title: "Die Seelenplanerin", text: message });
         } else {
           await navigator.clipboard.writeText(message);
-          window.alert("Link wurde kopiert!");
+          window.alert("Nachricht wurde kopiert!");
         }
       } else {
         await Share.share({ message });
       }
-    } catch (e) {
-      // User cancelled
-    }
+    } catch (e) { /* User cancelled */ }
   }
 
   async function handleSavePaymentInfo() {
@@ -169,7 +178,7 @@ export default function AffiliateScreen() {
 
   const openBalance = affiliate ? (affiliate.totalEarnings - affiliate.totalPaid) : 0;
 
-  // ── FORM: Name + E-Mail eingeben ──
+  // ── FORM: Name + E-Mail + Wunschcode eingeben ──
   if (step === "form") {
     return (
       <ScreenContainer className="bg-[#FDF8F4]">
@@ -187,8 +196,8 @@ export default function AffiliateScreen() {
             <Text style={s.introEmoji}>🤝</Text>
             <Text style={s.introTitle}>Empfehle Die Seelenplanerin{"\n"}und verdiene mit</Text>
             <Text style={s.introText}>
-              Du liebst Die Seelenplanerin? Dann teile sie mit deinen Freundinnen, deiner Familie oder deiner Community – und erhalte{" "}
-              <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf, der über deinen persönlichen Link zustande kommt.
+              Du liebst Die Seelenplanerin? Dann teile deinen persönlichen Code mit Freundinnen, Familie oder deiner Community – und erhalte{" "}
+              <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf.
             </Text>
             <Text style={[s.introText, { marginTop: 8 }]}>
               Egal ob Armbänder, Kerzen, Aura Readings, Soul Talks oder der Seelenimpuls – du verdienst auf alles mit. Kein Mindestbetrag, keine versteckten Bedingungen.
@@ -200,25 +209,26 @@ export default function AffiliateScreen() {
             <Text style={s.stepsTitle}>So funktioniert's</Text>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>1</Text></View>
-              <Text style={s.stepText}>Gib deinen Namen und deine E-Mail ein</Text>
+              <Text style={s.stepText}>Wähle deinen persönlichen Code – z.B. deinen Vornamen</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>2</Text></View>
-              <Text style={s.stepText}>Du bekommst sofort deinen persönlichen Empfehlungslink</Text>
+              <Text style={s.stepText}>Teile deinen Code per WhatsApp, Instagram oder persönlich</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>3</Text></View>
-              <Text style={s.stepText}>Teile den Link per WhatsApp, Instagram, E-Mail – wie du möchtest</Text>
+              <Text style={s.stepText}>Der Käufer gibt deinen Code bei der Bestellung auf Tentary ein</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>4</Text></View>
-              <Text style={s.stepText}>Sobald jemand über deinen Link kauft und die Zahlung eingegangen ist, erhältst du 20% Provision</Text>
+              <Text style={s.stepText}>Du erhältst 20% Provision sobald die Zahlung eingegangen ist</Text>
             </View>
           </View>
 
           {/* Formular */}
           <View style={s.formCard}>
-            <Text style={s.formTitle}>Jetzt deinen Link holen</Text>
+            <Text style={s.formTitle}>Jetzt deinen Code holen</Text>
+
             <Text style={s.inputLabel}>Dein Name</Text>
             <TextInput
               style={s.input}
@@ -229,6 +239,7 @@ export default function AffiliateScreen() {
               autoCapitalize="words"
               returnKeyType="next"
             />
+
             <Text style={s.inputLabel}>Deine E-Mail</Text>
             <TextInput
               style={s.input}
@@ -238,9 +249,34 @@ export default function AffiliateScreen() {
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
+              returnKeyType="next"
+            />
+
+            <Text style={s.inputLabel}>Dein Wunschcode</Text>
+            <Text style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>
+              Wähle einen einfachen Code, den du leicht weitergeben kannst – z.B. deinen Vornamen.
+            </Text>
+            <TextInput
+              style={[s.input, codeError ? { borderColor: "#EF4444" } : {}]}
+              placeholder="z.B. SARAH, LISA, ANNA"
+              placeholderTextColor={C.muted}
+              value={wunschCode}
+              onChangeText={(t) => { setWunschCode(formatCode(t)); setCodeError(""); }}
+              autoCapitalize="characters"
               returnKeyType="done"
               onSubmitEditing={handleGetCode}
             />
+            {codeError ? (
+              <Text style={{ fontSize: 12, color: "#EF4444", marginBottom: 8, marginTop: -4 }}>{codeError}</Text>
+            ) : null}
+            {wunschCode.length >= 2 && (
+              <View style={{ backgroundColor: C.goldLight, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.gold + "40" }}>
+                <Text style={{ fontSize: 13, color: C.brown, textAlign: "center" }}>
+                  Dein Code wird: <Text style={{ fontWeight: "700", color: C.gold, fontSize: 16 }}>{wunschCode}</Text>
+                </Text>
+              </View>
+            )}
+
             <TouchableOpacity
               style={[s.primaryBtn, loading && { opacity: 0.6 }]}
               onPress={handleGetCode}
@@ -250,9 +286,15 @@ export default function AffiliateScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={s.primaryBtnText}>Meinen Link erstellen</Text>
+                <Text style={s.primaryBtnText}>Meinen Code erstellen</Text>
               )}
             </TouchableOpacity>
+          </View>
+
+          {/* Bereits registriert? */}
+          <View style={{ marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.border }}>
+            <Text style={{ fontSize: 14, fontWeight: "600", color: C.brown, marginBottom: 8 }}>Bereits registriert?</Text>
+            <Text style={{ fontSize: 13, color: C.muted, marginBottom: 8 }}>Gib einfach deine E-Mail ein und lass die anderen Felder so – dein bestehendes Dashboard wird geladen.</Text>
           </View>
 
           {/* Richtlinien-Teaser */}
@@ -271,28 +313,21 @@ export default function AffiliateScreen() {
               <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
               <Text style={s.richtlinienText}>
                 <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
-                Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden. Auf Versandkosten (4,90 €) wird keine Provision berechnet.{"\n\n"}
-
+                Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Code gekauft werden.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision fällig?{"\n"}</Text>
-                Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}
-
+                Die Provision wird erst fällig, sobald die Zahlung des Käufers vollständig eingegangen ist. Bei Rückerstattungen oder Stornierungen entfällt die Provision.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
-                Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal. Hinterlege dazu einfach deine PayPal-E-Mail-Adresse. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
-
-                <Text style={{ fontWeight: "700" }}>4. Zuordnung von Verkäufen{"\n"}</Text>
-                Ein Verkauf wird dir zugeordnet, wenn der Käufer über deinen persönlichen Empfehlungslink auf die Seite gelangt ist. Die Zuordnung erfolgt über einen Tracking-Code in deinem Link.{"\n\n"}
-
+                Es gibt keinen Mindestbetrag. Jeder verdiente Betrag wird per PayPal ausgezahlt. Hinterlege dazu deine PayPal-E-Mail-Adresse.{"\n\n"}
+                <Text style={{ fontWeight: "700" }}>4. Zuordnung{"\n"}</Text>
+                Ein Verkauf wird dir zugeordnet, wenn der Käufer deinen Code bei der Bestellung auf Tentary eingibt.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>5. Faire Nutzung{"\n"}</Text>
-                Eigenkäufe über den eigenen Empfehlungslink sind nicht provisionsberechtigt. Spam, irreführende Werbung oder das Vortäuschen falscher Tatsachen führen zum Ausschluss aus dem Programm.{"\n\n"}
-
+                Eigenkäufe sind nicht provisionsberechtigt. Spam oder irreführende Werbung führen zum Ausschluss.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>6. Transparenz{"\n"}</Text>
-                Du kannst jederzeit in der App deinen aktuellen Stand einsehen: Klicks, Verkäufe, verdiente Provision und Auszahlungen. Alles ist transparent und nachvollziehbar.{"\n\n"}
-
+                Du kannst jederzeit in der App deinen Stand einsehen: Verkäufe, Provision und Auszahlungen.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>7. Änderungen{"\n"}</Text>
-                Die Seelenplanerin behält sich vor, die Bedingungen des Empfehlungsprogramms jederzeit anzupassen. Über Änderungen wirst du per E-Mail informiert.{"\n\n"}
-
+                Die Seelenplanerin behält sich vor, die Bedingungen jederzeit anzupassen.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>8. Steuerliche Hinweise{"\n"}</Text>
-                Provisionseinnahmen können steuerpflichtig sein. Du bist selbst für die korrekte Versteuerung deiner Einnahmen verantwortlich.
+                Provisionseinnahmen können steuerpflichtig sein. Du bist selbst für die korrekte Versteuerung verantwortlich.
               </Text>
             </View>
           )}
@@ -303,7 +338,7 @@ export default function AffiliateScreen() {
     );
   }
 
-  // ── DASHBOARD: Link + Statistiken ──
+  // ── DASHBOARD: Code + Statistiken ──
   return (
     <ScreenContainer className="bg-[#FDF8F4]">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
@@ -319,26 +354,39 @@ export default function AffiliateScreen() {
         <View style={s.welcomeCard}>
           <Text style={s.welcomeEmoji}>🌸</Text>
           <Text style={s.welcomeName}>Hallo {affiliate?.name}!</Text>
-          <Text style={s.welcomeText}>Hier ist dein persönlicher Empfehlungslink. Teile ihn und verdiene 20% auf jeden Verkauf.</Text>
+          <Text style={s.welcomeText}>Hier ist dein persönlicher Empfehlungscode. Teile ihn und verdiene 20% auf jeden Verkauf.</Text>
         </View>
 
-        {/* Dein Link */}
+        {/* Dein Code */}
         <View style={s.linkCard}>
-          <Text style={s.linkTitle}>Dein persönlicher Link</Text>
-          <View style={s.linkBox}>
-            <Text style={s.linkText} numberOfLines={1} ellipsizeMode="middle">
-              {affiliate ? getLink(affiliate.code) : ""}
+          <Text style={s.linkTitle}>Dein persönlicher Code</Text>
+          <View style={{ backgroundColor: C.goldLight, borderRadius: 16, padding: 20, borderWidth: 2, borderColor: C.gold, marginBottom: 12, alignItems: "center" }}>
+            <Text style={{ fontSize: 32, fontWeight: "800", color: C.gold, letterSpacing: 3 }}>
+              {affiliate?.code}
             </Text>
           </View>
+          <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginBottom: 12, lineHeight: 18 }}>
+            Der Käufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.
+          </Text>
           <View style={s.linkBtnRow}>
-            <TouchableOpacity style={[s.linkBtn, copied && { backgroundColor: C.green }]} onPress={handleCopyLink} activeOpacity={0.85}>
-              <Text style={s.linkBtnText}>{copied ? "✓ Kopiert!" : "Link kopieren"}</Text>
+            <TouchableOpacity style={[s.linkBtn, copied && { backgroundColor: C.green }]} onPress={handleCopyCode} activeOpacity={0.85}>
+              <Text style={s.linkBtnText}>{copied ? "✓ Kopiert!" : "Code kopieren"}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[s.linkBtn, { backgroundColor: C.gold }]} onPress={handleShareLink} activeOpacity={0.85}>
+            <TouchableOpacity style={[s.linkBtn, { backgroundColor: C.gold }]} onPress={handleShareCode} activeOpacity={0.85}>
               <Text style={s.linkBtnText}>Teilen</Text>
             </TouchableOpacity>
           </View>
-          <Text style={s.codeHint}>Dein Code: <Text style={{ fontWeight: "700", color: C.gold }}>{affiliate?.code}</Text></Text>
+        </View>
+
+        {/* Wie funktioniert's Hinweis */}
+        <View style={{ marginHorizontal: 16, marginBottom: 16, backgroundColor: C.goldLight, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.gold + "40" }}>
+          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "serif" }}>So nutzt der Käufer deinen Code</Text>
+          <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
+            1. Der Käufer geht auf den Tentary-Shop der Seelenplanerin{"\n"}
+            2. Wählt ein Produkt aus und geht zur Kasse{"\n"}
+            3. Gibt deinen Code <Text style={{ fontWeight: "700", color: C.gold }}>{affiliate?.code}</Text> im Gutscheinfeld ein{"\n"}
+            4. Du erhältst 20% Provision auf den Produktpreis
+          </Text>
         </View>
 
         {/* Statistiken */}
@@ -396,14 +444,14 @@ export default function AffiliateScreen() {
         {sales.length === 0 && (
           <View style={s.emptySales}>
             <Text style={s.emptySalesEmoji}>📊</Text>
-            <Text style={s.emptySalesText}>Noch keine Verkäufe – teile deinen Link und es geht los!</Text>
+            <Text style={s.emptySalesText}>Noch keine Verkäufe – teile deinen Code und es geht los!</Text>
           </View>
         )}
 
         {/* Zahlungsdaten */}
         <View style={s.paymentCard}>
           <Text style={s.paymentTitle}>Deine Zahlungsdaten</Text>
-          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen können, hinterlege bitte deine PayPal-Adresse. Falls du noch kein PayPal hast, kannst du dir kostenlos ein Konto erstellen unter paypal.com.</Text>
+          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen können, hinterlege bitte deine PayPal-Adresse.</Text>
           <Text style={s.inputLabel}>PayPal E-Mail</Text>
           <TextInput
             style={s.input}
@@ -414,7 +462,6 @@ export default function AffiliateScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-
           <TouchableOpacity
             style={[s.saveBtn, savingPayment && { opacity: 0.6 }]}
             onPress={handleSavePaymentInfo}
@@ -431,100 +478,76 @@ export default function AffiliateScreen() {
 
         {/* Social-Media-Vorlagen */}
         <View style={s.paymentCard}>
-          <Text style={s.paymentTitle}>📱 Fertige Vorlagen zum Teilen</Text>
-          <Text style={s.paymentDesc}>Kopiere eine Vorlage und teile sie direkt auf deinem Kanal. Dein persönlicher Link wird automatisch eingefügt!</Text>
+          <Text style={s.paymentTitle}>Fertige Vorlagen zum Teilen</Text>
+          <Text style={s.paymentDesc}>Kopiere eine Vorlage und teile sie direkt. Dein Code ist automatisch eingefügt!</Text>
 
           {/* Instagram */}
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>📷 Instagram Story / Post</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>Instagram Story / Post</Text>
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                ✨ Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin 🌙{"\n\n"}
-                Rituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche nach einem Ort bist, der sich wie Zuhause anfühlt – schau mal vorbei!{"\n\n"}
-                🔗 {getLink(affiliate?.code || "")}{"\n\n"}
+                Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin{"\n\n"}
+                Rituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche bist – nutze meinen Code{" "}
+                <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text> bei deiner Bestellung!{"\n\n"}
                 #DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität
               </Text>
             </View>
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: C.gold, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `✨ Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin 🌙\n\nRituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche nach einem Ort bist, der sich wie Zuhause anfühlt – schau mal vorbei!\n\n🔗 ${getLink(affiliate?.code || "")}\n\n#DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität`;
+                const text = `Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin\n\nRituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche bist – nutze meinen Code ${affiliate?.code} bei deiner Bestellung!\n\n#DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
               activeOpacity={0.85}
             >
-              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>📋 Vorlage kopieren</Text>
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>Vorlage kopieren</Text>
             </TouchableOpacity>
           </View>
 
           {/* WhatsApp */}
           <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>💬 WhatsApp-Nachricht</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>WhatsApp-Nachricht</Text>
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                Hey 🌸 ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin ✨{"\n\n"}
-                Das ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Ich bin total begeistert davon!{"\n\n"}
-                Schau mal hier: {getLink(affiliate?.code || "")}{"\n\n"}
-                Wenn du magst, kannst du dich dort für den Seelenimpuls anmelden oder einfach mal stöbern. Ich freu mich, wenn dir das genauso gut gefällt wie mir! 🌙
+                Hey, ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin{"\n\n"}
+                Das ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code{" "}
+                <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text> ein!{"\n\n"}
+                Schau mal hier: {getLink(affiliate?.code || "")}
               </Text>
             </View>
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: "#25D366", borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `Hey 🌸 ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin ✨\n\nDas ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Ich bin total begeistert davon!\n\nSchau mal hier: ${getLink(affiliate?.code || "")}\n\nWenn du magst, kannst du dich dort für den Seelenimpuls anmelden oder einfach mal stöbern. Ich freu mich, wenn dir das genauso gut gefällt wie mir! 🌙`;
+                const text = `Hey, ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin\n\nDas ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code ${affiliate?.code} ein!\n\nSchau mal hier: ${getLink(affiliate?.code || "")}`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
               activeOpacity={0.85}
             >
-              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>💬 WhatsApp-Vorlage kopieren</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Facebook */}
-          <View style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>👍 Facebook-Post</Text>
-            <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
-              <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                🌙✨ Empfehlung von Herzen: Die Seelenplanerin{"\n\n"}
-                Ich bin seit einiger Zeit Teil dieser wundervollen Community und möchte sie euch nicht vorenthalten. Rituale, Mondenergie, tägliche Impulse, Meditationen und so viel mehr – alles an einem Ort.{"\n\n"}
-                🔗 {getLink(affiliate?.code || "")}{"\n\n"}
-                #DieSeelenplanerin #Spiritualität #Mondenergie #GebenUndNehmen
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={{ marginTop: 8, backgroundColor: "#1877F2", borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
-              onPress={() => {
-                const text = `🌙✨ Empfehlung von Herzen: Die Seelenplanerin\n\nIch bin seit einiger Zeit Teil dieser wundervollen Community und möchte sie euch nicht vorenthalten. Rituale, Mondenergie, tägliche Impulse, Meditationen und so viel mehr – alles an einem Ort.\n\n🔗 ${getLink(affiliate?.code || "")}\n\n#DieSeelenplanerin #Spiritualität #Mondenergie #GebenUndNehmen`;
-                if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
-                else Share.share({ message: text });
-              }}
-              activeOpacity={0.85}
-            >
-              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>👍 Facebook-Vorlage kopieren</Text>
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>WhatsApp-Vorlage kopieren</Text>
             </TouchableOpacity>
           </View>
 
           {/* Kurz-Vorlage */}
           <View>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>⚡ Kurze Empfehlung (universal)</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>Kurze Empfehlung (universal)</Text>
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele 🌙✨{"\n"}
-                Entdecke alles über meinen Link: {getLink(affiliate?.code || "")}
+                Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele{"\n"}
+                Bestelle mit meinem Code: <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text>
               </Text>
             </View>
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: C.rose, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele 🌙✨\nEntdecke alles über meinen Link: ${getLink(affiliate?.code || "")}`;
+                const text = `Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele\nBestelle mit meinem Code: ${affiliate?.code}`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
               activeOpacity={0.85}
             >
-              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>⚡ Kurz-Vorlage kopieren</Text>
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>Kurz-Vorlage kopieren</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -545,28 +568,15 @@ export default function AffiliateScreen() {
             <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
             <Text style={s.richtlinienText}>
               <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
-              Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Empfehlungslink gekauft werden. Auf Versandkosten (4,90 €) wird keine Provision berechnet.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision fällig?{"\n"}</Text>
-              Die Provision wird erst fällig und gutgeschrieben, sobald die Zahlung des Käufers vollständig und positiv eingegangen ist. Bei Rückerstattungen, Stornierungen oder Rückbuchungen entfällt die Provision.{"\n\n"}
-
+              Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten).{"\n\n"}
+              <Text style={{ fontWeight: "700" }}>2. Zuordnung{"\n"}</Text>
+              Ein Verkauf wird dir zugeordnet, wenn der Käufer deinen Code bei der Bestellung eingibt.{"\n\n"}
               <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
-              Es gibt keinen Mindestbetrag für Auszahlungen. Jeder verdiente Betrag wird ausgezahlt. Die Auszahlung erfolgt per PayPal. Hinterlege dazu einfach deine PayPal-E-Mail-Adresse. Auszahlungen werden regelmäßig von Die Seelenplanerin veranlasst.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>4. Zuordnung von Verkäufen{"\n"}</Text>
-              Ein Verkauf wird dir zugeordnet, wenn der Käufer über deinen persönlichen Empfehlungslink auf die Seite gelangt ist. Die Zuordnung erfolgt über einen Tracking-Code in deinem Link.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>5. Faire Nutzung{"\n"}</Text>
-              Eigenkäufe über den eigenen Empfehlungslink sind nicht provisionsberechtigt. Spam, irreführende Werbung oder das Vortäuschen falscher Tatsachen führen zum Ausschluss aus dem Programm.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>6. Transparenz{"\n"}</Text>
-              Du kannst jederzeit in der App deinen aktuellen Stand einsehen: Klicks, Verkäufe, verdiente Provision und Auszahlungen. Alles ist transparent und nachvollziehbar.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>7. Änderungen{"\n"}</Text>
-              Die Seelenplanerin behält sich vor, die Bedingungen des Empfehlungsprogramms jederzeit anzupassen. Über Änderungen wirst du per E-Mail informiert.{"\n\n"}
-
-              <Text style={{ fontWeight: "700" }}>8. Steuerliche Hinweise{"\n"}</Text>
-              Provisionseinnahmen können steuerpflichtig sein. Du bist selbst für die korrekte Versteuerung deiner Einnahmen verantwortlich.
+              Kein Mindestbetrag. Auszahlung per PayPal.{"\n\n"}
+              <Text style={{ fontWeight: "700" }}>4. Faire Nutzung{"\n"}</Text>
+              Eigenkäufe sind nicht provisionsberechtigt.{"\n\n"}
+              <Text style={{ fontWeight: "700" }}>5. Steuerliche Hinweise{"\n"}</Text>
+              Du bist selbst für die korrekte Versteuerung verantwortlich.
             </Text>
           </View>
         )}
@@ -595,8 +605,6 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 20, fontWeight: "700", color: C.brown, fontFamily: "serif",
   },
-
-  // Intro
   introCard: {
     margin: 16, backgroundColor: C.card, borderRadius: 16, padding: 24,
     borderWidth: 1, borderColor: C.border, alignItems: "center",
@@ -609,8 +617,6 @@ const s = StyleSheet.create({
   introText: {
     fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center",
   },
-
-  // Steps
   stepsCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.goldLight,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.gold + "40",
@@ -618,17 +624,13 @@ const s = StyleSheet.create({
   stepsTitle: {
     fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 16, fontFamily: "serif",
   },
-  stepRow: {
-    flexDirection: "row", alignItems: "flex-start", marginBottom: 12,
-  },
+  stepRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 12 },
   stepCircle: {
     width: 28, height: 28, borderRadius: 14, backgroundColor: C.gold,
     alignItems: "center", justifyContent: "center", marginRight: 12, marginTop: 1,
   },
   stepNum: { fontSize: 14, fontWeight: "700", color: "#FFF" },
   stepText: { flex: 1, fontSize: 14, color: C.brownMid, lineHeight: 20 },
-
-  // Form
   formCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -648,14 +650,8 @@ const s = StyleSheet.create({
     marginTop: 12,
   },
   primaryBtnText: { fontSize: 16, fontWeight: "700", color: "#FFF" },
-
-  // Richtlinien
-  richtlinienToggle: {
-    marginHorizontal: 16, marginBottom: 8, padding: 12,
-  },
-  richtlinienToggleText: {
-    fontSize: 14, color: C.gold, fontWeight: "600",
-  },
+  richtlinienToggle: { marginHorizontal: 16, marginBottom: 8, padding: 12 },
+  richtlinienToggleText: { fontSize: 14, color: C.gold, fontWeight: "600" },
   richtlinienCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -663,11 +659,7 @@ const s = StyleSheet.create({
   richtlinienTitle: {
     fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 12, fontFamily: "serif",
   },
-  richtlinienText: {
-    fontSize: 13, color: C.brownMid, lineHeight: 20,
-  },
-
-  // Dashboard
+  richtlinienText: { fontSize: 13, color: C.brownMid, lineHeight: 20 },
   welcomeCard: {
     margin: 16, backgroundColor: C.roseLight, borderRadius: 16, padding: 24,
     alignItems: "center", borderWidth: 1, borderColor: C.rose + "30",
@@ -679,8 +671,6 @@ const s = StyleSheet.create({
   welcomeText: {
     fontSize: 14, color: C.brownMid, textAlign: "center", lineHeight: 20,
   },
-
-  // Link
   linkCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -688,22 +678,12 @@ const s = StyleSheet.create({
   linkTitle: {
     fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 12, fontFamily: "serif",
   },
-  linkBox: {
-    backgroundColor: C.bg, borderRadius: 10, padding: 14, borderWidth: 1,
-    borderColor: C.border, marginBottom: 12,
-  },
-  linkText: { fontSize: 13, color: C.gold, fontWeight: "600" },
   linkBtnRow: { flexDirection: "row", gap: 10 },
   linkBtn: {
     flex: 1, backgroundColor: C.rose, borderRadius: 10, padding: 12,
     alignItems: "center",
   },
   linkBtnText: { fontSize: 14, fontWeight: "700", color: "#FFF" },
-  codeHint: {
-    fontSize: 12, color: C.muted, textAlign: "center", marginTop: 12,
-  },
-
-  // Stats
   statsCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -718,8 +698,6 @@ const s = StyleSheet.create({
   },
   statNum: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 4 },
   statLabel: { fontSize: 11, color: C.muted, fontWeight: "500" },
-
-  // Sales
   salesCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -735,8 +713,6 @@ const s = StyleSheet.create({
   saleDate: { fontSize: 12, color: C.muted, marginTop: 2 },
   saleAmount: { fontSize: 15, fontWeight: "700", color: C.green },
   saleStatus: { fontSize: 11, fontWeight: "500", marginTop: 2 },
-
-  // Empty sales
   emptySales: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.goldLight,
     borderRadius: 16, padding: 24, alignItems: "center",
@@ -744,8 +720,6 @@ const s = StyleSheet.create({
   },
   emptySalesEmoji: { fontSize: 32, marginBottom: 8 },
   emptySalesText: { fontSize: 14, color: C.brownMid, textAlign: "center", lineHeight: 20 },
-
-  // Payment
   paymentCard: {
     marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
     borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border,
@@ -753,16 +727,12 @@ const s = StyleSheet.create({
   paymentTitle: {
     fontSize: 16, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "serif",
   },
-  paymentDesc: {
-    fontSize: 13, color: C.muted, marginBottom: 12, lineHeight: 18,
-  },
+  paymentDesc: { fontSize: 13, color: C.muted, marginBottom: 12, lineHeight: 18 },
   saveBtn: {
     backgroundColor: C.goldLight, borderRadius: 12, padding: 14, alignItems: "center",
     marginTop: 8, borderWidth: 1, borderColor: C.gold,
   },
   saveBtnText: { fontSize: 14, fontWeight: "600", color: C.brown },
-
-  // Switch
   switchBtn: {
     marginHorizontal: 16, marginBottom: 8, padding: 12, alignItems: "center",
   },

@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, sendAffiliateAdminNotification, sendAffiliatePayoutEmail, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -179,20 +179,28 @@ export const appRouter = router({
   affiliate: router({
     // Affiliate-Code für einen Nutzer erstellen oder abrufen
     getOrCreate: publicProcedure
-      .input(z.object({ email: z.string().email(), name: z.string().min(1) }))
+      .input(z.object({ email: z.string().email(), name: z.string().min(1), wunschCode: z.string().min(2).optional() }))
       .mutation(async ({ input }) => {
         let affiliate = await db.getAffiliateByEmail(input.email);
         if (affiliate) return { success: true as const, affiliate };
-        // Neuen Code generieren (einzigartig)
-        let code = await db.generateAffiliateCode();
-        let attempts = 0;
-        while (await db.getAffiliateByCode(code) && attempts < 10) {
+        // Wunschcode verwenden oder automatisch generieren
+        let code: string;
+        if (input.wunschCode) {
+          code = input.wunschCode.toUpperCase().replace(/[^A-Z\u00C4\u00D6\u00DC0-9]/g, "").slice(0, 20);
+          // Prüfen ob Code schon vergeben ist
+          const existing = await db.getAffiliateByCode(code);
+          if (existing) return { success: false as const, error: "code_taken" };
+        } else {
           code = await db.generateAffiliateCode();
-          attempts++;
+          let attempts = 0;
+          while (await db.getAffiliateByCode(code) && attempts < 10) {
+            code = await db.generateAffiliateCode();
+            attempts++;
+          }
         }
         const id = await db.createAffiliate({ email: input.email, name: input.name, code });
         affiliate = await db.getAffiliateByEmail(input.email);
-        // Willkommens-E-Mail senden (async, nicht blockierend)
+        // Willkommens-E-Mail an Affiliate senden
         const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;
         sendAffiliateWelcomeEmail({
           toEmail: input.email,
@@ -200,6 +208,12 @@ export const appRouter = router({
           affiliateCode: code,
           affiliateLink,
         }).catch(err => console.error("[Affiliate] Willkommens-E-Mail Fehler:", err));
+        // Admin-Benachrichtigung: Neuer Affiliate angemeldet
+        sendAffiliateAdminNotification({
+          affiliateName: input.name,
+          affiliateEmail: input.email,
+          affiliateCode: code,
+        }).catch(err => console.error("[Affiliate] Admin-Benachrichtigung Fehler:", err));
         return { success: true as const, affiliate };
       }),
 
@@ -301,6 +315,17 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const id = await db.createAffiliatePayout(input);
+        // Auszahlungs-E-Mail an Affiliate senden
+        const affiliate = await db.getAffiliateByCode(input.affiliateCode);
+        if (affiliate) {
+          sendAffiliatePayoutEmail({
+            toEmail: affiliate.email,
+            toName: affiliate.name,
+            amount: (input.amount / 100).toFixed(2).replace(".", ","),
+            method: input.method,
+            reference: input.reference,
+          }).catch(err => console.error("[Affiliate] Auszahlungs-E-Mail Fehler:", err));
+        }
         return { success: true as const, id };
       }),
 
@@ -315,6 +340,14 @@ export const appRouter = router({
     listAllPayouts: publicProcedure.query(async () => {
       return db.getAllAffiliatePayouts();
     }),
+
+    // Affiliate aktivieren/deaktivieren (Admin)
+    toggleActive: publicProcedure
+      .input(z.object({ code: z.string().min(1), isActive: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.updateAffiliate(input.code, { isActive: input.isActive });
+        return { success: true };
+      }),
 
     // Affiliate-Zahlungsdaten aktualisieren
     updatePaymentInfo: publicProcedure
