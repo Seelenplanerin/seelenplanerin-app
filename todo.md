@@ -580,3 +580,12 @@
 - [x] Runen-Quiz: Heilsteine auf 5 verfügbare anpassen (Mondstein, Bergkristall, Amethyst, Rosenquarz, Schwarzer Turmalin)
 - [x] Runen-Quiz: Verlinkung zum Armband-Shop prüfen und korrigieren
 - [x] Runen-Quiz: Alle Kombinationen aus PDF korrekt übernehmen
+
+## DRINGEND: Komplette Link-Prüfung (03.03.2026)
+- [x] ALLE Tentary-Links in allen Ritualen prüfen und korrigieren (16 Links im Browser geprüft)
+- [x] ALLE Tentary-Links im Shop prüfen und korrigieren
+- [x] ALLE Calendly-Links prüfen und korrigieren
+- [x] ALLE Shop-Links in Produkt-CTAs prüfen und korrigieren
+- [x] ALLE Links in Runen-Screens prüfen und korrigieren
+- [x] ALLE Links in Seelenimpuls/Abo-Screens prüfen und korrigieren
+- [x] 11 Rituale: Materialien + shopUrl an Ritual-Thema anpassen (10 korrigiert + nov-3)
