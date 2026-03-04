@@ -627,3 +627,7 @@
 - [x] Shop-Beschreibungen korrigieren
 - [x] Quizze korrigieren (Mondtyp, Kerzen, Quiz-Data)
 - [x] Armband-Beschreibungen: nur die 5 Pulver-Steine (bereits korrekt)
+
+## BUG: Veröffentlichte Seite zeigt "Not Found" (04.03.2026)
+- [ ] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
+- [ ] Problem diagnostizieren und beheben
