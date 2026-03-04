@@ -43,8 +43,12 @@ function getWebDistPath(): string {
   // Primary: web-dist folder (separated from server dist)
   const cwdWebDist = path.join(process.cwd(), "web-dist");
   if (fs.existsSync(cwdWebDist)) return cwdWebDist;
-  // Fallback: dist folder (legacy, for backwards compatibility)
+  // Fallback: dist folder (contains both server bundle + web export in Docker)
   const cwdDist = path.join(process.cwd(), "dist");
+  if (fs.existsSync(path.join(cwdDist, "index.html"))) return cwdDist;
+  // Last resort: check relative to __dirname
+  const dirDist = path.join(__dirname, "..", "web-dist");
+  if (fs.existsSync(dirDist)) return dirDist;
   return cwdDist;
 }
 

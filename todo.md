@@ -644,3 +644,8 @@
 ## Tentary-Links prüfen (04.03.2026)
 - [ ] Alle 51 Ritual-shopUrl-Links prüfen: Jedes Ritual muss auf das korrekte Ritual-Set verlinken
 - [ ] Tentary-Code-Mapping abgleichen
+
+## BUG: Veröffentlichte Seite - Tabs/Navigation kaputt (04.03.2026)
+- [x] Seite baut sich nur halb auf auf der veröffentlichten Domain
+- [x] Tab-Klicks führen zu Not Found weil Expo Router Links ohne /api/app/ Prefix sind
+- [x] Expo Web Export mit baseUrl=/api/app neu bauen

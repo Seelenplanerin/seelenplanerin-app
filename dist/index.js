@@ -1944,6 +1944,9 @@ function getWebDistPath() {
   const cwdWebDist = path.join(process.cwd(), "web-dist");
   if (fs.existsSync(cwdWebDist)) return cwdWebDist;
   const cwdDist = path.join(process.cwd(), "dist");
+  if (fs.existsSync(path.join(cwdDist, "index.html"))) return cwdDist;
+  const dirDist = path.join(__dirname, "..", "web-dist");
+  if (fs.existsSync(dirDist)) return dirDist;
   return cwdDist;
 }
 async function startServer() {

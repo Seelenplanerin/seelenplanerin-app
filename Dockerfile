@@ -14,13 +14,12 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build ONLY the server (esbuild) - web app dist is pre-built and committed to repo
-# Do NOT run expo export here - it would overwrite the pre-built dist with wrong API URL
-RUN pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Build server bundle into server-dist/ to avoid overwriting web-dist/ or dist/
+RUN pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=server-dist
 
 EXPOSE 3000
 
 ENV NODE_ENV=production
 ENV PORT=3000
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "server-dist/index.js"]
