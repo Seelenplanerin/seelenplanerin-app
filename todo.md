@@ -636,3 +636,7 @@
 - [x] Alle 51 Rituale umschreiben: NUR die Set-Inhalte (2 Steine, 1 Räucherwerk, 1 Kerze) beschreiben
 - [x] Keine externen Materialien (Honig, Orangen, Blumen, Maibaum, Salz, Wasser, Schalen etc.)
 - [x] Jedes Ritual muss konkret beschreiben wie man mit den 2 Steinen, dem Räucherwerk und der Kerze arbeitet
+
+## Rituale individuell umschreiben (04.03.2026)
+- [x] Alle 51 Rituale individuell und einzigartig umschreiben – passend zum jeweiligen Anlass
+- [x] Weiterhin NUR Set-Inhalte verwenden (2 Steine, 1 Räucherwerk, 1 Kerze)
