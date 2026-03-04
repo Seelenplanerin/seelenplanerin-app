@@ -649,3 +649,7 @@
 - [x] Seite baut sich nur halb auf auf der veröffentlichten Domain
 - [x] Tab-Klicks führen zu Not Found weil Expo Router Links ohne /api/app/ Prefix sind
 - [x] Expo Web Export mit baseUrl=/api/app neu bauen
+
+## Shop Dropdown + PWA (04.03.2026)
+- [x] Shop: Ober-Button "Ritual-Sets" mit Dropdown für die 10 einzelnen Sets
+- [x] App als PWA konfigurieren für eigene Webseite (manifest.json, sw.js, apple-mobile-web-app meta tags)

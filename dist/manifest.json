@@ -1,0 +1,24 @@
+{
+  "name": "Die Seelenplanerin",
+  "short_name": "Seelenplanerin",
+  "description": "Dein spiritueller Begleiter – Rituale, Mondphasen, Runen & mehr",
+  "start_url": "/api/app/",
+  "scope": "/api/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FDF8F2",
+  "theme_color": "#8B5E3C",
+  "icons": [
+    {
+      "src": "/api/app/assets/assets/images/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/api/app/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
