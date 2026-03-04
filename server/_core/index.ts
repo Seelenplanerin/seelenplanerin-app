@@ -103,6 +103,20 @@ async function startServer() {
 
   // Serve the web app under /api/app/* so the published domain (which only proxies /api/*) can serve the full app
   if (fs.existsSync(webDistPath)) {
+    // CRITICAL: Also serve static assets under /api/_expo and /api/assets
+    // because the Expo-generated HTML uses absolute paths like /_expo/... and /assets/...
+    // and the published domain only proxies /api/* requests
+    app.use("/api/_expo", express.static(path.join(webDistPath, "_expo")));
+    app.use("/api/assets", express.static(path.join(webDistPath, "assets")));
+    app.get("/api/favicon.ico", (_req, res) => {
+      const faviconPath = path.join(webDistPath, "favicon.ico");
+      if (fs.existsSync(faviconPath)) {
+        res.sendFile(faviconPath);
+      } else {
+        res.status(404).end();
+      }
+    });
+
     // Serve static assets under /api/app/_expo, /api/app/assets etc.
     app.use("/api/app", express.static(webDistPath));
     // Root /api/app serves index.html
@@ -111,7 +125,7 @@ async function startServer() {
     });
     // Catch-all: serve index.html for all /api/app/* routes (SPA routing)
     app.get("/api/app/*", (req, res) => {
-      const reqPath = req.path; // path relative to /api/app
+      const reqPath = req.path.replace("/api/app", "");
       const htmlFile = path.join(webDistPath, reqPath.endsWith(".html") ? reqPath : reqPath.replace(/\/$/, "") + ".html");
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);

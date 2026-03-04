@@ -1987,12 +1987,22 @@ async function startServer() {
   const webDistPath = getWebDistPath();
   console.log(`[api] Web dist path: ${webDistPath} (exists: ${fs.existsSync(webDistPath)})`);
   if (fs.existsSync(webDistPath)) {
+    app.use("/api/_expo", express.static(path.join(webDistPath, "_expo")));
+    app.use("/api/assets", express.static(path.join(webDistPath, "assets")));
+    app.get("/api/favicon.ico", (_req, res) => {
+      const faviconPath = path.join(webDistPath, "favicon.ico");
+      if (fs.existsSync(faviconPath)) {
+        res.sendFile(faviconPath);
+      } else {
+        res.status(404).end();
+      }
+    });
     app.use("/api/app", express.static(webDistPath));
     app.get("/api/app", (_req, res) => {
       res.sendFile(path.join(webDistPath, "index.html"));
     });
     app.get("/api/app/*", (req, res) => {
-      const reqPath = req.path;
+      const reqPath = req.path.replace("/api/app", "");
       const htmlFile = path.join(webDistPath, reqPath.endsWith(".html") ? reqPath : reqPath.replace(/\/$/, "") + ".html");
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);
