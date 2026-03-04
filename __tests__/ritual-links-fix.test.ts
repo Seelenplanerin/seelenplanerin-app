@@ -1,102 +1,167 @@
 import { describe, it, expect } from "vitest";
+import { RITUALE_2026 as RITUALE } from "../data/rituale-kalender";
 
-// Die 10 verfügbaren Heilsteine
+// Die 10 verfügbaren Ritual-Steine
 const VERFUEGBARE_STEINE = [
-  "Bergkristall", "Amethyst", "Rosenquarz", "Mondstein",
-  "Schwarzer Turmalin", "Citrin", "Karneol", "Obsidian",
-  "Labradorit", "Sodalith",
+  "Citrin", "Labradorit", "Sonnenstein", "Karneol",
+  "Amethyst", "Rosenquarz", "Schwarzer Turmalin", "Bergkristall",
+  "Pyrit", "Mondstein",
 ];
 
-// Zuordnungstabelle: Materialien → Ritual-Set → shopUrl (KORRIGIERT – nur verfügbare Steine)
-const MATERIAL_TO_SET: Record<string, { set: string; code: string }> = {
-  "Schwarzer Turmalin,Obsidian,Weißer Salbei,Schwarze Kerze": { set: "Schutz", code: "OX0aPw" },
-  "Rosenquarz,Mondstein,Myrrhe,Rosa Kerze": { set: "Selbstliebe", code: "QtLnrA" },
-  "Citrin,Bergkristall,Weihrauch,Goldene Kerze": { set: "Fülle", code: "QjvV1I" },
-  "Labradorit,Amethyst,Palo Santo,Violette Kerze": { set: "Transformation", code: "sGn2aD" },
-  "Karneol,Bergkristall,Weihrauch,Rote Kerze": { set: "Kraft", code: "BQ7sqg" },
-  "Amethyst,Mondstein,Myrrhe,Weiße Kerze": { set: "Intuition", code: "tfehqK" },
-  "Bergkristall,Citrin,Weißer Salbei,Gelbe Kerze": { set: "Neuanfang", code: "QFEH0i" },
-  "Schwarzer Turmalin,Karneol,Palo Santo,Braune Kerze": { set: "Erdung", code: "VN9WOT" },
-  "Karneol,Rosenquarz,Weihrauch,Orange Kerze": { set: "Lebensfreude", code: "gFloc9" },
-  "Rosenquarz,Amethyst,Palo Santo,Grüne Kerze": { set: "Heilung", code: "f9A55Q" },
-};
+// Erlaubtes Räucherwerk
+const ERLAUBTES_RAEUCHERWERK = [
+  "Weißer Salbei", "Myrrhe", "Palo Santo", "Weihrauch",
+];
+
+// Erlaubte Kerzen
+const ERLAUBTE_KERZEN = [
+  "Schwarze Kerze", "Rosa Kerze", "Goldene Kerze", "Violette Kerze",
+  "Rote Kerze", "Weiße Kerze", "Gelbe Kerze", "Braune Kerze",
+  "Orange Kerze", "Grüne Kerze",
+];
+
+const ALLE_ERLAUBT = [...VERFUEGBARE_STEINE, ...ERLAUBTES_RAEUCHERWERK, ...ERLAUBTE_KERZEN];
 
 // NICHT erlaubte Steine (haben wir nicht)
 const VERBOTENE_STEINE = [
-  "Pyrit", "Sonnenstein", "Roter Jaspis", "Lapislazuli", "Feueropal",
-  "Aquamarin", "Granat", "Tigerauge", "Malachit", "Aventurin",
-  "Calcit", "Moosachat", "Rauchquarz", "Bernstein",
+  "Obsidian", "Sodalith", "Aventurin", "Lapislazuli", "Tigerauge",
+  "Malachit", "Moosachat", "Rauchquarz", "Bernstein", "Granat",
+  "Aquamarin", "Feueropal", "Calcit", "Roter Jaspis",
 ];
 
-describe("Ritual-Sets Korrekturen (10 Heilsteine)", () => {
-  it("Alle 10 Sets haben gültige Tentary-Codes", () => {
-    for (const [materials, info] of Object.entries(MATERIAL_TO_SET)) {
-      expect(info.code).toBeTruthy();
-      expect(info.set).toBeTruthy();
-    }
+// Die 10 Ritual-Sets mit korrekten Tentary-Codes und Steinen
+const RITUAL_SETS: Record<string, { code: string; steine: string[] }> = {
+  "Schutz": { code: "OX0aPw", steine: ["Schwarzer Turmalin", "Bergkristall"] },
+  "Selbstliebe": { code: "QtLnrA", steine: ["Rosenquarz", "Mondstein"] },
+  "Fülle": { code: "QjvV1I", steine: ["Citrin", "Pyrit"] },
+  "Transformation": { code: "sGn2aD", steine: ["Labradorit", "Amethyst"] },
+  "Kraft": { code: "BQ7sqg", steine: ["Karneol", "Sonnenstein"] },
+  "Intuition": { code: "tfehqK", steine: ["Amethyst", "Mondstein"] },
+  "Neuanfang": { code: "QFEH0i", steine: ["Bergkristall", "Citrin"] },
+  "Erdung": { code: "VN9WOT", steine: ["Schwarzer Turmalin", "Karneol"] },
+  "Lebensfreude": { code: "gFloc9", steine: ["Sonnenstein", "Karneol"] },
+  "Heilung": { code: "f9A55Q", steine: ["Rosenquarz", "Amethyst"] },
+};
+
+describe("Ritual-Steine Korrektheit (10 Steine)", () => {
+  it("sollte genau 51 Rituale haben", () => {
+    expect(RITUALE.length).toBe(51);
   });
 
-  it("Alle 10 Ritual-Sets haben eindeutige Tentary-Codes", () => {
-    const codes = Object.values(MATERIAL_TO_SET).map(v => v.code);
-    const uniqueCodes = new Set(codes);
-    expect(uniqueCodes.size).toBe(10);
+  it("sollte KEINE verbotenen Steine in materialien haben", () => {
+    const fehler: string[] = [];
+    RITUALE.forEach((r) => {
+      r.materialien.forEach((m) => {
+        if (VERBOTENE_STEINE.includes(m)) {
+          fehler.push(`${r.id}: "${m}" ist verboten`);
+        }
+      });
+    });
+    expect(fehler).toEqual([]);
   });
 
-  it("Alle shopUrls verwenden das korrekte Tentary-Format", () => {
-    for (const [, info] of Object.entries(MATERIAL_TO_SET)) {
-      const url = `https://dieseelenplanerin.tentary.com/p/${info.code}`;
-      expect(url).toMatch(/^https:\/\/dieseelenplanerin\.tentary\.com\/p\/[A-Za-z0-9]+$/);
-    }
+  it("sollte NUR erlaubte Materialien verwenden", () => {
+    const fehler: string[] = [];
+    RITUALE.forEach((r) => {
+      r.materialien.forEach((m) => {
+        if (!ALLE_ERLAUBT.includes(m)) {
+          fehler.push(`${r.id}: "${m}" ist nicht erlaubt`);
+        }
+      });
+    });
+    expect(fehler).toEqual([]);
   });
 
-  it("Alle Steine in den Sets sind aus den 10 verfügbaren Steinen", () => {
-    for (const [materials] of Object.entries(MATERIAL_TO_SET)) {
-      const items = materials.split(",");
-      // Nur die Steine prüfen (nicht Räucherwerk und Kerzen)
-      const steine = items.filter(item =>
-        !item.includes("Salbei") && !item.includes("Myrrhe") &&
-        !item.includes("Palo Santo") && !item.includes("Weihrauch") &&
-        !item.includes("Kerze")
-      );
-      for (const stein of steine) {
-        expect(VERFUEGBARE_STEINE).toContain(stein);
+  it("sollte gültige Tentary-Links haben", () => {
+    const gueltigeCodes = Object.values(RITUAL_SETS).map((s) => s.code);
+    const fehler: string[] = [];
+    RITUALE.forEach((r) => {
+      const code = r.shopUrl.split("/").pop();
+      if (!gueltigeCodes.includes(code!)) {
+        fehler.push(`${r.id}: Code "${code}" ist ungültig`);
       }
-    }
+    });
+    expect(fehler).toEqual([]);
   });
 
-  it("Keine verbotenen Steine in den Sets", () => {
-    for (const [materials] of Object.entries(MATERIAL_TO_SET)) {
-      for (const verboten of VERBOTENE_STEINE) {
-        expect(materials).not.toContain(verboten);
+  it("sollte materialien passend zum shopUrl-Set haben", () => {
+    const fehler: string[] = [];
+    RITUALE.forEach((r) => {
+      const code = r.shopUrl.split("/").pop();
+      const set = Object.entries(RITUAL_SETS).find(([_, v]) => v.code === code);
+      if (set) {
+        const [setName, setData] = set;
+        const hatSetStein = setData.steine.some((s) => r.materialien.includes(s));
+        if (!hatSetStein) {
+          fehler.push(`${r.id} (${setName}): Keiner der Set-Steine [${setData.steine.join(", ")}] in materialien [${r.materialien.join(", ")}]`);
+        }
       }
-    }
+    });
+    expect(fehler).toEqual([]);
   });
 
-  it("Schutz-Set enthält Schwarzer Turmalin + Obsidian (nicht Bergkristall)", () => {
-    const schutz = MATERIAL_TO_SET["Schwarzer Turmalin,Obsidian,Weißer Salbei,Schwarze Kerze"];
-    expect(schutz).toBeDefined();
-    expect(schutz.set).toBe("Schutz");
-    expect(schutz.code).toBe("OX0aPw");
+  it("sollte KEINE Obsidian- oder Sodalith-Erwähnungen in Ritual-Texten haben", () => {
+    const fehler: string[] = [];
+    RITUALE.forEach((r) => {
+      r.abschnitte.forEach((a) => {
+        if (a.text.includes("Obsidian")) {
+          fehler.push(`${r.id}: "Obsidian" in Ritual-Text`);
+        }
+        if (a.text.includes("Sodalith")) {
+          fehler.push(`${r.id}: "Sodalith" in Ritual-Text`);
+        }
+      });
+    });
+    expect(fehler).toEqual([]);
   });
 
-  it("Fülle-Set enthält Citrin + Bergkristall (nicht Pyrit)", () => {
-    const fuelle = MATERIAL_TO_SET["Citrin,Bergkristall,Weihrauch,Goldene Kerze"];
-    expect(fuelle).toBeDefined();
-    expect(fuelle.set).toBe("Fülle");
-    expect(fuelle.code).toBe("QjvV1I");
+  it("sollte alle 10 Steine mindestens einmal verwenden", () => {
+    const verwendeteSteine = new Set<string>();
+    RITUALE.forEach((r) => {
+      r.materialien.forEach((m) => {
+        if (VERFUEGBARE_STEINE.includes(m)) {
+          verwendeteSteine.add(m);
+        }
+      });
+    });
+    const fehlend = VERFUEGBARE_STEINE.filter((s) => !verwendeteSteine.has(s));
+    expect(fehlend).toEqual([]);
   });
 
-  it("Kraft-Set enthält Karneol + Bergkristall (nicht Sonnenstein)", () => {
-    const kraft = MATERIAL_TO_SET["Karneol,Bergkristall,Weihrauch,Rote Kerze"];
-    expect(kraft).toBeDefined();
-    expect(kraft.set).toBe("Kraft");
-    expect(kraft.code).toBe("BQ7sqg");
+  it("Schutz-Set enthält Schwarzer Turmalin + Bergkristall", () => {
+    const schutzRituale = RITUALE.filter((r) => r.shopUrl.includes("OX0aPw"));
+    expect(schutzRituale.length).toBeGreaterThan(0);
+    schutzRituale.forEach((r) => {
+      expect(r.materialien).toContain("Schwarzer Turmalin");
+      expect(r.materialien).toContain("Bergkristall");
+      expect(r.materialien).not.toContain("Obsidian");
+    });
   });
 
-  it("Lebensfreude-Set enthält Karneol + Rosenquarz (nicht Sonnenstein)", () => {
-    const freude = MATERIAL_TO_SET["Karneol,Rosenquarz,Weihrauch,Orange Kerze"];
-    expect(freude).toBeDefined();
-    expect(freude.set).toBe("Lebensfreude");
-    expect(freude.code).toBe("gFloc9");
+  it("Fülle-Set enthält Citrin + Pyrit", () => {
+    const fuelleRituale = RITUALE.filter((r) => r.shopUrl.includes("QjvV1I"));
+    expect(fuelleRituale.length).toBeGreaterThan(0);
+    fuelleRituale.forEach((r) => {
+      expect(r.materialien).toContain("Citrin");
+      expect(r.materialien).toContain("Pyrit");
+    });
+  });
+
+  it("Kraft-Set enthält Karneol + Sonnenstein", () => {
+    const kraftRituale = RITUALE.filter((r) => r.shopUrl.includes("BQ7sqg"));
+    expect(kraftRituale.length).toBeGreaterThan(0);
+    kraftRituale.forEach((r) => {
+      expect(r.materialien).toContain("Karneol");
+      expect(r.materialien).toContain("Sonnenstein");
+    });
+  });
+
+  it("Lebensfreude-Set enthält Sonnenstein + Karneol", () => {
+    const freudeRituale = RITUALE.filter((r) => r.shopUrl.includes("gFloc9"));
+    expect(freudeRituale.length).toBeGreaterThan(0);
+    freudeRituale.forEach((r) => {
+      expect(r.materialien).toContain("Sonnenstein");
+      expect(r.materialien).toContain("Karneol");
+    });
   });
 });

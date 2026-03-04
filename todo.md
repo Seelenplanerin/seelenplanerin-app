@@ -616,3 +616,14 @@
 - [x] Alle 51 Ritual-Materialien korrigieren: Nur die 10 verfügbaren Heilsteine (Bergkristall, Amethyst, Rosenquarz, Mondstein, Schwarzer Turmalin, Citrin, Karneol, Obsidian, Labradorit, Sodalith)
 - [x] Alle shopUrl-Links in Ritualen verifizieren und korrigieren
 - [x] Tests schreiben um alle Korrekturen zu verifizieren
+
+## KRITISCH: Korrekte Steine-Liste (04.03.2026)
+- [x] 10 Ritual-Steine: Citrin, Labradorit, Sonnenstein, Karneol, Amethyst, Rosenquarz, Schwarzer Turmalin, Bergkristall, Pyrit, Mondstein
+- [x] 5 Armband-Pulver-Steine: Amethyst, Schwarzer Turmalin, Bergkristall, Mondstein, Rosenquarz
+- [x] Obsidian und Sodalith existieren NICHT – überall entfernt
+- [x] Sonnenstein und Pyrit existieren DOCH – wieder eingesetzt
+- [x] Alle 10 Ritual-Sets korrigieren (alle 10 Steine)
+- [x] Alle 51 Rituale korrigieren
+- [x] Shop-Beschreibungen korrigieren
+- [x] Quizze korrigieren (Mondtyp, Kerzen, Quiz-Data)
+- [x] Armband-Beschreibungen: nur die 5 Pulver-Steine (bereits korrekt)

@@ -99,7 +99,7 @@ const MONDTYPEN: Record<string, {
     beschreibung: "Du bist eine Hüterin der Stille und der Tiefe. Deine Kraft liegt im Innen – in der Reflexion, der Intuition und dem Mut, neu anzufangen. Du bist eine Visionärin, die in der Dunkelheit die Samen für Neues pflanzt.",
     staerken: ["Tiefe Intuition", "Mut zum Neuanfang", "Innere Weisheit", "Authentizität"],
     ritual: "Zünde eine schwarze oder dunkle Kerze an. Schreibe auf, was du loslassen möchtest – und was du neu erschaffen willst. Verbrenne das Papier als Symbol des Wandels.",
-    heilstein: "Obsidian oder Mondstein",
+    heilstein: "Schwarzer Turmalin oder Mondstein",
     affirmation: "Ich vertraue meiner inneren Stimme. In der Stille finde ich meine Kraft.",
   },
   V: {
@@ -132,7 +132,7 @@ const MONDTYPEN: Record<string, {
     beschreibung: "Du bist eine Meisterin des Loslassens und der Weisheit. Du weißt, dass wahre Stärke darin liegt, Altes zu verabschieden und Raum für Neues zu schaffen. Deine Tiefe und Reife sind ein Geschenk für alle, die dich kennen.",
     staerken: ["Weisheit & Reife", "Loslassen können", "Tiefe Reflexion", "Heilsame Präsenz"],
     ritual: "Schreibe auf, was du loslassen möchtest – Gedanken, Beziehungen, Gewohnheiten. Lege das Papier unter deinen Kopfkissen und lass es in der Nacht los.",
-    heilstein: "Amethyst oder Obsidian",
+    heilstein: "Amethyst oder Schwarzer Turmalin",
     affirmation: "Ich lasse los, was mich nicht mehr dient. Im Loslassen finde ich Frieden.",
   },
 };
