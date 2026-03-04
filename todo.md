@@ -631,3 +631,8 @@
 ## BUG: Veröffentlichte Seite zeigt "Not Found" (04.03.2026)
 - [ ] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
 - [ ] Problem diagnostizieren und beheben
+
+## KRITISCH: Rituale NUR mit Set-Inhalten (04.03.2026)
+- [x] Alle 51 Rituale umschreiben: NUR die Set-Inhalte (2 Steine, 1 Räucherwerk, 1 Kerze) beschreiben
+- [x] Keine externen Materialien (Honig, Orangen, Blumen, Maibaum, Salz, Wasser, Schalen etc.)
+- [x] Jedes Ritual muss konkret beschreiben wie man mit den 2 Steinen, dem Räucherwerk und der Kerze arbeitet
