@@ -629,5 +629,5 @@
 - [x] Armband-Beschreibungen: nur die 5 Pulver-Steine (bereits korrekt)
 
 ## BUG: Veröffentlichte Seite zeigt "Not Found" (04.03.2026)
-- [ ] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
-- [ ] Problem diagnostizieren und beheben
+- [x] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
+- [x] Problem diagnostizieren und beheben: web-dist/ von dist/ getrennt, Server nutzt jetzt web-dist/

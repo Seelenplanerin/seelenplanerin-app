@@ -36,18 +36,15 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 // Resolve the web dist path correctly in both dev and production:
-// - Dev (tsx): __dirname = .../server/_core/ -> ../../dist = project root/dist ✅
-// - Prod (node dist/index.js): __dirname = .../dist/ -> ../../dist = wrong ❌
-// Solution: use process.cwd() which is always the project root in both modes
+// web-dist/ contains the Expo web export (static HTML/CSS/JS)
+// dist/ contains the server bundle (index.js from esbuild)
+// This separation prevents esbuild from interfering with the web build.
 function getWebDistPath(): string {
-  // Try process.cwd()/dist first (works in production when started from /app)
+  // Primary: web-dist folder (separated from server dist)
+  const cwdWebDist = path.join(process.cwd(), "web-dist");
+  if (fs.existsSync(cwdWebDist)) return cwdWebDist;
+  // Fallback: dist folder (legacy, for backwards compatibility)
   const cwdDist = path.join(process.cwd(), "dist");
-  // In dev, __dirname is server/_core, so ../../dist is the project dist
-  const devDist = path.join(__dirname, "../../dist");
-  
-  // In production, the server runs from /app and dist is at /app/dist
-  // In dev, dist is at project-root/dist
-  // Both should resolve to the same place via cwd
   return cwdDist;
 }
 

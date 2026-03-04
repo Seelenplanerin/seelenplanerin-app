@@ -1941,8 +1941,9 @@ async function findAvailablePort(startPort = 3e3) {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 function getWebDistPath() {
+  const cwdWebDist = path.join(process.cwd(), "web-dist");
+  if (fs.existsSync(cwdWebDist)) return cwdWebDist;
   const cwdDist = path.join(process.cwd(), "dist");
-  const devDist = path.join(__dirname, "../../dist");
   return cwdDist;
 }
 async function startServer() {

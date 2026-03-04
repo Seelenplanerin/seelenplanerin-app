@@ -14,8 +14,8 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
-# Build ONLY the server (esbuild) - web app dist is pre-built and committed to repo
-# Do NOT run expo export here - it would overwrite the pre-built dist with wrong API URL
+# Build the server bundle into dist/ (separate from web-dist/)
+# web-dist/ contains the pre-built Expo web export and is committed to the repo
 RUN pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 EXPOSE 3000
