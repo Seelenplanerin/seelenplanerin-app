@@ -629,8 +629,8 @@
 - [x] Armband-Beschreibungen: nur die 5 Pulver-Steine (bereits korrekt)
 
 ## BUG: Veröffentlichte Seite zeigt "Not Found" (04.03.2026)
-- [ ] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
-- [ ] Problem diagnostizieren und beheben
+- [x] Veröffentlichte Domain seelenapp-m3pwe7f6.manus.space zeigt Not Found
+- [x] Problem diagnostizieren und beheben: /api/ redirect auf /api/app/ eingerichtet
 
 ## KRITISCH: Rituale NUR mit Set-Inhalten (04.03.2026)
 - [x] Alle 51 Rituale umschreiben: NUR die Set-Inhalte (2 Steine, 1 Räucherwerk, 1 Kerze) beschreiben
@@ -640,3 +640,7 @@
 ## Rituale individuell umschreiben (04.03.2026)
 - [x] Alle 51 Rituale individuell und einzigartig umschreiben – passend zum jeweiligen Anlass
 - [x] Weiterhin NUR Set-Inhalte verwenden (2 Steine, 1 Räucherwerk, 1 Kerze)
+
+## Tentary-Links prüfen (04.03.2026)
+- [ ] Alle 51 Ritual-shopUrl-Links prüfen: Jedes Ritual muss auf das korrekte Ritual-Set verlinken
+- [ ] Tentary-Code-Mapping abgleichen

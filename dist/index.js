@@ -1978,6 +1978,12 @@ async function startServer() {
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
   });
+  app.get("/api", (_req, res) => {
+    res.redirect("/api/app/");
+  });
+  app.get("/api/", (_req, res) => {
+    res.redirect("/api/app/");
+  });
   const webDistPath = getWebDistPath();
   console.log(`[api] Web dist path: ${webDistPath} (exists: ${fs.existsSync(webDistPath)})`);
   if (fs.existsSync(webDistPath)) {

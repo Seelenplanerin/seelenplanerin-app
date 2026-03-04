@@ -90,6 +90,14 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
+  // Redirect /api/ to /api/app/ so the published domain root works
+  app.get("/api", (_req, res) => {
+    res.redirect("/api/app/");
+  });
+  app.get("/api/", (_req, res) => {
+    res.redirect("/api/app/");
+  });
+
   const webDistPath = getWebDistPath();
   console.log(`[api] Web dist path: ${webDistPath} (exists: ${fs.existsSync(webDistPath)})`);
 
