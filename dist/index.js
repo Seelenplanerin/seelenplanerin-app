@@ -433,6 +433,454 @@ var init_db = __esm({
   }
 });
 
+// server/email.ts
+var email_exports = {};
+__export(email_exports, {
+  sendAcademyWaitlistEmail: () => sendAcademyWaitlistEmail,
+  sendAffiliateAdminNotification: () => sendAffiliateAdminNotification,
+  sendAffiliatePayoutEmail: () => sendAffiliatePayoutEmail,
+  sendAffiliateSaleNotification: () => sendAffiliateSaleNotification,
+  sendAffiliateWelcomeEmail: () => sendAffiliateWelcomeEmail,
+  sendBroadcastEmail: () => sendBroadcastEmail,
+  sendPasswordResetEmail: () => sendPasswordResetEmail,
+  sendWelcomeEmail: () => sendWelcomeEmail,
+  verifySmtpConnection: () => verifySmtpConnection
+});
+import nodemailer from "nodemailer";
+function getSmtpConfig() {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const fromName = process.env.SMTP_FROM_NAME || "Die Seelenplanerin";
+  if (!host || !user || !pass) {
+    throw new Error("SMTP-Konfiguration fehlt. Bitte SMTP_HOST, SMTP_USER und SMTP_PASS setzen.");
+  }
+  return { host, port, user, pass, fromName };
+}
+function createTransporter() {
+  const config = getSmtpConfig();
+  return nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.port === 465,
+    auth: {
+      user: config.user,
+      pass: config.pass
+    }
+  });
+}
+function emailTemplate(content) {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#FDF8F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FDF8F4;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:520px;background-color:#FFFFFF;border-radius:24px;border:1px solid #EDD9D0;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="background-color:#F9EDE8;padding:32px 32px 24px;text-align:center;">
+              <div style="font-size:40px;margin-bottom:12px;">\u{1F338}</div>
+              <h1 style="margin:0;font-size:24px;color:#5C3317;font-weight:700;">Die Seelenplanerin</h1>
+              <p style="margin:6px 0 0;font-size:14px;color:#A08070;">Dein spiritueller Begleiter</p>
+            </td>
+          </tr>
+          <!-- Content -->
+          <tr>
+            <td style="padding:32px;">
+              ${content}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 32px;border-top:1px solid #EDD9D0;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#A08070;line-height:20px;">
+                Mit Liebe gesendet von der Seelenplanerin \u2728<br>
+                <a href="https://www.instagram.com/die.seelenplanerin" style="color:#C4826A;text-decoration:none;">@die.seelenplanerin</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+async function sendWelcomeEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen, ${params.toName}! \u{1F319}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Sch\xF6n, dass du Teil unserer Community wirst. Hier sind deine Zugangsdaten f\xFCr die Seelenplanerin-App:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">E-Mail-Adresse</p>
+            <p style="margin:0 0 16px;font-size:16px;color:#5C3317;font-weight:700;">${params.toEmail}</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Tempor\xE4res Passwort</p>
+            <p style="margin:0;font-size:20px;color:#C4826A;font-weight:700;letter-spacing:2px;">${params.tempPassword}</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>So geht's weiter:</strong>
+      </p>
+      <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:24px;">
+        <li>\xD6ffne die Seelenplanerin-App</li>
+        <li>Gehe zum Tab <strong>Community</strong></li>
+        <li>Melde dich mit deiner E-Mail und dem tempor\xE4ren Passwort an</li>
+        <li>Du wirst aufgefordert, ein eigenes Passwort zu w\xE4hlen</li>
+      </ol>
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        "Dieser Raum geh\xF6rt uns \u2013 ein sicherer Ort f\xFCr alle Frauen, die ihren spirituellen Weg gehen." \u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F338} Willkommen in der Seelenplanerin-Community, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Fehler beim Senden:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendPasswordResetEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neues Passwort, ${params.toName} \u{1F511}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Dein Passwort f\xFCr die Seelenplanerin-Community wurde zur\xFCckgesetzt. Hier ist dein neues tempor\xE4res Passwort:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein neues tempor\xE4res Passwort</p>
+            <p style="margin:0;font-size:24px;color:#C4826A;font-weight:700;letter-spacing:3px;">${params.tempPassword}</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Melde dich mit diesem Passwort in der App an. Du wirst dann aufgefordert, ein neues pers\xF6nliches Passwort zu w\xE4hlen.
+      </p>
+      <p style="margin:0;font-size:13px;color:#A08070;text-align:center;">
+        Falls du kein neues Passwort angefordert hast, kannst du diese E-Mail ignorieren.
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F511} Neues Passwort f\xFCr die Seelenplanerin-Community`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Fehler beim Senden:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendBroadcastEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+    const safeMessage = params.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
+    for (const recipient of params.recipients) {
+      try {
+        const content = `
+          <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Nachricht von der Seelenplanerin \u{1F338}</h2>
+          <p style="margin:0 0 16px;font-size:15px;color:#C4826A;">Hallo ${recipient.name},</p>
+          <div style="margin:0 0 20px;font-size:15px;color:#8B5E3C;line-height:26px;">${safeMessage}</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+            <tr>
+              <td style="padding:16px;text-align:center;">
+                <p style="margin:0;font-size:14px;color:#8B5E3C;">
+                  \xD6ffne die <strong>Seelenplanerin-App</strong> f\xFCr mehr Inhalte \u2728
+                </p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:0;font-size:13px;color:#A08070;text-align:center;font-style:italic;">
+            "Vertraue deinem Weg \u2013 die Sterne begleiten dich." \u{1F319}
+          </p>`;
+        await transporter.sendMail({
+          from: `"${config.fromName}" <${config.user}>`,
+          to: recipient.email,
+          subject: params.subject,
+          html: emailTemplate(content)
+        });
+        sent++;
+      } catch (err) {
+        failed++;
+        errors.push(`${recipient.email}: ${err.message}`);
+      }
+    }
+    return { success: failed === 0, sent, failed, errors };
+  } catch (err) {
+    console.error("[Email] Broadcast-Fehler:", err);
+    return { success: false, sent: 0, failed: params.recipients.length, errors: [err.message] };
+  }
+}
+async function sendAffiliateWelcomeEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei \u201EGeben & Nehmen\u201C, ${params.toName}! \u{1F91D}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Wie wundersch\xF6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>20% Provision</strong> auf jeden Verkauf \xFCber deinen pers\xF6nlichen Link (nur auf den Produktpreis, nicht auf Versandkosten).
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\xF6nlicher Empfehlungscode</p>
+            <p style="margin:0 0 16px;font-size:28px;color:#C9A96E;font-weight:700;letter-spacing:3px;">${params.affiliateCode}</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;">Der K\xE4ufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.</p>
+            <p style="margin:0;font-size:12px;color:#A08070;">Dein Link: <a href="${params.affiliateLink}" style="color:#C4826A;">${params.affiliateLink}</a></p>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert\u2019s \u2013 in 3 Schritten:</p>
+
+      <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
+        <li><strong>Teile deinen Code</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
+        <li><strong>Der K\xE4ufer gibt deinen Code bei der Bestellung ein</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
+        <li><strong>Du erh\xE4ltst 20% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
+      </ol>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:16px;">
+            <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele \u2013 was du verdienen kannst:</p>
+            <table width="100%" style="font-size:13px;color:#8B5E3C;">
+              <tr><td style="padding:4px 0;">Seelenimpuls (17 \u20AC/Monat)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Schutzarmband Mariposa (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Runen-Charm einzeln (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Meditationskerze (17 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Aura Reading (77 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">15,40 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Runen-Armband (94 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">18,80 \u20AC</td></tr>
+              <tr><td style="padding:4px 0;">Deep Talk (ab 111 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">ab 22,20 \u20AC</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>Wichtig:</strong> Bitte hinterlege deine <strong>PayPal-E-Mail</strong> in der App unter \u201EGeben & Nehmen\u201C \u2192 \u201EDeine Zahlungsdaten\u201C, damit wir dir deine Provision auszahlen k\xF6nnen. Es gibt <strong>keinen Mindestbetrag</strong> \u2013 jeder Cent wird ausgezahlt!
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        \u201ETeile, was dir am Herzen liegt \u2013 und die F\xFClle kommt zu dir zur\xFCck.\u201C \u{1F319}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F91D} Willkommen bei \u201EGeben & Nehmen\u201C \u2013 Dein Empfehlungslink ist da, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Willkommen Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendAffiliateSaleNotification(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neuer Verkauf \xFCber deinen Link! \u{1F389}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Hallo ${params.toName}, gro\xDFartige Neuigkeiten! Es wurde gerade ein Verkauf \xFCber deinen Empfehlungslink get\xE4tigt.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0FFF0;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Produkt:</td><td style="text-align:right;">${params.product}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Verkaufsbetrag:</td><td style="text-align:right;">${params.amount} \u20AC</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">K\xE4ufer:</td><td style="text-align:right;">${params.customerName}</td></tr>
+              <tr style="border-top:1px solid #C8E6C9;"><td style="padding:10px 0 6px;font-weight:700;font-size:16px;color:#4CAF50;">Deine Provision (20%):</td><td style="text-align:right;font-weight:700;font-size:16px;color:#4CAF50;">${params.commission} \u20AC</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Die Provision wird dir ausgezahlt, sobald die Zahlung positiv eingegangen ist. Du kannst deinen aktuellen Stand jederzeit in der App unter <strong>\u201EGeben & Nehmen\u201C</strong> einsehen.
+      </p>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        <strong>Dein Affiliate-Code:</strong> ${params.affiliateCode}
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        Weiter so \u2013 du baust dir etwas Wundersch\xF6nes auf! \u{1F319}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F389} Neuer Verkauf! Du hast ${params.commission} \u20AC Provision verdient, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Sale-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendAcademyWaitlistEmail(email) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <div style="text-align:center;margin-bottom:20px;">
+        <span style="font-size:48px;">\u{1F393}</span>
+      </div>
+      <h1 style="color:#C9A96E;text-align:center;font-size:24px;">Seelen Academy \u2013 Du bist dabei!</h1>
+      <p style="text-align:center;color:#666;font-size:16px;line-height:1.6;">
+        Liebe Seele,<br><br>
+        vielen Dank, dass du dich f\xFCr die <strong>Seelen Academy</strong> interessierst!
+        Du bist jetzt auf der Warteliste und wirst als Erste erfahren, wenn die Ausbildungen starten.
+      </p>
+      <div style="background:#FDF8F4;border-radius:12px;padding:20px;margin:20px 0;">
+        <h3 style="color:#3D2314;margin-bottom:12px;">Geplante Ausbildungen:</h3>
+        <p style="color:#666;margin:8px 0;">\u{1F441}\uFE0F <strong>Aura Reading Ausbildung</strong> \u2013 Coming Soon</p>
+        <p style="color:#666;margin:8px 0;">\u{1F300} <strong>Theta Healing Ausbildung</strong> \u2013 Coming Soon</p>
+      </div>
+      <p style="text-align:center;color:#666;font-size:14px;line-height:1.6;">
+        Ich freue mich riesig, dass du diesen Weg mit mir gehen m\xF6chtest.
+        Sobald es Neuigkeiten gibt, melde ich mich bei dir!<br><br>
+        Von Herzen,<br>
+        <strong>Lara \u2013 Die Seelenplanerin</strong> \u2728
+      </p>
+    `;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: email,
+      subject: "\u{1F393} Seelen Academy \u2013 Du bist auf der Warteliste!",
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Academy-Warteliste Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function verifySmtpConnection() {
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] SMTP-Verbindung fehlgeschlagen:", err);
+    return { success: false, error: err.message || "Verbindung fehlgeschlagen" };
+  }
+}
+async function sendAffiliateAdminNotification(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neue Affiliate-Anmeldung! \u{1F91D}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Es hat sich eine neue Person f\xFCr das Empfehlungsprogramm \u201EGeben & Nehmen" angemeldet.
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Name:</td><td style="text-align:right;">${params.affiliateName}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">E-Mail:</td><td style="text-align:right;">${params.affiliateEmail}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Gew\xE4hlter Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <div style="background-color:#FFF3E0;border-radius:12px;padding:16px;border:1px solid #FFE0B2;margin:0 0 16px;">
+        <p style="margin:0;font-size:14px;color:#E65100;font-weight:700;">\u26A0\uFE0F N\xE4chster Schritt:</p>
+        <p style="margin:8px 0 0;font-size:14px;color:#8B5E3C;line-height:22px;">
+          Bitte lege den Gutscheincode <strong style="color:#C9A96E;">${params.affiliateCode}</strong> auf Tentary an, damit K\xE4ufer ihn bei der Bestellung eingeben k\xF6nnen.
+        </p>
+      </div>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: config.user,
+      // An Admin (= SMTP-User)
+      subject: `\u{1F91D} Neue Affiliate-Anmeldung: ${params.affiliateName} (Code: ${params.affiliateCode})`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Admin-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+async function sendAffiliatePayoutEmail(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Deine Provision wurde ausgezahlt! \u{1F4B8}</h2>
+      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
+        Hallo ${params.toName}, wir haben dir soeben deine Provision \xFCberwiesen!
+      </p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#E8F5E9;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
+        <tr>
+          <td style="padding:20px;">
+            <table width="100%" style="font-size:14px;color:#5C3317;">
+              <tr><td style="padding:6px 0;font-weight:600;">Betrag:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#4CAF50;">${params.amount} \u20AC</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Methode:</td><td style="text-align:right;">PayPal</td></tr>
+              ${params.reference ? `<tr><td style="padding:6px 0;font-weight:600;">Referenz:</td><td style="text-align:right;">${params.reference}</td></tr>` : ""}
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
+        Bitte pr\xFCfe dein PayPal-Konto \u2013 der Betrag sollte in K\xFCrze dort eingehen. Falls du Fragen hast, melde dich gerne bei uns.
+      </p>
+
+      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
+        Danke, dass du Die Seelenplanerin weiterempfiehlst! \u{1F338}\u2728
+      </p>`;
+    await transporter.sendMail({
+      from: `"${config.fromName}" <${config.user}>`,
+      to: params.toEmail,
+      subject: `\u{1F4B8} Auszahlung: ${params.amount} \u20AC wurden an dich \xFCberwiesen, ${params.toName}!`,
+      html: emailTemplate(content)
+    });
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Affiliate-Auszahlungs-E-Mail Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+var init_email = __esm({
+  "server/email.ts"() {
+    "use strict";
+  }
+});
+
 // server/_core/index.ts
 import "dotenv/config";
 import express from "express";
@@ -978,436 +1426,8 @@ var systemRouter = router({
   })
 });
 
-// server/email.ts
-import nodemailer from "nodemailer";
-function getSmtpConfig() {
-  const host = process.env.SMTP_HOST;
-  const port = parseInt(process.env.SMTP_PORT || "587", 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const fromName = process.env.SMTP_FROM_NAME || "Die Seelenplanerin";
-  if (!host || !user || !pass) {
-    throw new Error("SMTP-Konfiguration fehlt. Bitte SMTP_HOST, SMTP_USER und SMTP_PASS setzen.");
-  }
-  return { host, port, user, pass, fromName };
-}
-function createTransporter() {
-  const config = getSmtpConfig();
-  return nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.port === 465,
-    auth: {
-      user: config.user,
-      pass: config.pass
-    }
-  });
-}
-function emailTemplate(content) {
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin:0;padding:0;background-color:#FDF8F4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FDF8F4;padding:40px 20px;">
-    <tr>
-      <td align="center">
-        <table width="100%" style="max-width:520px;background-color:#FFFFFF;border-radius:24px;border:1px solid #EDD9D0;overflow:hidden;">
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#F9EDE8;padding:32px 32px 24px;text-align:center;">
-              <div style="font-size:40px;margin-bottom:12px;">\u{1F338}</div>
-              <h1 style="margin:0;font-size:24px;color:#5C3317;font-weight:700;">Die Seelenplanerin</h1>
-              <p style="margin:6px 0 0;font-size:14px;color:#A08070;">Dein spiritueller Begleiter</p>
-            </td>
-          </tr>
-          <!-- Content -->
-          <tr>
-            <td style="padding:32px;">
-              ${content}
-            </td>
-          </tr>
-          <!-- Footer -->
-          <tr>
-            <td style="padding:24px 32px;border-top:1px solid #EDD9D0;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#A08070;line-height:20px;">
-                Mit Liebe gesendet von der Seelenplanerin \u2728<br>
-                <a href="https://www.instagram.com/die.seelenplanerin" style="color:#C4826A;text-decoration:none;">@die.seelenplanerin</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-async function sendWelcomeEmail(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen, ${params.toName}! \u{1F319}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Sch\xF6n, dass du Teil unserer Community wirst. Hier sind deine Zugangsdaten f\xFCr die Seelenplanerin-App:
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;">
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">E-Mail-Adresse</p>
-            <p style="margin:0 0 16px;font-size:16px;color:#5C3317;font-weight:700;">${params.toEmail}</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Tempor\xE4res Passwort</p>
-            <p style="margin:0;font-size:20px;color:#C4826A;font-weight:700;letter-spacing:2px;">${params.tempPassword}</p>
-          </td>
-        </tr>
-      </table>
-      <p style="margin:0 0 16px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        <strong>So geht's weiter:</strong>
-      </p>
-      <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:24px;">
-        <li>\xD6ffne die Seelenplanerin-App</li>
-        <li>Gehe zum Tab <strong>Community</strong></li>
-        <li>Melde dich mit deiner E-Mail und dem tempor\xE4ren Passwort an</li>
-        <li>Du wirst aufgefordert, ein eigenes Passwort zu w\xE4hlen</li>
-      </ol>
-      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
-        "Dieser Raum geh\xF6rt uns \u2013 ein sicherer Ort f\xFCr alle Frauen, die ihren spirituellen Weg gehen." \u2728
-      </p>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: params.toEmail,
-      subject: `\u{1F338} Willkommen in der Seelenplanerin-Community, ${params.toName}!`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Fehler beim Senden:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function sendPasswordResetEmail(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neues Passwort, ${params.toName} \u{1F511}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Dein Passwort f\xFCr die Seelenplanerin-Community wurde zur\xFCckgesetzt. Hier ist dein neues tempor\xE4res Passwort:
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;text-align:center;">
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein neues tempor\xE4res Passwort</p>
-            <p style="margin:0;font-size:24px;color:#C4826A;font-weight:700;letter-spacing:3px;">${params.tempPassword}</p>
-          </td>
-        </tr>
-      </table>
-      <p style="margin:0 0 16px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        Melde dich mit diesem Passwort in der App an. Du wirst dann aufgefordert, ein neues pers\xF6nliches Passwort zu w\xE4hlen.
-      </p>
-      <p style="margin:0;font-size:13px;color:#A08070;text-align:center;">
-        Falls du kein neues Passwort angefordert hast, kannst du diese E-Mail ignorieren.
-      </p>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: params.toEmail,
-      subject: `\u{1F511} Neues Passwort f\xFCr die Seelenplanerin-Community`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Fehler beim Senden:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function sendBroadcastEmail(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    let sent = 0;
-    let failed = 0;
-    const errors = [];
-    const safeMessage = params.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>");
-    for (const recipient of params.recipients) {
-      try {
-        const content = `
-          <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Nachricht von der Seelenplanerin \u{1F338}</h2>
-          <p style="margin:0 0 16px;font-size:15px;color:#C4826A;">Hallo ${recipient.name},</p>
-          <div style="margin:0 0 20px;font-size:15px;color:#8B5E3C;line-height:26px;">${safeMessage}</div>
-          <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
-            <tr>
-              <td style="padding:16px;text-align:center;">
-                <p style="margin:0;font-size:14px;color:#8B5E3C;">
-                  \xD6ffne die <strong>Seelenplanerin-App</strong> f\xFCr mehr Inhalte \u2728
-                </p>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:0;font-size:13px;color:#A08070;text-align:center;font-style:italic;">
-            "Vertraue deinem Weg \u2013 die Sterne begleiten dich." \u{1F319}
-          </p>`;
-        await transporter.sendMail({
-          from: `"${config.fromName}" <${config.user}>`,
-          to: recipient.email,
-          subject: params.subject,
-          html: emailTemplate(content)
-        });
-        sent++;
-      } catch (err) {
-        failed++;
-        errors.push(`${recipient.email}: ${err.message}`);
-      }
-    }
-    return { success: failed === 0, sent, failed, errors };
-  } catch (err) {
-    console.error("[Email] Broadcast-Fehler:", err);
-    return { success: false, sent: 0, failed: params.recipients.length, errors: [err.message] };
-  }
-}
-async function sendAffiliateWelcomeEmail(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei \u201EGeben & Nehmen\u201C, ${params.toName}! \u{1F91D}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Wie wundersch\xF6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>20% Provision</strong> auf jeden Verkauf \xFCber deinen pers\xF6nlichen Link (nur auf den Produktpreis, nicht auf Versandkosten).
-      </p>
-
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;text-align:center;">
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\xF6nlicher Empfehlungscode</p>
-            <p style="margin:0 0 16px;font-size:28px;color:#C9A96E;font-weight:700;letter-spacing:3px;">${params.affiliateCode}</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;">Der K\xE4ufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.</p>
-            <p style="margin:0;font-size:12px;color:#A08070;">Dein Link: <a href="${params.affiliateLink}" style="color:#C4826A;">${params.affiliateLink}</a></p>
-          </td>
-        </tr>
-      </table>
-
-      <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert\u2019s \u2013 in 3 Schritten:</p>
-
-      <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
-        <li><strong>Teile deinen Code</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\xF6nlich</li>
-        <li><strong>Der K\xE4ufer gibt deinen Code bei der Bestellung ein</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
-        <li><strong>Du erh\xE4ltst 20% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
-      </ol>
-
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
-        <tr>
-          <td style="padding:16px;">
-            <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele \u2013 was du verdienen kannst:</p>
-            <table width="100%" style="font-size:13px;color:#8B5E3C;">
-              <tr><td style="padding:4px 0;">Seelenimpuls (17 \u20AC/Monat)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Schutzarmband Mariposa (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Runen-Charm einzeln (24 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Meditationskerze (17 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Aura Reading (77 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">15,40 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Runen-Armband (94 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">18,80 \u20AC</td></tr>
-              <tr><td style="padding:4px 0;">Deep Talk (ab 111 \u20AC)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">ab 22,20 \u20AC</td></tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-
-      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        <strong>Wichtig:</strong> Bitte hinterlege deine <strong>PayPal-E-Mail</strong> in der App unter \u201EGeben & Nehmen\u201C \u2192 \u201EDeine Zahlungsdaten\u201C, damit wir dir deine Provision auszahlen k\xF6nnen. Es gibt <strong>keinen Mindestbetrag</strong> \u2013 jeder Cent wird ausgezahlt!
-      </p>
-
-      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
-        \u201ETeile, was dir am Herzen liegt \u2013 und die F\xFClle kommt zu dir zur\xFCck.\u201C \u{1F319}\u2728
-      </p>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: params.toEmail,
-      subject: `\u{1F91D} Willkommen bei \u201EGeben & Nehmen\u201C \u2013 Dein Empfehlungslink ist da, ${params.toName}!`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Affiliate-Willkommen Fehler:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function sendAffiliateSaleNotification(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neuer Verkauf \xFCber deinen Link! \u{1F389}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Hallo ${params.toName}, gro\xDFartige Neuigkeiten! Es wurde gerade ein Verkauf \xFCber deinen Empfehlungslink get\xE4tigt.
-      </p>
-
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0FFF0;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;">
-            <table width="100%" style="font-size:14px;color:#5C3317;">
-              <tr><td style="padding:6px 0;font-weight:600;">Produkt:</td><td style="text-align:right;">${params.product}</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">Verkaufsbetrag:</td><td style="text-align:right;">${params.amount} \u20AC</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">K\xE4ufer:</td><td style="text-align:right;">${params.customerName}</td></tr>
-              <tr style="border-top:1px solid #C8E6C9;"><td style="padding:10px 0 6px;font-weight:700;font-size:16px;color:#4CAF50;">Deine Provision (20%):</td><td style="text-align:right;font-weight:700;font-size:16px;color:#4CAF50;">${params.commission} \u20AC</td></tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-
-      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        Die Provision wird dir ausgezahlt, sobald die Zahlung positiv eingegangen ist. Du kannst deinen aktuellen Stand jederzeit in der App unter <strong>\u201EGeben & Nehmen\u201C</strong> einsehen.
-      </p>
-
-      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        <strong>Dein Affiliate-Code:</strong> ${params.affiliateCode}
-      </p>
-
-      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
-        Weiter so \u2013 du baust dir etwas Wundersch\xF6nes auf! \u{1F319}\u2728
-      </p>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: params.toEmail,
-      subject: `\u{1F389} Neuer Verkauf! Du hast ${params.commission} \u20AC Provision verdient, ${params.toName}!`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Affiliate-Sale-Benachrichtigung Fehler:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function sendAcademyWaitlistEmail(email) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <div style="text-align:center;margin-bottom:20px;">
-        <span style="font-size:48px;">\u{1F393}</span>
-      </div>
-      <h1 style="color:#C9A96E;text-align:center;font-size:24px;">Seelen Academy \u2013 Du bist dabei!</h1>
-      <p style="text-align:center;color:#666;font-size:16px;line-height:1.6;">
-        Liebe Seele,<br><br>
-        vielen Dank, dass du dich f\xFCr die <strong>Seelen Academy</strong> interessierst!
-        Du bist jetzt auf der Warteliste und wirst als Erste erfahren, wenn die Ausbildungen starten.
-      </p>
-      <div style="background:#FDF8F4;border-radius:12px;padding:20px;margin:20px 0;">
-        <h3 style="color:#3D2314;margin-bottom:12px;">Geplante Ausbildungen:</h3>
-        <p style="color:#666;margin:8px 0;">\u{1F441}\uFE0F <strong>Aura Reading Ausbildung</strong> \u2013 Coming Soon</p>
-        <p style="color:#666;margin:8px 0;">\u{1F300} <strong>Theta Healing Ausbildung</strong> \u2013 Coming Soon</p>
-      </div>
-      <p style="text-align:center;color:#666;font-size:14px;line-height:1.6;">
-        Ich freue mich riesig, dass du diesen Weg mit mir gehen m\xF6chtest.
-        Sobald es Neuigkeiten gibt, melde ich mich bei dir!<br><br>
-        Von Herzen,<br>
-        <strong>Lara \u2013 Die Seelenplanerin</strong> \u2728
-      </p>
-    `;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: email,
-      subject: "\u{1F393} Seelen Academy \u2013 Du bist auf der Warteliste!",
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Academy-Warteliste Fehler:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function verifySmtpConnection() {
-  try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] SMTP-Verbindung fehlgeschlagen:", err);
-    return { success: false, error: err.message || "Verbindung fehlgeschlagen" };
-  }
-}
-async function sendAffiliateAdminNotification(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Neue Affiliate-Anmeldung! \u{1F91D}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Es hat sich eine neue Person f\xFCr das Empfehlungsprogramm \u201EGeben & Nehmen" angemeldet.
-      </p>
-
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;">
-            <table width="100%" style="font-size:14px;color:#5C3317;">
-              <tr><td style="padding:6px 0;font-weight:600;">Name:</td><td style="text-align:right;">${params.affiliateName}</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">E-Mail:</td><td style="text-align:right;">${params.affiliateEmail}</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">Gew\xE4hlter Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-
-      <div style="background-color:#FFF3E0;border-radius:12px;padding:16px;border:1px solid #FFE0B2;margin:0 0 16px;">
-        <p style="margin:0;font-size:14px;color:#E65100;font-weight:700;">\u26A0\uFE0F N\xE4chster Schritt:</p>
-        <p style="margin:8px 0 0;font-size:14px;color:#8B5E3C;line-height:22px;">
-          Bitte lege den Gutscheincode <strong style="color:#C9A96E;">${params.affiliateCode}</strong> auf Tentary an, damit K\xE4ufer ihn bei der Bestellung eingeben k\xF6nnen.
-        </p>
-      </div>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: config.user,
-      // An Admin (= SMTP-User)
-      subject: `\u{1F91D} Neue Affiliate-Anmeldung: ${params.affiliateName} (Code: ${params.affiliateCode})`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Affiliate-Admin-Benachrichtigung Fehler:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
-async function sendAffiliatePayoutEmail(params) {
-  try {
-    const config = getSmtpConfig();
-    const transporter = createTransporter();
-    const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Deine Provision wurde ausgezahlt! \u{1F4B8}</h2>
-      <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Hallo ${params.toName}, wir haben dir soeben deine Provision \xFCberwiesen!
-      </p>
-
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#E8F5E9;border-radius:16px;border:1px solid #C8E6C9;margin:0 0 20px;">
-        <tr>
-          <td style="padding:20px;">
-            <table width="100%" style="font-size:14px;color:#5C3317;">
-              <tr><td style="padding:6px 0;font-weight:600;">Betrag:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#4CAF50;">${params.amount} \u20AC</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">Methode:</td><td style="text-align:right;">PayPal</td></tr>
-              ${params.reference ? `<tr><td style="padding:6px 0;font-weight:600;">Referenz:</td><td style="text-align:right;">${params.reference}</td></tr>` : ""}
-            </table>
-          </td>
-        </tr>
-      </table>
-
-      <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        Bitte pr\xFCfe dein PayPal-Konto \u2013 der Betrag sollte in K\xFCrze dort eingehen. Falls du Fragen hast, melde dich gerne bei uns.
-      </p>
-
-      <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
-        Danke, dass du Die Seelenplanerin weiterempfiehlst! \u{1F338}\u2728
-      </p>`;
-    await transporter.sendMail({
-      from: `"${config.fromName}" <${config.user}>`,
-      to: params.toEmail,
-      subject: `\u{1F4B8} Auszahlung: ${params.amount} \u20AC wurden an dich \xFCberwiesen, ${params.toName}!`,
-      html: emailTemplate(content)
-    });
-    return { success: true };
-  } catch (err) {
-    console.error("[Email] Affiliate-Auszahlungs-E-Mail Fehler:", err);
-    return { success: false, error: err.message || "Unbekannter Fehler" };
-  }
-}
+// server/routers.ts
+init_email();
 
 // server/storage.ts
 init_env();
@@ -1747,6 +1767,27 @@ var appRouter = router({
     // Affiliate aktivieren/deaktivieren (Admin)
     toggleActive: publicProcedure.input(z2.object({ code: z2.string().min(1), isActive: z2.number() })).mutation(async ({ input }) => {
       await updateAffiliate(input.code, { isActive: input.isActive });
+      return { success: true };
+    }),
+    // Passwort vergessen: neues temporäres Passwort per E-Mail senden
+    resetPassword: publicProcedure.input(z2.object({ email: z2.string().email() })).mutation(async ({ input }) => {
+      const affiliate = await getAffiliateByEmail(input.email);
+      if (!affiliate) return { success: false, error: "not_found" };
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let tempPw = "";
+      for (let i = 0; i < 6; i++) tempPw += chars[Math.floor(Math.random() * chars.length)];
+      await updateAffiliate(affiliate.code, { password: tempPw });
+      try {
+        const { sendPasswordResetEmail: sendReset } = await Promise.resolve().then(() => (init_email(), email_exports));
+        await sendReset({
+          toEmail: affiliate.email,
+          toName: affiliate.name,
+          tempPassword: tempPw
+        });
+      } catch (emailErr) {
+        console.error("[Affiliate] Reset-E-Mail Fehler:", emailErr);
+        return { success: false, error: "email_failed" };
+      }
       return { success: true };
     }),
     // Affiliate-Zahlungsdaten aktualisieren

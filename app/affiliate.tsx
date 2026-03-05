@@ -54,6 +54,8 @@ export default function AffiliateScreen() {
   const [copied, setCopied] = useState(false);
   const [paypalEmail, setPaypalEmail] = useState("");
   const [savingPayment, setSavingPayment] = useState(false);
+  const [resetSending, setResetSending] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const baseUrl = "https://seelenplanerin-app.onrender.com";
   const getLink = (code: string) => `${baseUrl}/ref/${code}`;
@@ -163,6 +165,50 @@ export default function AffiliateScreen() {
       setLoginError("Verbindungsfehler. Bitte versuche es erneut.");
     }
     setLoading(false);
+  }
+
+  async function handleResetPassword() {
+    if (!loginEmail.trim()) {
+      const msg = "Bitte gib zuerst deine E-Mail-Adresse ein.";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Hinweis", msg);
+      return;
+    }
+    setResetSending(true);
+    try {
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/affiliate.resetPassword`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: loginEmail.trim().toLowerCase() } }),
+      });
+      const data = await res.json();
+      const result = data?.result?.data?.json;
+      if (result?.success) {
+        setResetSent(true);
+        const msg = "Ein neues Passwort wurde an deine E-Mail gesendet. Bitte pr\u00fcfe dein Postfach.";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("E-Mail gesendet", msg);
+      } else if (result?.error === "not_found") {
+        const msg = "Diese E-Mail ist nicht registriert.";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("Fehler", msg);
+      } else if (result?.error === "email_failed") {
+        const msg = "E-Mail konnte nicht gesendet werden. Bitte versuche es sp\u00e4ter erneut.";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("Fehler", msg);
+      } else {
+        const msg = "Fehler beim Zur\u00fccksetzen. Bitte versuche es erneut.";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("Fehler", msg);
+      }
+    } catch (e) {
+      console.error("[Affiliate] Reset error:", e);
+      const msg = "Verbindungsfehler. Bitte versuche es erneut.";
+      if (Platform.OS === "web") window.alert(msg);
+      else Alert.alert("Fehler", msg);
+    }
+    setResetSending(false);
   }
 
   async function loadSales(code: string) {
@@ -287,6 +333,22 @@ export default function AffiliateScreen() {
                 <ActivityIndicator color="#FFF" />
               ) : (
                 <Text style={s.primaryBtnText}>Einloggen</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Passwort vergessen */}
+            <TouchableOpacity
+              style={{ marginTop: 12, alignItems: "center", padding: 8 }}
+              onPress={handleResetPassword}
+              disabled={resetSending}
+              activeOpacity={0.7}
+            >
+              {resetSending ? (
+                <ActivityIndicator color={C.gold} size="small" />
+              ) : resetSent ? (
+                <Text style={{ fontSize: 13, color: C.green, fontWeight: "600" }}>{"\u2713"} Neues Passwort gesendet!</Text>
+              ) : (
+                <Text style={{ fontSize: 13, color: C.gold, fontWeight: "600" }}>Passwort vergessen?</Text>
               )}
             </TouchableOpacity>
           </View>

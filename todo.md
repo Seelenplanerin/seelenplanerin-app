@@ -659,3 +659,11 @@
 - [x] Geschützter Passwort-Bereich für Affiliate-Dashboard (Login mit E-Mail + Passwort)
 - [x] Affiliate-Bestätigungsmail bei Registrierung senden (Code, Infos, Anleitung) - bereits implementiert via sendAffiliateWelcomeEmail
 - [x] SMTP-Zugangsdaten einrichten für E-Mail-Versand über hallo@seelenplanerin.de (bereits vorhanden: smtp.ionos.de)
+
+## Affiliate-Erweiterungen (05.03.2026 - Runde 2)
+- [x] Passwort-Vergessen-Funktion: E-Mail mit neuem Passwort senden
+- [x] Passwort-Vergessen: Server-Route implementieren
+- [x] Passwort-Vergessen: UI im Login-Screen
+- [x] Admin-Affiliate-Verwaltung prüfen und vervollständigen (war bereits fertig)
+- [x] Admin: Verkäufe manuell eintragen können (war bereits fertig)
+- [x] Admin: Auszahlungen markieren können (war bereits fertig)

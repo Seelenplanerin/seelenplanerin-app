@@ -371,6 +371,33 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // Passwort vergessen: neues temporäres Passwort per E-Mail senden
+    resetPassword: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const affiliate = await db.getAffiliateByEmail(input.email);
+        if (!affiliate) return { success: false as const, error: "not_found" };
+        // Generiere ein neues temporäres Passwort (6 Zeichen)
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let tempPw = "";
+        for (let i = 0; i < 6; i++) tempPw += chars[Math.floor(Math.random() * chars.length)];
+        // Passwort in DB speichern
+        await db.updateAffiliate(affiliate.code, { password: tempPw });
+        // E-Mail mit neuem Passwort senden
+        try {
+          const { sendPasswordResetEmail: sendReset } = await import("./email");
+          await sendReset({
+            toEmail: affiliate.email,
+            toName: affiliate.name,
+            tempPassword: tempPw,
+          });
+        } catch (emailErr) {
+          console.error("[Affiliate] Reset-E-Mail Fehler:", emailErr);
+          return { success: false as const, error: "email_failed" };
+        }
+        return { success: true as const };
+      }),
+
     // Affiliate-Zahlungsdaten aktualisieren
     updatePaymentInfo: publicProcedure
       .input(z.object({
