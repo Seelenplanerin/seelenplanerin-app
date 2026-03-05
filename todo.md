@@ -685,3 +685,19 @@
 - [ ] Preise in der App korrigieren
 - [x] Schutzarmband Summersoul: Preis auf 24 € korrigieren (Admin)
 - [x] Schutzarmband Mariposa: Preis auf 24 € korrigieren (Shop + Admin)
+
+## Affiliate-Code selbst wählen (05.03.2026 - DRINGEND)
+- [ ] Registrierung: Affiliate kann eigenen Code wählen (z.B. Vorname) statt Auto-Generierung
+- [ ] Server-Route anpassen: Code vom Nutzer entgegennehmen statt generieren
+- [ ] Validierung: Prüfen ob Code bereits vergeben ist
+
+## Affiliate-Reset + E-Mail-Fix (05.03.2026 - DRINGEND)
+- [x] Alle Affiliate-Daten komplett gelöscht (Codes, Sales, Payouts)
+- [x] E-Mail-Versand bei Affiliate-Registrierung funktioniert (SMTP auf Render korrekt konfiguriert)
+
+## Community-Login Bug (06.03.2026 - DRINGEND)
+- [ ] Community-Login nach Passwort-Reset funktioniert nicht
+
+## Shop + Community-Login Fix (06.03.2026)
+- [ ] Runen-Charm einzeln aus dem Shop entfernen
+- [ ] Community-Login nach Passwort-Reset fixen (Passwort aus E-Mail funktioniert nicht)

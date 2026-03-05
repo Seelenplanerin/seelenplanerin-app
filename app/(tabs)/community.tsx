@@ -476,58 +476,61 @@ export default function CommunityScreen() {
     if (!password.trim()) { setFehler("Bitte gib dein Passwort ein."); return; }
 
     try {
-      // Login: Lade Nutzerliste vom Server (mit Fallback auf AsyncStorage)
-      // Nutze XMLHttpRequest für iOS Safari Kompatibilität
       const API_URL = getApiBaseUrl();
-      let users: CommunityUser[] = [];
-      try {
-        const usersJson = await new Promise<any>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('GET', `${API_URL}/api/trpc/communityUsers.list`, true);
-          xhr.timeout = 10000;
-          xhr.onload = () => { try { resolve(JSON.parse(xhr.responseText)); } catch(e) { reject(e); } };
-          xhr.onerror = () => reject(new Error('network'));
-          xhr.ontimeout = () => reject(new Error('timeout'));
-          xhr.send();
-        });
-        const dbUsers = usersJson?.result?.data?.json || usersJson?.result?.data || [];
-        if (Array.isArray(dbUsers) && dbUsers.length > 0) {
-          users = dbUsers.map((u: any) => ({
-            email: u.email, password: u.password, name: u.name,
-            mustChangePassword: u.mustChangePassword === 1 || u.mustChangePassword === true,
-          }));
-          // Lokal cachen für Offline-Nutzung
-          await AsyncStorage.setItem(USERS_KEY, JSON.stringify(users));
-        }
-      } catch (_) {
-        // Fallback auf gecachte Nutzerliste
-        const cached = await AsyncStorage.getItem(USERS_KEY);
-        users = cached ? JSON.parse(cached) : [];
-      }
+      // Direkt die Server-Login-Route nutzen (prüft Passwort in der DB)
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password: password } }),
+      });
+      const data = await res.json();
+      const result = data?.result?.data?.json || data?.result?.data;
 
-      const emailLower = email.trim().toLowerCase();
-      const found = users.find(u => u.email.toLowerCase() === emailLower);
-      
-      if (!found) {
+      if (result?.error === "not_found") {
         setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
         return;
       }
-      if (found.password !== password) {
+      if (result?.error === "wrong_password") {
         setFehler("Falsches Passwort. Bitte versuche es erneut.");
         return;
       }
-
-      setIsLoggedIn(true);
-      setUserName(found.name || found.email.split("@")[0]);
-      setCurrentUser(found);
-      setFehler("");
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
-      if (found.mustChangePassword) {
-        setShowChangePw(true);
+      if (result?.success && result.user) {
+        const found: CommunityUser = {
+          email: result.user.email,
+          password: password,
+          name: result.user.name,
+          mustChangePassword: result.user.mustChangePassword === true,
+        };
+        setIsLoggedIn(true);
+        setUserName(found.name || found.email.split("@")[0]);
+        setCurrentUser(found);
+        setFehler("");
+        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        if (found.mustChangePassword) {
+          setShowChangePw(true);
+        }
+      } else {
+        setFehler("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
       }
     } catch (e: any) {
       console.error('Login error:', e?.message || e);
-      setFehler("Verbindungsfehler. Bitte versuche es erneut.");
+      // Fallback: versuche mit gecachten Daten
+      try {
+        const cached = await AsyncStorage.getItem(USERS_KEY);
+        const users: CommunityUser[] = cached ? JSON.parse(cached) : [];
+        const emailLower = email.trim().toLowerCase();
+        const found = users.find(u => u.email.toLowerCase() === emailLower);
+        if (!found) { setFehler("Verbindungsfehler und kein lokaler Cache vorhanden."); return; }
+        if (found.password !== password) { setFehler("Falsches Passwort."); return; }
+        setIsLoggedIn(true);
+        setUserName(found.name || found.email.split("@")[0]);
+        setCurrentUser(found);
+        setFehler("");
+        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        if (found.mustChangePassword) setShowChangePw(true);
+      } catch {
+        setFehler("Verbindungsfehler. Bitte versuche es erneut.");
+      }
     }
   };
 

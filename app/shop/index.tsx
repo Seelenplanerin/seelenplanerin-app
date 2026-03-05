@@ -170,17 +170,7 @@ const PRODUCTS: Product[] = [
     highlight: "Schwarzer Turmalin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
   },
-  {
-    id: "charm-einzeln",
-    name: "Runen-Charm einzeln",
-    nameEn: "Single Rune Charm",
-    kategorie: "armbänder",
-    preis: 11.00,
-    preisDisplay: "11,00 €",
-    beschreibung: "Einzelner Runen-Charm mit Heilstein-Pulver. Handgraviert. Passend für das Silberkettenarmband.",
-    emoji: "✦",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
-  },
+
   // ═══════════════════════════════════════════════
   // SESSIONS
   // ═══════════════════════════════════════════════
