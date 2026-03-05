@@ -696,8 +696,8 @@
 - [x] E-Mail-Versand bei Affiliate-Registrierung funktioniert (SMTP auf Render korrekt konfiguriert)
 
 ## Community-Login Bug (06.03.2026 - DRINGEND)
-- [ ] Community-Login nach Passwort-Reset funktioniert nicht
+- [x] Community-Login nach Passwort-Reset funktioniert nicht (gefixt: Server-Login-Route)
 
 ## Shop + Community-Login Fix (06.03.2026)
-- [ ] Runen-Charm einzeln aus dem Shop entfernen
-- [ ] Community-Login nach Passwort-Reset fixen (Passwort aus E-Mail funktioniert nicht)
+- [x] Runen-Charm einzeln aus dem Shop entfernen (Shop + Admin)
+- [x] Community-Login nach Passwort-Reset fixen (nutzt jetzt Server-Login-Route direkt statt gecachte Liste)
