@@ -1473,7 +1473,7 @@ export default function AdminScreen() {
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
                     <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
                       {[
-                        { name: "Schutzarmband", price: "28.90" },
+                        { name: "Schutzarmband", price: "24.00" },
                         { name: "Runen-Armband (Kette + 3 Charms)", price: "57.00" },
                         { name: "Runen-Charm einzeln", price: "11.00" },
                         { name: "Aura Reading", price: "77.00" },

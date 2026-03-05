@@ -679,3 +679,9 @@
 - [x] Unicode-Escape-Fehler im Affiliate-Bereich fixen (\u00e4 → ä etc.)
 - [x] Runen-Armbänder Preise aktualisiert: Armband 57€, Charm einzeln 11€, Schutzarmband 28,90€
 - [x] Admin-Passwort auf 1306 geändert
+
+## Preiskorrektur (05.03.2026 - Runde 5)
+- [ ] Alle Produkt-Preise auf Tentary nochmal prüfen
+- [ ] Preise in der App korrigieren
+- [ ] Schutzarmband Summersoul: Preis auf 24 € korrigieren
+- [ ] Schutzarmband Mariposa: Preis auf 24 € korrigieren
