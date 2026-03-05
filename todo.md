@@ -683,5 +683,5 @@
 ## Preiskorrektur (05.03.2026 - Runde 5)
 - [ ] Alle Produkt-Preise auf Tentary nochmal prüfen
 - [ ] Preise in der App korrigieren
-- [ ] Schutzarmband Summersoul: Preis auf 24 € korrigieren
-- [ ] Schutzarmband Mariposa: Preis auf 24 € korrigieren
+- [x] Schutzarmband Summersoul: Preis auf 24 € korrigieren (Admin)
+- [x] Schutzarmband Mariposa: Preis auf 24 € korrigieren (Shop + Admin)
