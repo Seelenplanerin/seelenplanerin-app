@@ -301,7 +301,7 @@ export default function RunenScreen() {
                     💫 Ein Unikat – nur für dich
                   </Text>
                 </View>
-                <Text style={st.preisText}>49,90 € inkl. Versand</Text>
+                <Text style={st.preisText}>57,00 € zzgl. 4,90 € Versand</Text>
                 <TouchableOpacity style={st.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
                   <Text style={st.shopBtnText}>🛍️ Armband bestellen →</Text>
                 </TouchableOpacity>

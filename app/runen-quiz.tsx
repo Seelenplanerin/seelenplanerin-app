@@ -219,7 +219,7 @@ export default function RunenQuizScreen() {
             <Text style={s.ctaText}>
               3 handgravierte Runen-Charms auf {info.heilstein}-Plättchen, befüllt mit Heilstein-Pulver. Ein Unikat – nur für dich.
             </Text>
-            <Text style={s.ctaPreis}>49,90 € inkl. Versand</Text>
+            <Text style={s.ctaPreis}>57,00 € zzgl. 4,90 € Versand</Text>
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: info.farbe }]}
               onPress={() => Linking.openURL(selectedSet?.tentaryUrl || "https://dieseelenplanerin.tentary.com/p/qnl3vN")}

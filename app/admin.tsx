@@ -19,7 +19,7 @@ const C = {
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
 
-const DEFAULT_PIN = "1234";
+const DEFAULT_PIN = "1306";
 const PIN_KEY = "admin_pin";
 const USERS_KEY = "community_users";
 const SONGS_KEY = "lara_songs";
@@ -1473,9 +1473,9 @@ export default function AdminScreen() {
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
                     <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
                       {[
-                        { name: "Schutzarmband", price: "24.00" },
-                        { name: "Runen-Armband", price: "94.00" },
-                        { name: "Runen-Charm", price: "24.00" },
+                        { name: "Schutzarmband", price: "28.90" },
+                        { name: "Runen-Armband (Kette + 3 Charms)", price: "57.00" },
+                        { name: "Runen-Charm einzeln", price: "11.00" },
                         { name: "Aura Reading", price: "77.00" },
                         { name: "Meditationskerze", price: "17.00" },
                         { name: "Seelenimpuls", price: "17.00" },

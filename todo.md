@@ -671,3 +671,11 @@
 ## Passwort-Ändern im Dashboard (05.03.2026 - Runde 3)
 - [x] Server-Route affiliate.changePassword implementieren (altes + neues Passwort)
 - [x] UI im Affiliate-Dashboard: Passwort-Ändern-Bereich (aufklappbar, mit Bestätigung)
+
+## Rituale-Links Korrektur (05.03.2026 - DRINGEND)
+- [ ] Alle Links bei den Ritualen prüfen und korrigieren
+
+## Fixes (05.03.2026 - Runde 4)
+- [ ] Unicode-Escape-Fehler im Affiliate-Bereich fixen (\u00e4 → ä etc.)
+- [ ] Runen-Armbänder Preise aktualisieren (Einzelcharms 11€, Preise von Tentary)
+- [ ] Admin-Passwort auf 1306 ändern
