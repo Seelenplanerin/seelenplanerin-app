@@ -1790,6 +1790,23 @@ var appRouter = router({
       }
       return { success: true };
     }),
+    // Passwort ändern (eingeloggt, mit altem Passwort bestätigen)
+    changePassword: publicProcedure.input(z2.object({
+      code: z2.string().min(1),
+      oldPassword: z2.string().min(1),
+      newPassword: z2.string().min(4)
+    })).mutation(async ({ input }) => {
+      const affiliate = await getAffiliateByCode(input.code);
+      if (!affiliate) return { success: false, error: "not_found" };
+      if (!affiliate.password || affiliate.password !== input.oldPassword) {
+        return { success: false, error: "wrong_password" };
+      }
+      if (input.newPassword.length < 4) {
+        return { success: false, error: "too_short" };
+      }
+      await updateAffiliate(input.code, { password: input.newPassword });
+      return { success: true };
+    }),
     // Affiliate-Zahlungsdaten aktualisieren
     updatePaymentInfo: publicProcedure.input(z2.object({
       code: z2.string().min(1),

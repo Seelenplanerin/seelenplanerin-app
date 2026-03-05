@@ -15,11 +15,16 @@ describe("Affiliate Login Route", () => {
     expect(router._def.procedures["affiliate.resetPassword"]).toBeDefined();
   });
 
+  it("should have affiliate.changePassword route defined", async () => {
+    const routerModule = await import("../server/routers");
+    const router = routerModule.appRouter;
+    expect(router._def.procedures["affiliate.changePassword"]).toBeDefined();
+  });
+
   it("should have all admin affiliate routes defined", async () => {
     const routerModule = await import("../server/routers");
     const router = routerModule.appRouter;
     const procedures = router._def.procedures;
-    // Admin routes
     expect(procedures["affiliate.list"]).toBeDefined();
     expect(procedures["affiliate.listAllSales"]).toBeDefined();
     expect(procedures["affiliate.createSale"]).toBeDefined();

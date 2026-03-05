@@ -398,6 +398,26 @@ export const appRouter = router({
         return { success: true as const };
       }),
 
+    // Passwort ändern (eingeloggt, mit altem Passwort bestätigen)
+    changePassword: publicProcedure
+      .input(z.object({
+        code: z.string().min(1),
+        oldPassword: z.string().min(1),
+        newPassword: z.string().min(4),
+      }))
+      .mutation(async ({ input }) => {
+        const affiliate = await db.getAffiliateByCode(input.code);
+        if (!affiliate) return { success: false as const, error: "not_found" };
+        if (!affiliate.password || affiliate.password !== input.oldPassword) {
+          return { success: false as const, error: "wrong_password" };
+        }
+        if (input.newPassword.length < 4) {
+          return { success: false as const, error: "too_short" };
+        }
+        await db.updateAffiliate(input.code, { password: input.newPassword });
+        return { success: true as const };
+      }),
+
     // Affiliate-Zahlungsdaten aktualisieren
     updatePaymentInfo: publicProcedure
       .input(z.object({

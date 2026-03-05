@@ -667,3 +667,7 @@
 - [x] Admin-Affiliate-Verwaltung prüfen und vervollständigen (war bereits fertig)
 - [x] Admin: Verkäufe manuell eintragen können (war bereits fertig)
 - [x] Admin: Auszahlungen markieren können (war bereits fertig)
+
+## Passwort-Ändern im Dashboard (05.03.2026 - Runde 3)
+- [x] Server-Route affiliate.changePassword implementieren (altes + neues Passwort)
+- [x] UI im Affiliate-Dashboard: Passwort-Ändern-Bereich (aufklappbar, mit Bestätigung)

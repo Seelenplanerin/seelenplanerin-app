@@ -56,6 +56,12 @@ export default function AffiliateScreen() {
   const [savingPayment, setSavingPayment] = useState(false);
   const [resetSending, setResetSending] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [oldPw, setOldPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [newPw2, setNewPw2] = useState("");
+  const [changePwLoading, setChangePwLoading] = useState(false);
+  const [changePwMsg, setChangePwMsg] = useState("");
 
   const baseUrl = "https://seelenplanerin-app.onrender.com";
   const getLink = (code: string) => `${baseUrl}/ref/${code}`;
@@ -271,6 +277,51 @@ export default function AffiliateScreen() {
       else Alert.alert("Fehler", "Fehler beim Speichern.");
     }
     setSavingPayment(false);
+  }
+
+  async function handleChangePassword() {
+    if (!affiliate) return;
+    if (!oldPw.trim()) {
+      setChangePwMsg("Bitte gib dein aktuelles Passwort ein.");
+      return;
+    }
+    if (newPw.length < 4) {
+      setChangePwMsg("Das neue Passwort muss mindestens 4 Zeichen lang sein.");
+      return;
+    }
+    if (newPw !== newPw2) {
+      setChangePwMsg("Die Passw\u00f6rter stimmen nicht \u00fcberein.");
+      return;
+    }
+    setChangePwLoading(true);
+    setChangePwMsg("");
+    try {
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/affiliate.changePassword`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: {
+          code: affiliate.code,
+          oldPassword: oldPw,
+          newPassword: newPw,
+        } }),
+      });
+      const data = await res.json();
+      const result = data?.result?.data?.json;
+      if (result?.success) {
+        const msg = "Passwort erfolgreich ge\u00e4ndert!";
+        if (Platform.OS === "web") window.alert(msg);
+        else Alert.alert("Erfolg", msg);
+        setOldPw(""); setNewPw(""); setNewPw2(""); setShowChangePw(false); setChangePwMsg("");
+      } else if (result?.error === "wrong_password") {
+        setChangePwMsg("Das aktuelle Passwort ist falsch.");
+      } else {
+        setChangePwMsg("Fehler beim \u00c4ndern. Bitte versuche es erneut.");
+      }
+    } catch (e) {
+      setChangePwMsg("Verbindungsfehler. Bitte versuche es erneut.");
+    }
+    setChangePwLoading(false);
   }
 
   const openBalance = affiliate ? (affiliate.totalEarnings - affiliate.totalPaid) : 0;
@@ -683,6 +734,68 @@ export default function AffiliateScreen() {
               <Text style={s.saveBtnText}>Zahlungsdaten speichern</Text>
             )}
           </TouchableOpacity>
+        </View>
+
+        {/* Passwort ändern */}
+        <View style={s.paymentCard}>
+          <TouchableOpacity
+            onPress={() => { setShowChangePw(!showChangePw); setChangePwMsg(""); setOldPw(""); setNewPw(""); setNewPw2(""); }}
+            activeOpacity={0.7}
+            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
+          >
+            <Text style={s.paymentTitle}>Passwort \u00e4ndern</Text>
+            <Text style={{ fontSize: 18, color: C.gold }}>{showChangePw ? "\u2303" : "\u2304"}</Text>
+          </TouchableOpacity>
+          {showChangePw && (
+            <View style={{ marginTop: 12 }}>
+              <Text style={s.inputLabel}>Aktuelles Passwort</Text>
+              <TextInput
+                style={s.input}
+                placeholder="Dein aktuelles Passwort"
+                placeholderTextColor={C.muted}
+                value={oldPw}
+                onChangeText={(t) => { setOldPw(t); setChangePwMsg(""); }}
+                secureTextEntry
+                returnKeyType="next"
+              />
+              <Text style={s.inputLabel}>Neues Passwort</Text>
+              <TextInput
+                style={s.input}
+                placeholder="Mindestens 4 Zeichen"
+                placeholderTextColor={C.muted}
+                value={newPw}
+                onChangeText={(t) => { setNewPw(t); setChangePwMsg(""); }}
+                secureTextEntry
+                returnKeyType="next"
+              />
+              <Text style={s.inputLabel}>Neues Passwort best\u00e4tigen</Text>
+              <TextInput
+                style={s.input}
+                placeholder="Passwort wiederholen"
+                placeholderTextColor={C.muted}
+                value={newPw2}
+                onChangeText={(t) => { setNewPw2(t); setChangePwMsg(""); }}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleChangePassword}
+              />
+              {changePwMsg ? (
+                <Text style={{ fontSize: 13, color: changePwMsg.includes("erfolgreich") ? "#4CAF50" : "#EF4444", marginBottom: 8 }}>{changePwMsg}</Text>
+              ) : null}
+              <TouchableOpacity
+                style={[s.saveBtn, changePwLoading && { opacity: 0.6 }]}
+                onPress={handleChangePassword}
+                disabled={changePwLoading}
+                activeOpacity={0.85}
+              >
+                {changePwLoading ? (
+                  <ActivityIndicator color={C.brown} />
+                ) : (
+                  <Text style={s.saveBtnText}>Passwort \u00e4ndern</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Social-Media-Vorlagen */}
