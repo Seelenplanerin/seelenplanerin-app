@@ -59,6 +59,7 @@ export const affiliateCodes = pgTable("affiliate_codes", {
   totalSales: integer("totalSales").default(0).notNull(),
   totalEarnings: integer("totalEarnings").default(0).notNull(), // in Cent
   totalPaid: integer("totalPaid").default(0).notNull(),         // in Cent
+  password: varchar("password", { length: 255 }),               // Passwort für Dashboard-Login
   paypalEmail: varchar("paypalEmail", { length: 320 }),         // für Auszahlung
   iban: varchar("iban", { length: 50 }),                        // alternativ IBAN
   createdAt: timestamp("createdAt").defaultNow().notNull(),

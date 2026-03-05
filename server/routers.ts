@@ -178,11 +178,29 @@ export const appRouter = router({
   // ── Affiliate-System ──
   affiliate: router({
     // Affiliate-Code für einen Nutzer erstellen oder abrufen
+    // Login mit E-Mail + Passwort
+    login: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        const affiliate = await db.getAffiliateByEmail(input.email);
+        if (!affiliate) return { success: false as const, error: "not_found" };
+        if (!affiliate.password || affiliate.password !== input.password) {
+          return { success: false as const, error: "wrong_password" };
+        }
+        return { success: true as const, affiliate };
+      }),
+
     getOrCreate: publicProcedure
-      .input(z.object({ email: z.string().email(), name: z.string().min(1), wunschCode: z.string().min(2).optional() }))
+      .input(z.object({ email: z.string().email(), name: z.string().min(1), wunschCode: z.string().min(2).optional(), password: z.string().min(4).optional() }))
       .mutation(async ({ input }) => {
         let affiliate = await db.getAffiliateByEmail(input.email);
-        if (affiliate) return { success: true as const, affiliate };
+        if (affiliate) {
+          // Wenn Passwort mitgegeben, prüfen
+          if (input.password && affiliate.password && affiliate.password !== input.password) {
+            return { success: false as const, error: "wrong_password" };
+          }
+          return { success: true as const, affiliate };
+        }
         // Wunschcode verwenden oder automatisch generieren
         let code: string;
         if (input.wunschCode) {
@@ -199,6 +217,10 @@ export const appRouter = router({
           }
         }
         const id = await db.createAffiliate({ email: input.email, name: input.name, code });
+        // Passwort speichern
+        if (input.password) {
+          await db.updateAffiliate(code, { password: input.password });
+        }
         affiliate = await db.getAffiliateByEmail(input.email);
         // Willkommens-E-Mail an Affiliate senden
         const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;

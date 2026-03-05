@@ -1,0 +1,22 @@
+{
+  "query": "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE();",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.edbbe7a298c6 --database M3PWE7f6T2SxuxdrbesCC6 --execute SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE();",
+  "rows": [
+    {
+      "table_name": "users"
+    },
+    {
+      "table_name": "meditations"
+    },
+    {
+      "table_name": "community_users"
+    },
+    {
+      "table_name": "__drizzle_migrations"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\nusers\nmeditations\ncommunity_users\n__drizzle_migrations\n",
+  "stderr": "",
+  "execution_time_ms": 58
+}

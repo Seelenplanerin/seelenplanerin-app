@@ -205,7 +205,7 @@ export async function createAffiliate(data: { email: string; name: string; code:
   return result[0].id;
 }
 
-export async function updateAffiliate(code: string, data: Partial<{ isActive: number; paypalEmail: string; iban: string; totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number }>) {
+export async function updateAffiliate(code: string, data: Partial<{ isActive: number; paypalEmail: string; iban: string; totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number; password: string }>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.code, code.toUpperCase()));

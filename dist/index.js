@@ -60,6 +60,8 @@ var init_schema = __esm({
       // in Cent
       totalPaid: integer("totalPaid").default(0).notNull(),
       // in Cent
+      password: varchar("password", { length: 255 }),
+      // Passwort für Dashboard-Login
       paypalEmail: varchar("paypalEmail", { length: 320 }),
       // für Auszahlung
       iban: varchar("iban", { length: 50 }),
@@ -1596,9 +1598,23 @@ var appRouter = router({
   // ── Affiliate-System ──
   affiliate: router({
     // Affiliate-Code für einen Nutzer erstellen oder abrufen
-    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), wunschCode: z2.string().min(2).optional() })).mutation(async ({ input }) => {
+    // Login mit E-Mail + Passwort
+    login: publicProcedure.input(z2.object({ email: z2.string().email(), password: z2.string().min(1) })).mutation(async ({ input }) => {
+      const affiliate = await getAffiliateByEmail(input.email);
+      if (!affiliate) return { success: false, error: "not_found" };
+      if (!affiliate.password || affiliate.password !== input.password) {
+        return { success: false, error: "wrong_password" };
+      }
+      return { success: true, affiliate };
+    }),
+    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), wunschCode: z2.string().min(2).optional(), password: z2.string().min(4).optional() })).mutation(async ({ input }) => {
       let affiliate = await getAffiliateByEmail(input.email);
-      if (affiliate) return { success: true, affiliate };
+      if (affiliate) {
+        if (input.password && affiliate.password && affiliate.password !== input.password) {
+          return { success: false, error: "wrong_password" };
+        }
+        return { success: true, affiliate };
+      }
       let code;
       if (input.wunschCode) {
         code = input.wunschCode.toUpperCase().replace(/[^A-Z\u00C4\u00D6\u00DC0-9]/g, "").slice(0, 20);
@@ -1613,6 +1629,9 @@ var appRouter = router({
         }
       }
       const id = await createAffiliate({ email: input.email, name: input.name, code });
+      if (input.password) {
+        await updateAffiliate(code, { password: input.password });
+      }
       affiliate = await getAffiliateByEmail(input.email);
       const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;
       sendAffiliateWelcomeEmail({
@@ -1867,11 +1886,17 @@ async function runMigrations() {
         "totalSales" INTEGER DEFAULT 0 NOT NULL,
         "totalEarnings" INTEGER DEFAULT 0 NOT NULL,
         "totalPaid" INTEGER DEFAULT 0 NOT NULL,
+        password VARCHAR(255),
         "paypalEmail" VARCHAR(320),
         iban VARCHAR(50),
         "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `;
+    try {
+      await sql2`ALTER TABLE affiliate_codes ADD COLUMN IF NOT EXISTS password VARCHAR(255)`;
+    } catch (e) {
+      console.log("[db-migrate] password column may already exist:", e.message);
+    }
     await sql2`
       CREATE TABLE IF NOT EXISTS affiliate_clicks (
         id SERIAL PRIMARY KEY,

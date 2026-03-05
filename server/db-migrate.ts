@@ -77,11 +77,19 @@ export async function runMigrations(): Promise<void> {
         "totalSales" INTEGER DEFAULT 0 NOT NULL,
         "totalEarnings" INTEGER DEFAULT 0 NOT NULL,
         "totalPaid" INTEGER DEFAULT 0 NOT NULL,
+        password VARCHAR(255),
         "paypalEmail" VARCHAR(320),
         iban VARCHAR(50),
         "createdAt" TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `;
+
+    // Add password column if missing (for existing databases)
+    try {
+      await sql`ALTER TABLE affiliate_codes ADD COLUMN IF NOT EXISTS password VARCHAR(255)`;
+    } catch (e) {
+      console.log('[db-migrate] password column may already exist:', (e as any).message);
+    }
 
     // affiliate_clicks table
     await sql`

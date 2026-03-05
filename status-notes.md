@@ -1,21 +1,9 @@
-# Diagnose Runde 10
+# Status Notes (05.03.2026)
 
-## Mondphasen-Logik
-Die moon-phase.ts Logik ist korrekt verifiziert:
-- 25.2.2026 -> Erstes Viertel (korrekt, Zunehmender Mond)
-- 3.3.2026 -> Vollmond (KORREKT!)
-- 17.2.2026 -> Neumond (korrekt)
-- 1.2.2026 -> Vollmond (korrekt)
-
-Home-Screen verwendet getCurrentMoonPhase() aus moon-phase.ts - sollte korrekt sein.
-Mond-Tab verwendet ebenfalls getCurrentMoonPhase() aus moon-phase.ts.
-
-Problem könnte sein: useMemo cacht den Wert und aktualisiert nicht.
-Oder: Die Nutzerin sieht noch die alte gecachte Version im Browser.
-
-## Kerzen-Quiz
-kerzen-quiz.tsx existiert und exportiert KerzenQuizScreen.
-Route: /kerzen-quiz
-Erreichbar über: Ich-Tab -> Meditationskerzen -> "Welche Kerze passt zu mir?"
-
-Problem: Nutzerin findet es nicht. Muss prominenter platziert werden.
+- App läuft lokal, Screenshot zeigt Home-Screen korrekt
+- 70 TS-Fehler (wahrscheinlich wegen fehlender node_modules in einem Pfad)
+- Metro bundelt erfolgreich trotz TS-Fehler
+- affiliate.tsx hat JSX-Syntax-Fehler (fehlender ScrollView closing tag) - muss Login-Step hinzufügen
+- Login-Step fehlt in affiliate.tsx (state "login" existiert, aber kein Rendering dafür)
+- SMTP-Daten sind gesetzt: smtp.ionos.de / hallo@seelenplanerin.de
+- Offene Aufgaben: Login-Passwortschutz für Affiliate-Dashboard, Bestätigungsmail

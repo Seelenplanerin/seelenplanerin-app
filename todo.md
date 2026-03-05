@@ -653,3 +653,9 @@
 ## Shop Dropdown + PWA (04.03.2026)
 - [x] Shop: Ober-Button "Ritual-Sets" mit Dropdown für die 10 einzelnen Sets
 - [x] App als PWA konfigurieren für eigene Webseite (manifest.json, sw.js, apple-mobile-web-app meta tags)
+
+## Affiliate-Code + Passwort-Bereich (05.03.2026)
+- [x] Nutzer soll eigenen Affiliate-Code selbst bestimmen können (bereits implementiert)
+- [x] Geschützter Passwort-Bereich für Affiliate-Dashboard (Login mit E-Mail + Passwort)
+- [x] Affiliate-Bestätigungsmail bei Registrierung senden (Code, Infos, Anleitung) - bereits implementiert via sendAffiliateWelcomeEmail
+- [x] SMTP-Zugangsdaten einrichten für E-Mail-Versand über hallo@seelenplanerin.de (bereits vorhanden: smtp.ionos.de)
