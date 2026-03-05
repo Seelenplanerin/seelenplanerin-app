@@ -673,9 +673,9 @@
 - [x] UI im Affiliate-Dashboard: Passwort-Ändern-Bereich (aufklappbar, mit Bestätigung)
 
 ## Rituale-Links Korrektur (05.03.2026 - DRINGEND)
-- [ ] Alle Links bei den Ritualen prüfen und korrigieren
+- [x] Unicode-Escape-Fehler im Affiliate-Bereich behoben (ä, ö, ü, – statt \u00e4 etc.)
 
 ## Fixes (05.03.2026 - Runde 4)
-- [ ] Unicode-Escape-Fehler im Affiliate-Bereich fixen (\u00e4 → ä etc.)
-- [ ] Runen-Armbänder Preise aktualisieren (Einzelcharms 11€, Preise von Tentary)
-- [ ] Admin-Passwort auf 1306 ändern
+- [x] Unicode-Escape-Fehler im Affiliate-Bereich fixen (\u00e4 → ä etc.)
+- [x] Runen-Armbänder Preise aktualisiert: Armband 57€, Charm einzeln 11€, Schutzarmband 28,90€
+- [x] Admin-Passwort auf 1306 geändert
