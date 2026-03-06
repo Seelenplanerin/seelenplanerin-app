@@ -703,4 +703,4 @@
 - [x] Community-Login nach Passwort-Reset fixen (nutzt jetzt Server-Login-Route direkt statt gecachte Liste)
 
 ## Passwort-Reset Bestätigung (06.03.2026)
-- [ ] Bestätigungsmeldung nach "Passwort vergessen" im Community-Bereich anzeigen ("Ein neues Passwort wurde an deine E-Mail gesendet")
+- [x] Bestätigungsmeldung nach "Passwort vergessen" im Community-Bereich anzeigen (grüne Hinweisbox statt Alert)
