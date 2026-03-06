@@ -1630,10 +1630,7 @@ var appRouter = router({
     getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), wunschCode: z2.string().min(2).optional(), password: z2.string().min(4).optional() })).mutation(async ({ input }) => {
       let affiliate = await getAffiliateByEmail(input.email);
       if (affiliate) {
-        if (input.password && affiliate.password && affiliate.password !== input.password) {
-          return { success: false, error: "wrong_password" };
-        }
-        return { success: true, affiliate };
+        return { success: false, error: "already_registered" };
       }
       let code;
       if (input.wunschCode) {

@@ -195,11 +195,8 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         let affiliate = await db.getAffiliateByEmail(input.email);
         if (affiliate) {
-          // Wenn Passwort mitgegeben, prüfen
-          if (input.password && affiliate.password && affiliate.password !== input.password) {
-            return { success: false as const, error: "wrong_password" };
-          }
-          return { success: true as const, affiliate };
+          // E-Mail existiert bereits - Nutzer soll sich einloggen
+          return { success: false as const, error: "already_registered" };
         }
         // Wunschcode verwenden oder automatisch generieren
         let code: string;

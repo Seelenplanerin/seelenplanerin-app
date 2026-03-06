@@ -704,3 +704,8 @@
 
 ## Passwort-Reset Bestätigung (06.03.2026)
 - [x] Bestätigungsmeldung nach "Passwort vergessen" im Community-Bereich anzeigen (grüne Hinweisbox statt Alert)
+
+## Affiliate-Login Bug nach Passwort-Reset (06.03.2026 - DRINGEND)
+- [ ] Bug: Affiliate-Registrierung schlägt fehl ("Fehler beim Erstellen deines Codes")
+- [ ] Bug: Affiliate-Login nach Passwort-Reset funktioniert nicht
+- [ ] Affiliate Passwort-Reset: Sichtbare Bestätigungsmeldung statt Alert (wie im Community-Bereich)

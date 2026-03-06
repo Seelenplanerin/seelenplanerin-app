@@ -1,0 +1,9 @@
+{
+  "query": "SELECT email, code, name, password, \"isActive\" FROM affiliate_codes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.edbbe7a298c6 --database M3PWE7f6T2SxuxdrbesCC6 --execute SELECT email, code, name, password, \"isActive\" FROM affiliate_codes;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 151
+}

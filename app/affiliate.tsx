@@ -118,7 +118,10 @@ export default function AffiliateScreen() {
         setStep("dashboard");
         loadSales(result.affiliate.code);
       } else if (result?.error === "code_taken") {
-        setCodeError("Dieser Code ist leider schon vergeben. Bitte wähle einen anderen.");
+        setCodeError("Dieser Code ist leider schon vergeben. Bitte w\u00e4hle einen anderen.");
+      } else if (result?.error === "already_registered" || result?.error === "wrong_password") {
+        setCodeError("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
+        setTimeout(() => setStep("login"), 2000);
       } else {
         const msg = "Fehler beim Erstellen deines Codes. Bitte versuche es erneut.";
         if (Platform.OS === "web") window.alert(msg);
@@ -175,12 +178,11 @@ export default function AffiliateScreen() {
 
   async function handleResetPassword() {
     if (!loginEmail.trim()) {
-      const msg = "Bitte gib zuerst deine E-Mail-Adresse ein.";
-      if (Platform.OS === "web") window.alert(msg);
-      else Alert.alert("Hinweis", msg);
+      setLoginError("Bitte gib zuerst deine E-Mail-Adresse ein.");
       return;
     }
     setResetSending(true);
+    setLoginError("");
     try {
       const API_URL = getApiBaseUrl();
       const res = await fetch(`${API_URL}/api/trpc/affiliate.resetPassword`, {
@@ -192,27 +194,18 @@ export default function AffiliateScreen() {
       const result = data?.result?.data?.json;
       if (result?.success) {
         setResetSent(true);
-        const msg = "Ein neues Passwort wurde an deine E-Mail gesendet. Bitte prüfe dein Postfach.";
-        if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert("E-Mail gesendet", msg);
+        setLoginError("");
+        setLoginPassword("");
       } else if (result?.error === "not_found") {
-        const msg = "Diese E-Mail ist nicht registriert.";
-        if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert("Fehler", msg);
+        setLoginError("Diese E-Mail ist nicht registriert.");
       } else if (result?.error === "email_failed") {
-        const msg = "E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.";
-        if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert("Fehler", msg);
+        setLoginError("E-Mail konnte nicht gesendet werden. Bitte versuche es sp\u00e4ter erneut.");
       } else {
-        const msg = "Fehler beim Zurücksetzen. Bitte versuche es erneut.";
-        if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert("Fehler", msg);
+        setLoginError("Fehler beim Zur\u00fccksetzen. Bitte versuche es erneut.");
       }
     } catch (e) {
       console.error("[Affiliate] Reset error:", e);
-      const msg = "Verbindungsfehler. Bitte versuche es erneut.";
-      if (Platform.OS === "web") window.alert(msg);
-      else Alert.alert("Fehler", msg);
+      setLoginError("Verbindungsfehler. Bitte versuche es erneut.");
     }
     setResetSending(false);
   }
@@ -374,6 +367,15 @@ export default function AffiliateScreen() {
               <Text style={{ fontSize: 13, color: "#EF4444", marginBottom: 8 }}>{loginError}</Text>
             ) : null}
 
+            {/* Gr\u00fcne Best\u00e4tigungsbox nach Passwort-Reset */}
+            {resetSent && (
+              <View style={{ backgroundColor: C.greenLight, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: C.green + "40" }}>
+                <Text style={{ fontSize: 14, color: "#2E7D32", fontWeight: "600", textAlign: "center", lineHeight: 20 }}>
+                  {"\u2713"} Ein neues Passwort wurde an deine E-Mail gesendet.{"\n"}Pr\u00fcfe deinen Posteingang (auch den Spam-Ordner) und logge dich mit dem neuen Passwort ein.
+                </Text>
+              </View>
+            )}
+
             <TouchableOpacity
               style={[s.primaryBtn, loading && { opacity: 0.6 }]}
               onPress={handleLogin}
@@ -396,8 +398,6 @@ export default function AffiliateScreen() {
             >
               {resetSending ? (
                 <ActivityIndicator color={C.gold} size="small" />
-              ) : resetSent ? (
-                <Text style={{ fontSize: 13, color: C.green, fontWeight: "600" }}>{"✓"} Neues Passwort gesendet!</Text>
               ) : (
                 <Text style={{ fontSize: 13, color: C.gold, fontWeight: "600" }}>Passwort vergessen?</Text>
               )}
@@ -508,7 +508,9 @@ export default function AffiliateScreen() {
               returnKeyType="next"
             />
             {codeError ? (
-              <Text style={{ fontSize: 12, color: "#EF4444", marginBottom: 8, marginTop: -4 }}>{codeError}</Text>
+              <View style={{ backgroundColor: "#FEF2F2", borderRadius: 10, padding: 12, marginBottom: 8, marginTop: -4, borderWidth: 1, borderColor: "#EF444440" }}>
+                <Text style={{ fontSize: 13, color: "#DC2626", fontWeight: "600", textAlign: "center" }}>{codeError}</Text>
+              </View>
             ) : null}
             {wunschCode.length >= 2 && (
               <View style={{ backgroundColor: C.goldLight, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.gold + "40" }}>
