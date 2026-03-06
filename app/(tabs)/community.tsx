@@ -416,6 +416,7 @@ export default function CommunityScreen() {
   const [selectedEmoji, setSelectedEmoji] = useState("🌸");
 
   // Passwort ändern
+  const [resetSent, setResetSent] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
   const [newPw, setNewPw] = useState("");
   const [newPwConfirm, setNewPwConfirm] = useState("");
@@ -814,10 +815,7 @@ export default function CommunityScreen() {
                         });
                       } catch (e) { /* E-Mail-Fehler ignorieren, PW wurde trotzdem geändert */ }
                       setFehler("");
-                      Alert.alert(
-                        "E-Mail gesendet ✉️",
-                        `Ein neues temporäres Passwort wurde an ${email.trim()} gesendet. Prüfe deinen Posteingang (auch Spam-Ordner).`,
-                      );
+                      setResetSent(true);
                     } catch {
                       Alert.alert("Fehler", "Beim Zurücksetzen ist ein Fehler aufgetreten.");
                     }
@@ -826,6 +824,13 @@ export default function CommunityScreen() {
                 >
                   <Text style={s.forgotText}>Passwort vergessen?</Text>
                 </TouchableOpacity>
+                {resetSent && (
+                  <View style={{ backgroundColor: "#F0F7F0", borderRadius: 12, padding: 14, marginTop: 12, borderWidth: 1, borderColor: "#C8E6C9" }}>
+                    <Text style={{ fontSize: 14, color: "#2E7D32", textAlign: "center", fontWeight: "600", lineHeight: 20 }}>
+                      ✉️ Ein neues Passwort wurde an {email.trim()} gesendet. Prüfe deinen Posteingang (auch den Spam-Ordner).
+                    </Text>
+                  </View>
+                )}
             </View>
 
             <TouchableOpacity
