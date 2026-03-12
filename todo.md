@@ -768,4 +768,4 @@
 - [x] Widgets: Erklärung wird im Ergebnis geliefert
 
 ## Premium-Kacheln Fix (12.03.2026 - Runde 3)
-- [ ] Premium-Kacheln (Zyklus, Kalender, Mondphasen, Med.) DRASTISCH verkleinern – sind immer noch riesig
+- [x] Premium-Kacheln (Zyklus, Kalender, Mondphasen, Med.) als kompakte Chips mit flexWrap statt riesige Kacheln
