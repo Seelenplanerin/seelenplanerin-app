@@ -751,3 +751,7 @@
 - [ ] Fragen + Antworten für alle Community-Mitglieder sichtbar
 - [ ] Admin: Fragen-Übersicht mit Antwort-Funktion
 - [ ] Fragen in AsyncStorage speichern (lokal)
+
+## Runen-Produktbilder einbinden (12.03.2026)
+- [ ] Tentary-Seite https://dieseelenplanerin.tentary.com/p/HWnXez besuchen und Produktbilder/Preise extrahieren
+- [ ] Einzelne Runen mit Bildern im Shop einbinden

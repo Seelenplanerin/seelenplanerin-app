@@ -25,6 +25,7 @@ interface Product {
   highlight?: string;
   tentaryUrl: string;
   badge?: string;
+  imageUrl?: string;
 }
 
 const PRODUCTS: Product[] = [
@@ -164,11 +165,25 @@ const PRODUCTS: Product[] = [
     nameEn: "Protection Bracelet Mariposa",
     kategorie: "armbänder",
     preis: 24.00,
-    preisDisplay: "24,00 €",
-    beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
-    emoji: "🖤",
+    preisDisplay: "24,00 \u20ac",
+    beschreibung: "Schwarzer Turmalin \u2013 der st\u00e4rkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
+    emoji: "\ud83d\udda4",
     highlight: "Schwarzer Turmalin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
+  },
+  {
+    id: "runen-charm-einzeln",
+    name: "Einzelne Runen-Charm",
+    nameEn: "Single Rune Charm",
+    kategorie: "armbänder",
+    preis: 13.90,
+    preisDisplay: "ab 13,90 \u20ac",
+    beschreibung: "Dein pers\u00f6nliches Runen-Charm \u2013 handgefertigt mit Kristallpulver. 1 Schutzrune (11 \u20ac + Versand) oder 2er Themen-Set (22 \u20ac + Versand). Individuell auf dich abgestimmt.",
+    emoji: "\u16b1",
+    highlight: "Handgefertigt & individuell",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/HWnXez",
+    badge: "Unikat",
+    imageUrl: "runen-charm",
   },
 
   // ═══════════════════════════════════════════════
@@ -375,6 +390,14 @@ export default function ShopScreen() {
         }
         renderItem={({ item }) => (
           <View style={s.card}>
+            {/* Produktbild wenn vorhanden */}
+            {item.imageUrl === "runen-charm" && (
+              <Image
+                source={require("@/assets/images/runen-charm-einzeln.png")}
+                style={{ width: "100%", height: 200, borderRadius: 16, marginBottom: 12 }}
+                resizeMode="cover"
+              />
+            )}
             <View style={s.cardTop}>
               <View style={s.emojiBox}>
                 <Text style={s.emojiText}>{item.emoji}</Text>
@@ -388,7 +411,7 @@ export default function ShopScreen() {
                   </View>
                 )}
                 <Text style={s.cardName}>{item.name}</Text>
-                {item.highlight && <Text style={s.cardHighlight}>✦ {item.highlight}</Text>}
+                {item.highlight && <Text style={s.cardHighlight}>\u2726 {item.highlight}</Text>}
               </View>
             </View>
             <Text style={s.cardDesc}>{item.beschreibung}</Text>
