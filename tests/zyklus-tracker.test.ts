@@ -4,6 +4,10 @@ import {
   berechneZyklusUebersicht,
   berechneZyklusKalender,
   getDefaultEinstellungen,
+  datumZuString,
+  STIMMUNGEN,
+  KOERPER_SYMPTOME,
+  BLUTUNGS_OPTIONEN,
   ZyklusEinstellungen,
 } from "../lib/zyklus-tracker";
 
@@ -92,5 +96,39 @@ describe("Zyklustracking", () => {
     expect(defaults.zyklusLaenge).toBe(28);
     expect(defaults.periodenDauer).toBe(5);
     expect(defaults.letztePeriodenStart).toBeTruthy();
+  });
+});
+
+describe("Symptom-Tracking Datenmodell", () => {
+  it("hat alle Stimmungstypen definiert", () => {
+    expect(STIMMUNGEN.length).toBeGreaterThanOrEqual(6);
+    STIMMUNGEN.forEach((s) => {
+      expect(s.typ).toBeDefined();
+      expect(s.label).toBeDefined();
+      expect(s.emoji).toBeDefined();
+    });
+  });
+
+  it("hat körperliche Symptome definiert", () => {
+    expect(KOERPER_SYMPTOME.length).toBeGreaterThanOrEqual(8);
+    expect(KOERPER_SYMPTOME).toContain("Krämpfe");
+    expect(KOERPER_SYMPTOME).toContain("Kopfschmerzen");
+  });
+
+  it("hat Blutungsoptionen definiert", () => {
+    expect(BLUTUNGS_OPTIONEN.length).toBe(4);
+    const typen = BLUTUNGS_OPTIONEN.map(b => b.typ);
+    expect(typen).toContain("leicht");
+    expect(typen).toContain("mittel");
+    expect(typen).toContain("stark");
+    expect(typen).toContain("schmierblutung");
+  });
+});
+
+describe("Hilfsfunktionen", () => {
+  it("datumZuString formatiert korrekt", () => {
+    const d = new Date("2026-03-15T14:30:00");
+    const str = datumZuString(d);
+    expect(str).toBe("2026-03-15");
   });
 });

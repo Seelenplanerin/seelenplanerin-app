@@ -868,18 +868,42 @@ export default function CommunityScreen() {
             </View>
           </View>
 
-          {/* Premium-Inhalte Banner */}
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── PREMIUM-BEREICH – GROSS & AUFFÄLLIG ── */}
+          {/* ══════════════════════════════════════════════ */}
           <TouchableOpacity
-            style={s.premiumBanner}
+            style={s.premiumHero}
             onPress={() => router.push("/community-premium" as any)}
             activeOpacity={0.85}
           >
-            <Text style={{ fontSize: 22 }}>👑</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.premiumBannerTitle}>Premium Inhalte</Text>
-              <Text style={s.premiumBannerSub}>Mondkalender · Meditationen · Mond & Zyklus</Text>
+            <View style={s.premiumHeroInner}>
+              <Text style={{ fontSize: 40, marginBottom: 8 }}>👑</Text>
+              <Text style={s.premiumHeroTitle}>Premium Bereich</Text>
+              <Text style={s.premiumHeroSub}>
+                Dein exklusiver Zugang zu Zyklustracker, Mondkalender & geführten Meditationen
+              </Text>
+              <View style={s.premiumHeroFeatures}>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🌸</Text>
+                  <Text style={s.premiumFeatureText}>Zyklustracker im Flo-Stil</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🌙</Text>
+                  <Text style={s.premiumFeatureText}>Mondphasen-Kalender 2026</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🧘</Text>
+                  <Text style={s.premiumFeatureText}>Exklusive Meditationen</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>📝</Text>
+                  <Text style={s.premiumFeatureText}>Symptom- & Stimmungstracking</Text>
+                </View>
+              </View>
+              <View style={s.premiumHeroBtn}>
+                <Text style={s.premiumHeroBtnText}>Jetzt entdecken →</Text>
+              </View>
             </View>
-            <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
           </TouchableOpacity>
 
           {/* ── Meditationen Sektion ── */}
@@ -1051,13 +1075,42 @@ const s = StyleSheet.create({
   instagramCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: C.card, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: C.border },
   instagramTitel: { fontSize: 14, fontWeight: "700", color: C.brown },
   instagramHandle: { fontSize: 13, color: C.rose },
-  premiumBanner: {
-    marginHorizontal: 16, marginTop: 16, backgroundColor: C.goldLight,
-    borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center",
-    gap: 12, borderWidth: 1, borderColor: "#E8D5B0",
+  premiumHero: {
+    marginHorizontal: 16, marginTop: 16, marginBottom: 4,
+    borderRadius: 24, overflow: "hidden",
+    shadowColor: "#C9A96E", shadowOpacity: 0.25, shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
-  premiumBannerTitle: { fontSize: 15, fontWeight: "700", color: C.brown },
-  premiumBannerSub: { fontSize: 12, color: C.muted },
+  premiumHeroInner: {
+    backgroundColor: C.brown, borderRadius: 24, padding: 24,
+    alignItems: "center",
+  },
+  premiumHeroTitle: {
+    fontSize: 24, fontWeight: "800", color: "#FFF", marginBottom: 8,
+    letterSpacing: 1,
+  },
+  premiumHeroSub: {
+    fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center",
+    lineHeight: 21, marginBottom: 16, maxWidth: 280,
+  },
+  premiumHeroFeatures: {
+    width: "100%", marginBottom: 16,
+  },
+  premiumFeatureRow: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingVertical: 6, paddingHorizontal: 12,
+  },
+  premiumFeatureIcon: { fontSize: 18 },
+  premiumFeatureText: {
+    fontSize: 14, color: "rgba(255,255,255,0.9)", fontWeight: "600",
+  },
+  premiumHeroBtn: {
+    backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+    paddingHorizontal: 32, alignItems: "center", width: "100%",
+  },
+  premiumHeroBtnText: {
+    color: "#FFF", fontSize: 16, fontWeight: "700",
+  },
 
   // Neuer Beitrag
   newPostSection: { marginTop: 4 },

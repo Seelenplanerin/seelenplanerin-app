@@ -17,6 +17,7 @@ export interface ZyklusPhase {
   emoji: string;
   farbe: string;
   beschreibung: string;
+  spirituellerTipp: string;
   startTag: number; // Tag im Zyklus (1-basiert)
   endTag: number;
 }
@@ -46,10 +47,51 @@ export interface ZyklusUebersicht {
   fruchtbareFensterEnde: Date;
 }
 
+// ── Symptom-Tracking ──
+
+export type StimmungTyp = "gluecklich" | "ruhig" | "energiegeladen" | "sensibel" | "gereizt" | "traurig" | "aengstlich" | "muede";
+export type EnergieLevel = 1 | 2 | 3 | 4 | 5;
+export type BlutungsStaerke = "leicht" | "mittel" | "stark" | "schmierblutung";
+
+export interface SymptomEintrag {
+  datum: string; // YYYY-MM-DD
+  stimmungen: StimmungTyp[];
+  energie: EnergieLevel;
+  koerperlich: string[]; // z.B. "Krämpfe", "Kopfschmerzen", "Blähungen"
+  blutung?: BlutungsStaerke;
+  periodenStart?: boolean;
+  periodenEnde?: boolean;
+  notiz?: string;
+}
+
+export const STIMMUNGEN: { typ: StimmungTyp; label: string; emoji: string }[] = [
+  { typ: "gluecklich", label: "Glücklich", emoji: "😊" },
+  { typ: "ruhig", label: "Ruhig", emoji: "😌" },
+  { typ: "energiegeladen", label: "Energiegeladen", emoji: "⚡" },
+  { typ: "sensibel", label: "Sensibel", emoji: "🥺" },
+  { typ: "gereizt", label: "Gereizt", emoji: "😤" },
+  { typ: "traurig", label: "Traurig", emoji: "😢" },
+  { typ: "aengstlich", label: "Ängstlich", emoji: "😰" },
+  { typ: "muede", label: "Müde", emoji: "😴" },
+];
+
+export const KOERPER_SYMPTOME = [
+  "Krämpfe", "Kopfschmerzen", "Rückenschmerzen", "Blähungen",
+  "Brustspannen", "Übelkeit", "Heißhunger", "Hautunreinheiten",
+  "Schlafprobleme", "Verdauung",
+];
+
+export const BLUTUNGS_OPTIONEN: { typ: BlutungsStaerke; label: string; emoji: string }[] = [
+  { typ: "schmierblutung", label: "Schmierblutung", emoji: "💧" },
+  { typ: "leicht", label: "Leicht", emoji: "🩸" },
+  { typ: "mittel", label: "Mittel", emoji: "🩸🩸" },
+  { typ: "stark", label: "Stark", emoji: "🩸🩸🩸" },
+];
+
 // ── Zyklusphasen-Definition ──
 
 function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPhase[] {
-  const eisprungTag = Math.round(zyklusLaenge / 2); // ca. Tag 14 bei 28-Tage-Zyklus
+  const eisprungTag = Math.round(zyklusLaenge / 2);
   const follikelStart = periodenDauer + 1;
   const eisprungStart = eisprungTag - 1;
   const eisprungEnde = eisprungTag + 1;
@@ -62,6 +104,7 @@ function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPha
       emoji: "🩸",
       farbe: "#E74C3C",
       beschreibung: "Rückzug und Erneuerung",
+      spirituellerTipp: "Dein Körper reinigt sich. Ziehe dich zurück, ruhe dich aus und höre auf deine innere Stimme. Jetzt ist die Zeit für Loslassen und Innenschau.",
       startTag: 1,
       endTag: periodenDauer,
     },
@@ -71,6 +114,7 @@ function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPha
       emoji: "🌱",
       farbe: "#27AE60",
       beschreibung: "Aufbruch und neue Energie",
+      spirituellerTipp: "Neue Energie fließt! Starte Projekte, setze Intentionen und nutze deine wachsende Kreativität. Deine Intuition wird klarer.",
       startTag: follikelStart,
       endTag: eisprungStart - 1,
     },
@@ -80,6 +124,7 @@ function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPha
       emoji: "🌸",
       farbe: "#F39C12",
       beschreibung: "Höhepunkt und Ausstrahlung",
+      spirituellerTipp: "Du strahlst von innen! Deine Kommunikation und Ausstrahlung sind auf dem Höhepunkt. Nutze diese Kraft für wichtige Gespräche und Manifestation.",
       startTag: eisprungStart,
       endTag: eisprungEnde,
     },
@@ -89,6 +134,7 @@ function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPha
       emoji: "🍂",
       farbe: "#8E44AD",
       beschreibung: "Reflexion und Loslassen",
+      spirituellerTipp: "Zeit für Reflexion und Abschluss. Bringe Dinge zu Ende, räume auf – innerlich und äußerlich. Deine Wahrnehmung ist jetzt besonders fein.",
       startTag: lutealStart,
       endTag: zyklusLaenge,
     },
@@ -100,7 +146,6 @@ function getZyklusPhasen(zyklusLaenge: number, periodenDauer: number): ZyklusPha
 function getZyklusTag(datum: Date, letztePeriodenStart: Date, zyklusLaenge: number): number {
   const diffMs = datum.getTime() - letztePeriodenStart.getTime();
   const diffTage = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  // Modulo für wiederkehrenden Zyklus
   let tag = (diffTage % zyklusLaenge) + 1;
   if (tag <= 0) tag += zyklusLaenge;
   return tag;
@@ -112,14 +157,13 @@ function getPhaseForTag(tag: number, phasen: ZyklusPhase[]): ZyklusPhase {
       return phase;
     }
   }
-  return phasen[phasen.length - 1]; // Fallback: Lutealphase
+  return phasen[phasen.length - 1];
 }
 
 function getSynchronisation(
   zyklusPhase: ZyklusPhaseName,
   mondphase: string
 ): { typ: "harmonisch" | "neutral" | "gegenläufig"; tipp: string } {
-  // Harmonische Kombinationen (Mond und Zyklus in Einklang)
   const harmonisch: Record<string, string[]> = {
     menstruation: ["Neumond", "Abnehmende Sichel"],
     follikel: ["Zunehmende Sichel", "Erstes Viertel"],
@@ -204,18 +248,15 @@ export function berechneZyklusUebersicht(
   const zyklusTag = getZyklusTag(datum, letztePeriodenStart, einstellungen.zyklusLaenge);
   const aktuellePhase = getPhaseForTag(zyklusTag, phasen);
   
-  // Nächste Phase berechnen
   const aktuellerIndex = phasen.findIndex(p => p.name === aktuellePhase.name);
   const naechsterIndex = (aktuellerIndex + 1) % phasen.length;
   const naechstePhase = phasen[naechsterIndex];
   const tageZurNaechstenPhase = aktuellePhase.endTag - zyklusTag + 1;
 
-  // Nächste Periode berechnen
   const tageBisNaechstePeriode = einstellungen.zyklusLaenge - zyklusTag + 1;
   const naechstePeriode = new Date(datum);
   naechstePeriode.setDate(naechstePeriode.getDate() + tageBisNaechstePeriode);
   
-  // Fruchtbares Fenster (ca. 5 Tage vor Eisprung bis 1 Tag danach)
   const eisprungTag = Math.round(einstellungen.zyklusLaenge / 2);
   const tageZumEisprung = eisprungTag - zyklusTag;
   const fruchtbarStart = new Date(datum);
@@ -252,6 +293,7 @@ export function berechneZyklusKalender(
 // ── Persistenz ──
 
 const STORAGE_KEY = "seelenplanerin_zyklus";
+const SYMPTOM_KEY = "seelenplanerin_symptome";
 
 export async function speichereZyklusEinstellungen(einstellungen: ZyklusEinstellungen): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(einstellungen));
@@ -274,4 +316,34 @@ export function getDefaultEinstellungen(): ZyklusEinstellungen {
     zyklusLaenge: 28,
     periodenDauer: 5,
   };
+}
+
+// ── Symptom-Persistenz ──
+
+export async function speichereSymptomEintrag(eintrag: SymptomEintrag): Promise<void> {
+  const alle = await ladeAlleSymptome();
+  const idx = alle.findIndex(e => e.datum === eintrag.datum);
+  if (idx >= 0) {
+    alle[idx] = eintrag;
+  } else {
+    alle.push(eintrag);
+  }
+  await AsyncStorage.setItem(SYMPTOM_KEY, JSON.stringify(alle));
+}
+
+export async function ladeAlleSymptome(): Promise<SymptomEintrag[]> {
+  try {
+    const stored = await AsyncStorage.getItem(SYMPTOM_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
+export async function ladeSymptomFuerDatum(datum: string): Promise<SymptomEintrag | null> {
+  const alle = await ladeAlleSymptome();
+  return alle.find(e => e.datum === datum) || null;
+}
+
+export function datumZuString(d: Date): string {
+  return d.toISOString().split("T")[0];
 }

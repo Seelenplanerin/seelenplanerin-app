@@ -709,3 +709,13 @@
 - [x] Bug: Affiliate-Registrierung schlägt fehl ("Fehler beim Erstellen deines Codes") - zeigt jetzt klare Meldung "Bereits registriert" + leitet zum Login weiter
 - [x] Bug: Affiliate-Login nach Passwort-Reset funktioniert nicht - Login funktioniert mit neuem Passwort aus E-Mail
 - [x] Affiliate Passwort-Reset: Sichtbare Bestätigungsmeldung statt Alert (grüne Box wie im Community-Bereich)
+
+## Zyklustracker wie Flo-App + Premium-Hervorhebung (März 2026)
+- [x] Zyklustracker im Flo-Stil: Großer Tageskreis mit aktuellem Zyklustag
+- [x] Zyklustracker: Kalenderansicht mit farblichen Markierungen (Periode, Follikel, Eisprung, Luteal)
+- [x] Zyklustracker: Symptom-Tracking (Stimmung, Energie, körperliche Symptome)
+- [x] Zyklustracker: Perioden-Logging (Start/Ende, Stärke)
+- [x] Zyklustracker: Vorhersage nächste Periode
+- [x] Zyklustracker: Zyklusphasen-Anzeige mit spirituellen Tipps
+- [x] Zyklustracker: Mond-Zyklus-Synchronisation beibehalten
+- [x] Premium-Bereich in Community viel deutlicher hervorheben
