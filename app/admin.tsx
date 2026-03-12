@@ -140,7 +140,24 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "affiliate" | "academy" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "affiliate" | "academy" | "qa" | "einstellungen";
+
+interface QAFrage {
+  id: string;
+  frage: string;
+  von: string;
+  datum: string;
+  antwort?: string;
+  antwortDatum?: string;
+}
+const QA_KEY = "community_qa_fragen";
+async function getQAFragen(): Promise<QAFrage[]> {
+  const data = await AsyncStorage.getItem(QA_KEY);
+  return data ? JSON.parse(data) : [];
+}
+async function saveQAFragen(fragen: QAFrage[]) {
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
+}
 
 interface AffiliateInfo {
   id: number; code: string; name: string; email: string;
@@ -256,6 +273,12 @@ export default function AdminScreen() {
   const [academyWaitlist, setAcademyWaitlist] = useState<{ id: number; email: string; createdAt: string }[]>([]);
   const [academyLoading, setAcademyLoading] = useState(false);
 
+  // Q&A Fragen-Verwaltung
+  const [qaFragen, setQaFragen] = useState<QAFrage[]>([]);
+  const [qaLoading, setQaLoading] = useState(false);
+  const [qaAntwortId, setQaAntwortId] = useState<string | null>(null);
+  const [qaAntwortText, setQaAntwortText] = useState("");
+
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
   const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
@@ -277,6 +300,7 @@ export default function AdminScreen() {
       getSongs().then(setSongs);
       getMeditationen().then(setMeditationen);
       getImpulse().then(setImpulse);
+      getQAFragen().then(setQaFragen);
     }
   }, [isLoggedIn]);
 
@@ -661,6 +685,7 @@ export default function AdminScreen() {
     { key: "push", label: "Push", emoji: "📲" },
     { key: "affiliate", label: "Affiliate", emoji: "🤝" },
     { key: "academy", label: "Academy", emoji: "🎓" },
+    { key: "qa", label: "Q&A", emoji: "🌙" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
@@ -1970,6 +1995,156 @@ export default function AdminScreen() {
             </>
           )}
 
+          {/* ═══════ Q&A FRAGEN TAB ═══════ */}
+          {activeTab === "qa" && (
+            <>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🌙 Fragen der Community</Text>
+                <Text style={s.sectionHint}>Hier siehst du alle Fragen deiner Community. Tippe auf eine Frage, um sie zu beantworten.</Text>
+
+                <TouchableOpacity
+                  style={[s.addBtn, { marginBottom: 16 }]}
+                  onPress={async () => {
+                    setQaLoading(true);
+                    const fragen = await getQAFragen();
+                    setQaFragen(fragen);
+                    setQaLoading(false);
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={s.addBtnText}>🔄 Fragen aktualisieren</Text>
+                </TouchableOpacity>
+
+                {qaLoading && <ActivityIndicator color={C.rose} style={{ marginVertical: 12 }} />}
+
+                {/* Unbeantwortete Fragen zuerst */}
+                {qaFragen.filter(f => !f.antwort).length > 0 && (
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: "#C87C82", marginBottom: 10 }}>⏳ Warten auf deine Antwort ({qaFragen.filter(f => !f.antwort).length})</Text>
+                    {qaFragen.filter(f => !f.antwort).map(f => (
+                      <View key={f.id} style={[s.memberCard, { borderColor: "#E8D5B0", borderWidth: 1.5 }]}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>🙋 {f.von}</Text>
+                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(f.datum).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}</Text>
+                        </View>
+                        <Text style={{ fontSize: 14, color: C.brownMid, lineHeight: 21, marginBottom: 10 }}>{f.frage}</Text>
+
+                        {qaAntwortId === f.id ? (
+                          <View>
+                            <TextInput
+                              style={[s.input, { height: 100, textAlignVertical: "top" }]}
+                              placeholder="Deine Antwort..."
+                              placeholderTextColor={C.muted}
+                              value={qaAntwortText}
+                              onChangeText={setQaAntwortText}
+                              multiline
+                              maxLength={500}
+                            />
+                            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                              <TouchableOpacity
+                                style={[s.addBtn, { flex: 1 }]}
+                                onPress={async () => {
+                                  if (!qaAntwortText.trim()) return;
+                                  const updated = qaFragen.map(q =>
+                                    q.id === f.id ? { ...q, antwort: qaAntwortText.trim(), antwortDatum: new Date().toISOString() } : q
+                                  );
+                                  setQaFragen(updated);
+                                  await saveQAFragen(updated);
+                                  setQaAntwortId(null);
+                                  setQaAntwortText("");
+                                }}
+                                activeOpacity={0.85}
+                              >
+                                <Text style={s.addBtnText}>✅ Antwort senden</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={[s.addBtn, { flex: 1, backgroundColor: C.surface }]}
+                                onPress={() => { setQaAntwortId(null); setQaAntwortText(""); }}
+                                activeOpacity={0.85}
+                              >
+                                <Text style={[s.addBtnText, { color: C.muted }]}>✕ Abbrechen</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            style={[s.addBtn, { backgroundColor: C.gold }]}
+                            onPress={() => { setQaAntwortId(f.id); setQaAntwortText(""); }}
+                            activeOpacity={0.85}
+                          >
+                            <Text style={s.addBtnText}>✏️ Antworten</Text>
+                          </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity
+                          style={{ marginTop: 8, alignItems: "center" }}
+                          onPress={async () => {
+                            const updated = qaFragen.filter(q => q.id !== f.id);
+                            setQaFragen(updated);
+                            await saveQAFragen(updated);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Frage l\u00f6schen</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Beantwortete Fragen */}
+                {qaFragen.filter(f => f.antwort).length > 0 && (
+                  <View>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: "#7A9E7E", marginBottom: 10 }}>✅ Beantwortet ({qaFragen.filter(f => f.antwort).length})</Text>
+                    {qaFragen.filter(f => f.antwort).map(f => (
+                      <View key={f.id} style={[s.memberCard, { borderColor: "#C8E6C9", borderWidth: 1 }]}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>🙋 {f.von}</Text>
+                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(f.datum).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}</Text>
+                        </View>
+                        <Text style={{ fontSize: 14, color: C.brownMid, lineHeight: 21, marginBottom: 8 }}>{f.frage}</Text>
+                        <View style={{ backgroundColor: C.roseLight, borderRadius: 12, padding: 12, borderLeftWidth: 3, borderLeftColor: C.rose }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: C.brown, marginBottom: 4 }}>🌸 Deine Antwort:</Text>
+                          <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>{f.antwort}</Text>
+                          {f.antwortDatum && <Text style={{ fontSize: 10, color: C.muted, marginTop: 6 }}>{new Date(f.antwortDatum).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}</Text>}
+                        </View>
+
+                        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                          <TouchableOpacity
+                            style={{ flex: 1, alignItems: "center" }}
+                            onPress={() => { setQaAntwortId(f.id); setQaAntwortText(f.antwort || ""); }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={{ fontSize: 12, color: C.rose }}>✏️ Bearbeiten</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{ flex: 1, alignItems: "center" }}
+                            onPress={async () => {
+                              const updated = qaFragen.filter(q => q.id !== f.id);
+                              setQaFragen(updated);
+                              await saveQAFragen(updated);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 L\u00f6schen</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {qaFragen.length === 0 && !qaLoading && (
+                  <View style={{ alignItems: "center", paddingVertical: 30 }}>
+                    <Text style={{ fontSize: 40, marginBottom: 12 }}>🌙</Text>
+                    <Text style={{ fontSize: 15, color: C.muted, textAlign: "center" }}>Noch keine Fragen von deiner Community.</Text>
+                    <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 4 }}>Sobald jemand eine Frage stellt, erscheint sie hier.</Text>
+                  </View>
+                )}
+              </View>
+            </>
+          )}
+
           {/* ═══════ EINSTELLUNGEN TAB ═══════ */}
           {activeTab === "einstellungen" && (
             <>
@@ -2091,6 +2266,12 @@ const s = StyleSheet.create({
   katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
   katText: { fontSize: 12, fontWeight: "600", color: C.muted },
   katTextActive: { color: "#FFF" },
+
+  // Q&A / shared styles
+  addBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 12, alignItems: "center" },
+  addBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
+  memberCard: { backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.border },
+  input: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
 
   // Bottom buttons
   speichernBtn: { margin: 16, backgroundColor: C.rose, borderRadius: 16, paddingVertical: 16, alignItems: "center" },

@@ -744,3 +744,10 @@
 - [x] Admin Push: Klares Feedback wenn Nachricht gesendet wurde (Web-kompatible Bestätigung + große Erfolgsbox)
 - [x] Benachrichtigungs-Erlaubnis: Web-kompatible Bestätigung implementiert
 - [ ] Community: Mehrwert-Ideen für Premium-Bereich überlegen
+
+## Frage an die Seelenplanerin – Q&A-Bereich (12.03.2026)
+- [ ] Community: "Frage an die Seelenplanerin" Bereich einbauen
+- [ ] Nutzerinnen können öffentliche Fragen mit ihrem Community-Namen stellen
+- [ ] Fragen + Antworten für alle Community-Mitglieder sichtbar
+- [ ] Admin: Fragen-Übersicht mit Antwort-Funktion
+- [ ] Fragen in AsyncStorage speichern (lokal)

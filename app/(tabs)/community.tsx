@@ -91,6 +91,15 @@ interface CommunityPost {
   istLara: boolean;
 }
 
+interface QAFrage {
+  id: string;
+  frage: string;
+  von: string;
+  datum: string;
+  antwort?: string;
+  antwortDatum?: string;
+}
+
 const DEFAULT_POSTS: CommunityPost[] = [
   {
     id: "default-1", emoji: "🌙", titel: "Willkommen in unserem Seelenraum",
@@ -123,6 +132,7 @@ const ANGEBOTE = [
 const POSTS_KEY = "community_posts";
 const USERS_KEY = "community_users";
 const CURRENT_USER_KEY = "community_current_user";
+const QA_KEY = "community_qa_fragen";
 
 const POST_EMOJIS = ["🌸", "🌙", "✨", "💎", "🔮", "🌿", "🦋", "💫", "🕯️", "🌈"];
 
@@ -171,6 +181,45 @@ async function getPosts(): Promise<CommunityPost[]> {
 
 async function savePosts(posts: CommunityPost[]) {
   await AsyncStorage.setItem(POSTS_KEY, JSON.stringify(posts));
+}
+
+const DEFAULT_QA: QAFrage[] = [
+  {
+    id: "qa-default-1",
+    frage: "Welcher Heilstein passt am besten zu mir, wenn ich gerade eine schwierige Phase durchmache?",
+    von: "Sarah M.",
+    datum: new Date(Date.now() - 172800000).toISOString(),
+    antwort: "Rosenquarz ist dein treuer Begleiter in schweren Zeiten \u2013 er \u00f6ffnet dein Herz f\u00fcr Selbstliebe und Mitgef\u00fchl. Trage ihn nah am Herzen und sp\u00fcre, wie er dich sanft tr\u00e4gt. Amethyst kann zus\u00e4tzlich helfen, innere Ruhe zu finden. \ud83d\udc9c",
+    antwortDatum: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "qa-default-2",
+    frage: "Wie oft sollte ich meine Runen reinigen?",
+    von: "Julia K.",
+    datum: new Date(Date.now() - 345600000).toISOString(),
+    antwort: "Ich empfehle, deine Runen bei jedem Vollmond zu reinigen \u2013 lege sie ins Mondlicht oder r\u00e4uchere sie mit wei\u00dfem Salbei. Wenn du sie t\u00e4glich nutzt, kannst du sie auch w\u00f6chentlich kurz unter flie\u00dfendes Wasser halten. H\u00f6re auf deine Intuition! \u2728",
+    antwortDatum: new Date(Date.now() - 259200000).toISOString(),
+  },
+  {
+    id: "qa-default-3",
+    frage: "Kann ich das Neumond-Ritual auch alleine machen oder brauche ich jemanden daf\u00fcr?",
+    von: "Lena B.",
+    datum: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+async function getQAFragen(): Promise<QAFrage[]> {
+  const data = await AsyncStorage.getItem(QA_KEY);
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  }
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(DEFAULT_QA));
+  return DEFAULT_QA;
+}
+
+async function saveQAFragen(fragen: QAFrage[]) {
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
 }
 
 function formatDatum(isoString: string): string {
@@ -415,6 +464,12 @@ export default function CommunityScreen() {
   const [newPostText, setNewPostText] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState("🌸");
 
+  // Q&A – Frage an die Seelenplanerin
+  const [qaFragen, setQaFragen] = useState<QAFrage[]>([]);
+  const [showNewFrage, setShowNewFrage] = useState(false);
+  const [newFrage, setNewFrage] = useState("");
+  const [frageGesendet, setFrageGesendet] = useState(false);
+
   // Passwort ändern
   const [resetSent, setResetSent] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
@@ -462,10 +517,11 @@ export default function CommunityScreen() {
     });
   }, []);
 
-  // Posts laden bei Focus
+  // Posts und Q&A laden bei Focus
   useFocusEffect(
     useCallback(() => {
       getPosts().then(setPosts);
+      getQAFragen().then(setQaFragen);
     }, [])
   );
 
@@ -603,6 +659,23 @@ export default function CommunityScreen() {
     setNewPwConfirm("");
     setFehler("");
     Alert.alert("Passwort geändert", "Dein neues Passwort wurde gespeichert.");
+  };
+
+  const handleSendFrage = async () => {
+    if (!newFrage.trim()) return;
+    const frage: QAFrage = {
+      id: `qa-${Date.now()}`,
+      frage: newFrage.trim(),
+      von: userName,
+      datum: new Date().toISOString(),
+    };
+    const updated = [frage, ...qaFragen];
+    setQaFragen(updated);
+    await saveQAFragen(updated);
+    setNewFrage("");
+    setShowNewFrage(false);
+    setFrageGesendet(true);
+    setTimeout(() => setFrageGesendet(false), 4000);
   };
 
   const handleCreatePost = async () => {
@@ -909,6 +982,107 @@ export default function CommunityScreen() {
           {/* ── Meditationen Sektion ── */}
           <MeditationenSektion audio={audio} />
 
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── FRAGE AN DIE SEELENPLANERIN ── */}
+          {/* ══════════════════════════════════════════════ */}
+          <View style={s.qaSection}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <Text style={s.sec}>🌙 Frage an die Seelenplanerin</Text>
+              <TouchableOpacity
+                style={s.qaAskBtn}
+                onPress={() => { setShowNewFrage(!showNewFrage); setFrageGesendet(false); }}
+                activeOpacity={0.8}
+              >
+                <Text style={s.qaAskBtnText}>{showNewFrage ? "✕ Schlie\u00dfen" : "✨ Frage stellen"}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {frageGesendet && (
+              <View style={s.qaSuccessBox}>
+                <Text style={{ fontSize: 18, marginBottom: 4 }}>✅</Text>
+                <Text style={s.qaSuccessText}>Deine Frage wurde gesendet! Die Seelenplanerin wird sie bald beantworten.</Text>
+              </View>
+            )}
+
+            {showNewFrage && (
+              <View style={s.qaInputCard}>
+                <Text style={s.qaInputLabel}>Deine Frage an die Seelenplanerin</Text>
+                <TextInput
+                  style={[s.qaInput, { height: 80, textAlignVertical: "top" }]}
+                  placeholder="Was m\u00f6chtest du wissen? Stelle deine Frage..."
+                  placeholderTextColor={C.muted}
+                  value={newFrage}
+                  onChangeText={setNewFrage}
+                  multiline
+                  maxLength={300}
+                />
+                <Text style={s.qaCharCount}>{newFrage.length}/300</Text>
+                <TouchableOpacity
+                  style={[s.qaSendBtn, !newFrage.trim() && { opacity: 0.5 }]}
+                  onPress={handleSendFrage}
+                  disabled={!newFrage.trim()}
+                  activeOpacity={0.85}
+                >
+                  <Text style={s.qaSendBtnText}>Frage senden \u2192</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Beantwortete Fragen */}
+            {qaFragen.filter(f => f.antwort).length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                {qaFragen.filter(f => f.antwort).map(f => (
+                  <View key={f.id} style={s.qaCard}>
+                    <View style={s.qaFrageRow}>
+                      <View style={s.qaFrageAvatar}>
+                        <Text style={{ fontSize: 14 }}>🙋</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.qaFrageVon}>{f.von}</Text>
+                        <Text style={s.qaFrageDatum}>{formatDatum(f.datum)}</Text>
+                      </View>
+                    </View>
+                    <Text style={s.qaFrageText}>{f.frage}</Text>
+                    {f.antwort && (
+                      <View style={s.qaAntwortBox}>
+                        <View style={s.qaAntwortHeader}>
+                          <View style={s.qaAntwortAvatar}>
+                            <Text style={{ fontSize: 12 }}>🌸</Text>
+                          </View>
+                          <Text style={s.qaAntwortVon}>Die Seelenplanerin</Text>
+                          {f.antwortDatum && <Text style={s.qaAntwortDatum}>{formatDatum(f.antwortDatum)}</Text>}
+                        </View>
+                        <Text style={s.qaAntwortText}>{f.antwort}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Unbeantwortete Fragen */}
+            {qaFragen.filter(f => !f.antwort).length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={{ fontSize: 13, color: C.muted, marginHorizontal: 16, marginBottom: 8, fontStyle: "italic" }}>Warten auf Antwort...</Text>
+                {qaFragen.filter(f => !f.antwort).map(f => (
+                  <View key={f.id} style={[s.qaCard, { borderStyle: "dashed" as any }]}>
+                    <View style={s.qaFrageRow}>
+                      <View style={s.qaFrageAvatar}>
+                        <Text style={{ fontSize: 14 }}>🙋</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.qaFrageVon}>{f.von}</Text>
+                        <Text style={s.qaFrageDatum}>{formatDatum(f.datum)}</Text>
+                      </View>
+                    </View>
+                    <Text style={s.qaFrageText}>{f.frage}</Text>
+                    <Text style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 8 }}>🕒 Die Seelenplanerin wird bald antworten...</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
           <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
             {ANGEBOTE.map((a, i) => (
@@ -1111,6 +1285,59 @@ const s = StyleSheet.create({
   premiumHeroBtnText: {
     color: "#FFF", fontSize: 16, fontWeight: "700",
   },
+
+  // Q&A – Frage an die Seelenplanerin
+  qaSection: { marginTop: 8 },
+  qaAskBtn: {
+    backgroundColor: C.goldLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8,
+    marginRight: 16, borderWidth: 1, borderColor: "#E8D5B0",
+  },
+  qaAskBtnText: { color: C.brown, fontSize: 13, fontWeight: "700" },
+  qaSuccessBox: {
+    marginHorizontal: 16, marginBottom: 12, backgroundColor: "#F0F7F0",
+    borderRadius: 16, padding: 16, alignItems: "center",
+    borderWidth: 1, borderColor: "#C8E6C9",
+  },
+  qaSuccessText: { fontSize: 13, color: "#2E7D32", textAlign: "center", fontWeight: "600", lineHeight: 20 },
+  qaInputCard: {
+    marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
+    borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.gold,
+  },
+  qaInputLabel: { fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 },
+  qaInput: {
+    backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14,
+    color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 4,
+  },
+  qaCharCount: { fontSize: 11, color: C.muted, textAlign: "right", marginBottom: 8 },
+  qaSendBtn: {
+    backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+    alignItems: "center", marginTop: 4,
+  },
+  qaSendBtnText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
+  qaCard: {
+    marginHorizontal: 16, marginBottom: 12, backgroundColor: C.card,
+    borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.border,
+  },
+  qaFrageRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
+  qaFrageAvatar: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: C.goldLight,
+    alignItems: "center", justifyContent: "center",
+  },
+  qaFrageVon: { fontSize: 14, fontWeight: "700", color: C.brown },
+  qaFrageDatum: { fontSize: 11, color: C.muted },
+  qaFrageText: { fontSize: 14, color: C.brownMid, lineHeight: 21 },
+  qaAntwortBox: {
+    marginTop: 12, backgroundColor: C.roseLight, borderRadius: 14,
+    padding: 14, borderLeftWidth: 3, borderLeftColor: C.rose,
+  },
+  qaAntwortHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  qaAntwortAvatar: {
+    width: 28, height: 28, borderRadius: 14, backgroundColor: C.rose,
+    alignItems: "center", justifyContent: "center",
+  },
+  qaAntwortVon: { fontSize: 13, fontWeight: "700", color: C.brown },
+  qaAntwortDatum: { fontSize: 11, color: C.muted, marginLeft: "auto" },
+  qaAntwortText: { fontSize: 13, color: C.brownMid, lineHeight: 20 },
 
   // Neuer Beitrag
   newPostSection: { marginTop: 4 },
