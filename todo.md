@@ -746,12 +746,12 @@
 - [ ] Community: Mehrwert-Ideen für Premium-Bereich überlegen
 
 ## Frage an die Seelenplanerin – Q&A-Bereich (12.03.2026)
-- [ ] Community: "Frage an die Seelenplanerin" Bereich einbauen
-- [ ] Nutzerinnen können öffentliche Fragen mit ihrem Community-Namen stellen
-- [ ] Fragen + Antworten für alle Community-Mitglieder sichtbar
-- [ ] Admin: Fragen-Übersicht mit Antwort-Funktion
-- [ ] Fragen in AsyncStorage speichern (lokal)
+- [x] Community: "Frage an die Seelenplanerin" Bereich einbauen
+- [x] Nutzerinnen können öffentliche Fragen mit ihrem Community-Namen stellen
+- [x] Fragen + Antworten für alle Community-Mitglieder sichtbar
+- [x] Admin: Fragen-Übersicht mit Antwort-Funktion
+- [x] Fragen in AsyncStorage speichern (lokal)
 
 ## Runen-Produktbilder einbinden (12.03.2026)
-- [ ] Tentary-Seite https://dieseelenplanerin.tentary.com/p/HWnXez besuchen und Produktbilder/Preise extrahieren
-- [ ] Einzelne Runen mit Bildern im Shop einbinden
+- [x] Tentary-Seite https://dieseelenplanerin.tentary.com/p/HWnXez besuchen und Produktbilder/Preise extrahieren
+- [x] Einzelne Runen mit Bildern im Shop einbinden (Preis: ab 13,90 €, Bild von Tentary)

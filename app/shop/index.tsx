@@ -183,7 +183,7 @@ const PRODUCTS: Product[] = [
     highlight: "Handgefertigt & individuell",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/HWnXez",
     badge: "Unikat",
-    imageUrl: "runen-charm",
+    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/M3PWE7f6T2SxuxdrbesCC6/runen-charm-einzeln_1b598646.png",
   },
 
   // ═══════════════════════════════════════════════
@@ -391,9 +391,9 @@ export default function ShopScreen() {
         renderItem={({ item }) => (
           <View style={s.card}>
             {/* Produktbild wenn vorhanden */}
-            {item.imageUrl === "runen-charm" && (
+            {item.imageUrl && (
               <Image
-                source={require("@/assets/images/runen-charm-einzeln.png")}
+                source={{ uri: item.imageUrl }}
                 style={{ width: "100%", height: 200, borderRadius: 16, marginBottom: 12 }}
                 resizeMode="cover"
               />
