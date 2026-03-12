@@ -719,3 +719,10 @@
 - [x] Zyklustracker: Zyklusphasen-Anzeige mit spirituellen Tipps
 - [x] Zyklustracker: Mond-Zyklus-Synchronisation beibehalten
 - [x] Premium-Bereich in Community viel deutlicher hervorheben
+
+## Push-Benachrichtigungen + Widgets (März 2026)
+- [x] Push-Benachrichtigungen: Client-Seite – Token registrieren und Berechtigungen anfragen
+- [x] Push-Benachrichtigungen: Server-Seite – Push-Token in DB speichern
+- [x] Push-Benachrichtigungen: Server-Seite – Nachrichten an alle Token senden (Expo Push API)
+- [x] Push-Benachrichtigungen: Admin-UI zum Verfassen und Senden von Push-Nachrichten
+- [ ] Homescreen-Widgets: Mondphase / Zyklustag / Tagesimpuls (Expo unterstützt keine nativen Widgets – später mit EAS Build möglich)

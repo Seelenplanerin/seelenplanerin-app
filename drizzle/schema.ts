@@ -106,3 +106,32 @@ export const affiliatePayouts = pgTable("affiliate_payouts", {
 });
 export type AffiliatePayout = typeof affiliatePayouts.$inferSelect;
 export type InsertAffiliatePayout = typeof affiliatePayouts.$inferInsert;
+
+// ── Push-Benachrichtigungen ──
+
+// Push-Tokens: Speichert Expo Push Tokens der App-Nutzerinnen
+export const pushTokens = pgTable("push_tokens", {
+  id: serial("id").primaryKey(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  platform: varchar("platform", { length: 20 }), // ios, android, web
+  communityEmail: varchar("communityEmail", { length: 320 }), // optional: verknüpftes Community-Mitglied
+  isActive: integer("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type PushToken = typeof pushTokens.$inferSelect;
+export type InsertPushToken = typeof pushTokens.$inferInsert;
+
+// Push-Nachrichten-Historie: Alle gesendeten Push-Nachrichten
+export const pushMessages = pgTable("push_messages", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  data: text("data"), // JSON-String mit zusätzlichen Daten
+  sentTo: integer("sentTo").default(0).notNull(), // Anzahl Empfänger
+  sentSuccess: integer("sentSuccess").default(0).notNull(),
+  sentFailed: integer("sentFailed").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PushMessage = typeof pushMessages.$inferSelect;
+export type InsertPushMessage = typeof pushMessages.$inferInsert;

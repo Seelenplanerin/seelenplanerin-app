@@ -1,0 +1,12 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS push_messages (\n  id SERIAL PRIMARY KEY,\n  title VARCHAR(255) NOT NULL,\n  body TEXT NOT NULL,\n  data TEXT,\n  \"sentTo\" INTEGER NOT NULL DEFAULT 0,\n  \"sentSuccess\" INTEGER NOT NULL DEFAULT 0,\n  \"sentFailed\" INTEGER NOT NULL DEFAULT 0,\n  \"createdAt\" TIMESTAMP DEFAULT NOW() NOT NULL\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.edbbe7a298c6 --database M3PWE7f6T2SxuxdrbesCC6 --execute CREATE TABLE IF NOT EXISTS push_messages (\n  id SERIAL PRIMARY KEY,\n  title VARCHAR(255) NOT NULL,\n  body TEXT NOT NULL,\n  data TEXT,\n  \"sentTo\" INTEGER NOT NULL DEFAULT 0,\n  \"sentSuccess\" INTEGER NOT NULL DEFAULT 0,\n  \"sentFailed\" INTEGER NOT NULL DEFAULT 0,\n  \"createdAt\" TIMESTAMP DEFAULT NOW() NOT NULL\n);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1064 (42000) at line 1: You have an error in your SQL syntax; check the manual that corresponds to your TiDB version for the right syntax to use line 6 column 11 near \"\"sentTo\" INTEGER NOT NULL DEFAULT 0,",
+    "  \"sentSuccess\" INTEGER NOT NULL DEFAULT 0,",
+    "  \"sentFailed\" INTEGER NOT NULL DEFAULT 0,",
+    "  \"createdAt\" TIMESTAMP DEFAULT NOW() NOT NULL",
+    ")\""
+  ]
+}

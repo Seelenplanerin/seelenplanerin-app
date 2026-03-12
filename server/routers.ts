@@ -431,6 +431,113 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Push-Benachrichtigungen ──
+  push: router({
+    // Token registrieren (wird beim App-Start aufgerufen)
+    registerToken: publicProcedure
+      .input(z.object({
+        token: z.string().min(1),
+        platform: z.string().optional(),
+        communityEmail: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await db.registerPushToken(input);
+          return { success: true };
+        } catch (e: any) {
+          return { success: false, error: e.message };
+        }
+      }),
+
+    // Anzahl registrierter Geräte
+    tokenCount: publicProcedure.query(async () => {
+      return db.getPushTokenCount();
+    }),
+
+    // Push-Nachricht an alle senden (Admin)
+    sendToAll: publicProcedure
+      .input(z.object({
+        title: z.string().min(1),
+        body: z.string().min(1),
+        data: z.string().optional(), // JSON-String
+      }))
+      .mutation(async ({ input }) => {
+        const tokens = await db.getAllActivePushTokens();
+        if (tokens.length === 0) {
+          return { success: false, sent: 0, failed: 0, error: "Keine registrierten Ger\u00e4te vorhanden." };
+        }
+
+        // Nachricht in Historie speichern
+        const messageId = await db.createPushMessage({
+          title: input.title,
+          body: input.body,
+          data: input.data || null,
+          sentTo: tokens.length,
+        });
+
+        // Expo Push API aufrufen
+        const messages = tokens.map(t => ({
+          to: t.token,
+          sound: "default" as const,
+          title: input.title,
+          body: input.body,
+          data: input.data ? JSON.parse(input.data) : undefined,
+        }));
+
+        // In Chunks von 100 senden (Expo-Limit)
+        let sentSuccess = 0;
+        let sentFailed = 0;
+        const invalidTokens: string[] = [];
+
+        for (let i = 0; i < messages.length; i += 100) {
+          const chunk = messages.slice(i, i + 100);
+          try {
+            const response = await fetch("https://exp.host/--/api/v2/push/send", {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Accept-encoding": "gzip, deflate",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(chunk),
+            });
+            const result = await response.json();
+            if (result.data) {
+              for (const ticket of result.data) {
+                if (ticket.status === "ok") {
+                  sentSuccess++;
+                } else {
+                  sentFailed++;
+                  // Token deaktivieren wenn ungültig
+                  if (ticket.details?.error === "DeviceNotRegistered") {
+                    const idx = result.data.indexOf(ticket);
+                    if (chunk[idx]) invalidTokens.push(chunk[idx].to);
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            sentFailed += chunk.length;
+          }
+        }
+
+        // Ungültige Tokens deaktivieren
+        for (const token of invalidTokens) {
+          await db.deactivatePushToken(token);
+        }
+
+        // Historie aktualisieren
+        await db.updatePushMessage(messageId, { sentSuccess, sentFailed });
+
+        return { success: true, sent: sentSuccess, failed: sentFailed, total: tokens.length };
+      }),
+
+    // Nachrichten-Historie (Admin)
+    history: publicProcedure.query(async () => {
+      return db.getPushMessageHistory();
+    }),
+  }),
+
   academy: router({
     joinWaitlist: publicProcedure
       .input(z.object({ email: z.string().email() }))

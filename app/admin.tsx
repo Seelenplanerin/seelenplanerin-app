@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "affiliate" | "academy" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "affiliate" | "academy" | "einstellungen";
 
 interface AffiliateInfo {
   id: number; code: string; name: string; email: string;
@@ -241,6 +241,16 @@ export default function AdminScreen() {
   const [nachrichtFehler, setNachrichtFehler] = useState("");
   const [nachrichtSending, setNachrichtSending] = useState(false);
   const [nachrichtErfolg, setNachrichtErfolg] = useState("");
+
+  // Push-Benachrichtigungen
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushFehler, setPushFehler] = useState("");
+  const [pushSending, setPushSending] = useState(false);
+  const [pushErfolg, setPushErfolg] = useState("");
+  const [pushTokenCount, setPushTokenCount] = useState(0);
+  const [pushHistory, setPushHistory] = useState<Array<{ id: number; title: string; body: string; sentTo: number; sentSuccess: number; sentFailed: number; createdAt: string }>>([]);
+  const [pushHistoryLoading, setPushHistoryLoading] = useState(false);
 
   // Academy-Warteliste
   const [academyWaitlist, setAcademyWaitlist] = useState<{ id: number; email: string; createdAt: string }[]>([]);
@@ -648,6 +658,7 @@ export default function AdminScreen() {
     { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
     { key: "impulse", label: "Impulse", emoji: "✨" },
     { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
+    { key: "push", label: "Push", emoji: "📲" },
     { key: "affiliate", label: "Affiliate", emoji: "🤝" },
     { key: "academy", label: "Academy", emoji: "🎓" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
@@ -1326,6 +1337,188 @@ export default function AdminScreen() {
                 <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
                   Die Nachricht wird als sch\u00f6ne E-Mail im Seelenplanerin-Design an jedes Mitglied pers\u00f6nlich gesendet.{"\n"}
                   Jede E-Mail beginnt mit "Hallo [Name]" und enth\u00e4lt deine Nachricht.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ PUSH TAB ═══════ */}
+          {activeTab === "push" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>📲 Push-Benachrichtigung senden</Text>
+              <Text style={s.sectionHint}>
+                Sende eine Push-Nachricht direkt auf die Handys deiner Nutzerinnen.
+                {pushTokenCount > 0 ? ` ${pushTokenCount} Ger\u00e4t${pushTokenCount !== 1 ? "e" : ""} registriert.` : " Lade Ger\u00e4te-Anzahl..."}
+              </Text>
+
+              {/* Token-Count laden */}
+              <TouchableOpacity
+                style={[s.actionBtn, { borderColor: C.gold, marginBottom: 12 }]}
+                onPress={async () => {
+                  try {
+                    const API_URL = getApiBaseUrl();
+                    const res = await fetch(`${API_URL}/api/trpc/push.tokenCount`);
+                    const data = await res.json();
+                    const count = data?.result?.data?.json ?? data?.result?.data ?? 0;
+                    setPushTokenCount(Number(count));
+                  } catch (e) {
+                    setPushTokenCount(0);
+                  }
+                }}
+                activeOpacity={0.8}>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>🔄 Geräte-Anzahl aktualisieren</Text>
+              </TouchableOpacity>
+
+              <View style={s.formBox}>
+                <Text style={s.formLabel}>Titel *</Text>
+                <TextInput style={s.formInput}
+                  placeholder="z.B. Vollmond-Ritual heute Abend \u{1F315}"
+                  placeholderTextColor={C.muted}
+                  value={pushTitle}
+                  onChangeText={t => { setPushTitle(t); setPushFehler(""); setPushErfolg(""); }}
+                  returnKeyType="next" />
+
+                <Text style={s.formLabel}>Nachricht *</Text>
+                <TextInput style={[s.formInput, { height: 100, textAlignVertical: "top" }]}
+                  placeholder="Deine Push-Nachricht..."
+                  placeholderTextColor={C.muted}
+                  value={pushBody}
+                  onChangeText={t => { setPushBody(t); setPushFehler(""); setPushErfolg(""); }}
+                  multiline />
+
+                {pushFehler !== "" && <Text style={s.formError}>{pushFehler}</Text>}
+                {pushErfolg !== "" && (
+                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                    <Text style={{ fontSize: 13, color: "#2E7D32", fontWeight: "600" }}>{pushErfolg}</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[s.submitBtn, pushSending && { opacity: 0.6 }]}
+                  onPress={async () => {
+                    if (!pushTitle.trim()) { setPushFehler("Bitte gib einen Titel ein."); return; }
+                    if (!pushBody.trim()) { setPushFehler("Bitte gib eine Nachricht ein."); return; }
+
+                    Alert.alert(
+                      "Push senden?",
+                      `Push-Nachricht an alle registrierten Ger\u00e4te senden?\n\nTitel: ${pushTitle}`,
+                      [
+                        { text: "Abbrechen", style: "cancel" },
+                        {
+                          text: "Senden",
+                          style: "default",
+                          onPress: async () => {
+                            setPushSending(true);
+                            setPushFehler("");
+                            setPushErfolg("");
+                            try {
+                              const API_URL = getApiBaseUrl();
+                              const res = await fetch(`${API_URL}/api/trpc/push.sendToAll`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ json: { title: pushTitle.trim(), body: pushBody.trim() } }),
+                              });
+                              const data = await res.json();
+                              const result = data?.result?.data?.json;
+                              if (result?.success && result?.sent > 0) {
+                                setPushErfolg(`\u2705 ${result.sent} Push-Nachricht${result.sent !== 1 ? "en" : ""} erfolgreich gesendet!${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
+                                setPushTitle("");
+                                setPushBody("");
+                              } else if (result?.error) {
+                                setPushFehler(result.error);
+                              } else {
+                                setPushFehler("Keine Push-Nachrichten konnten gesendet werden.");
+                              }
+                            } catch (e: any) {
+                              setPushFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
+                            } finally {
+                              setPushSending(false);
+                            }
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  activeOpacity={0.85}
+                  disabled={pushSending}>
+                  {pushSending ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={s.submitBtnText}>Wird gesendet...</Text>
+                    </View>
+                  ) : (
+                    <Text style={s.submitBtnText}>📲 Push an alle senden</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Vorlagen */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 8 }}>✨ Schnellvorlagen</Text>
+                {[
+                  { title: "\u{1F315} Vollmond-Ritual", body: "Heute Abend ist Vollmond \u2013 dein Ritual wartet auf dich. \u00d6ffne die App und lass dich f\u00fchren." },
+                  { title: "\u{1F311} Neumond-Intention", body: "Heute ist Neumond \u2013 die perfekte Zeit, neue Intentionen zu setzen. Was m\u00f6chtest du manifestieren?" },
+                  { title: "\u2728 Neuer Seelenimpuls", body: "Ein neuer Seelenimpuls wartet auf dich. \u00d6ffne die App und lass dich inspirieren." },
+                  { title: "\u{1F9D8}\u200d\u2640\ufe0f Neue Meditation", body: "Eine neue Meditation ist verf\u00fcgbar. Nimm dir einen Moment der Stille." },
+                  { title: "\u{1F338} Community-Update", body: "Es gibt Neuigkeiten in der Seelenplanerin-Community. Schau vorbei!" },
+                ].map((vorlage, i) => (
+                  <TouchableOpacity key={i}
+                    style={{ paddingVertical: 8, paddingHorizontal: 10, backgroundColor: C.card, borderRadius: 8, marginBottom: 6, borderWidth: 1, borderColor: C.border }}
+                    onPress={() => { setPushTitle(vorlage.title); setPushBody(vorlage.body); setPushFehler(""); setPushErfolg(""); }}
+                    activeOpacity={0.7}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>{vorlage.title}</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }} numberOfLines={1}>{vorlage.body}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Historie */}
+              <View style={{ marginTop: 16 }}>
+                <TouchableOpacity
+                  style={[s.actionBtn, { borderColor: C.rose }]}
+                  onPress={async () => {
+                    setPushHistoryLoading(true);
+                    try {
+                      const API_URL = getApiBaseUrl();
+                      const res = await fetch(`${API_URL}/api/trpc/push.history`);
+                      const data = await res.json();
+                      const history = data?.result?.data?.json ?? data?.result?.data ?? [];
+                      setPushHistory(Array.isArray(history) ? history : []);
+                    } catch (e) {
+                      setPushHistory([]);
+                    } finally {
+                      setPushHistoryLoading(false);
+                    }
+                  }}
+                  activeOpacity={0.8}>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>📜 Gesendete Nachrichten laden</Text>
+                </TouchableOpacity>
+
+                {pushHistoryLoading && <ActivityIndicator style={{ marginTop: 12 }} color={C.rose} />}
+
+                {pushHistory.length > 0 && (
+                  <View style={{ marginTop: 12 }}>
+                    {pushHistory.map((msg) => (
+                      <View key={msg.id} style={{ backgroundColor: C.card, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.border }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{msg.title}</Text>
+                        <Text style={{ fontSize: 12, color: C.brownMid, marginTop: 4 }} numberOfLines={2}>{msg.body}</Text>
+                        <View style={{ flexDirection: "row", gap: 12, marginTop: 6 }}>
+                          <Text style={{ fontSize: 11, color: C.muted }}>\u2705 {msg.sentSuccess} gesendet</Text>
+                          {msg.sentFailed > 0 && <Text style={{ fontSize: 11, color: "#E53935" }}>\u274c {msg.sentFailed} fehlgeschlagen</Text>}
+                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(msg.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.roseLight, borderColor: C.rose + "40", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 So funktioniert's</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Push-Nachrichten erscheinen direkt auf dem Sperrbildschirm deiner Nutzerinnen \u2013 auch wenn die App geschlossen ist.{"\n"}
+                  Jede Nutzerin muss einmalig die Benachrichtigungen erlauben. Die Anzahl registrierter Ger\u00e4te siehst du oben.
                 </Text>
               </View>
             </View>

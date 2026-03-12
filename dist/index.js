@@ -10,7 +10,7 @@ var __export = (target, all) => {
 
 // drizzle/schema.ts
 import { integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
-var roleEnum, users, meditations, communityUsers, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts;
+var roleEnum, users, meditations, communityUsers, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, pushTokens, pushMessages;
 var init_schema = __esm({
   "drizzle/schema.ts"() {
     "use strict";
@@ -105,6 +105,29 @@ var init_schema = __esm({
       notes: text("notes"),
       createdAt: timestamp("createdAt").defaultNow().notNull()
     });
+    pushTokens = pgTable("push_tokens", {
+      id: serial("id").primaryKey(),
+      token: varchar("token", { length: 255 }).notNull().unique(),
+      platform: varchar("platform", { length: 20 }),
+      // ios, android, web
+      communityEmail: varchar("communityEmail", { length: 320 }),
+      // optional: verknüpftes Community-Mitglied
+      isActive: integer("isActive").default(1).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull(),
+      updatedAt: timestamp("updatedAt").defaultNow().notNull()
+    });
+    pushMessages = pgTable("push_messages", {
+      id: serial("id").primaryKey(),
+      title: varchar("title", { length: 255 }).notNull(),
+      body: text("body").notNull(),
+      data: text("data"),
+      // JSON-String mit zusätzlichen Daten
+      sentTo: integer("sentTo").default(0).notNull(),
+      // Anzahl Empfänger
+      sentSuccess: integer("sentSuccess").default(0).notNull(),
+      sentFailed: integer("sentFailed").default(0).notNull(),
+      createdAt: timestamp("createdAt").defaultNow().notNull()
+    });
   }
 });
 
@@ -135,6 +158,8 @@ __export(db_exports, {
   createAffiliateSale: () => createAffiliateSale,
   createCommunityUser: () => createCommunityUser,
   createMeditation: () => createMeditation,
+  createPushMessage: () => createPushMessage,
+  deactivatePushToken: () => deactivatePushToken,
   deleteCommunityUser: () => deleteCommunityUser,
   deleteMeditation: () => deleteMeditation,
   generateAffiliateCode: () => generateAffiliateCode,
@@ -145,6 +170,7 @@ __export(db_exports, {
   getAffiliateClicks: () => getAffiliateClicks,
   getAffiliatePayouts: () => getAffiliatePayouts,
   getAffiliateSales: () => getAffiliateSales,
+  getAllActivePushTokens: () => getAllActivePushTokens,
   getAllAffiliatePayouts: () => getAllAffiliatePayouts,
   getAllAffiliateSales: () => getAllAffiliateSales,
   getAllAffiliates: () => getAllAffiliates,
@@ -152,12 +178,16 @@ __export(db_exports, {
   getAllMeditations: () => getAllMeditations,
   getCommunityUserByEmail: () => getCommunityUserByEmail,
   getDb: () => getDb,
+  getPushMessageHistory: () => getPushMessageHistory,
+  getPushTokenCount: () => getPushTokenCount,
   getUserByOpenId: () => getUserByOpenId,
   recordAffiliateClick: () => recordAffiliateClick,
+  registerPushToken: () => registerPushToken,
   updateAffiliate: () => updateAffiliate,
   updateAffiliateSaleStatus: () => updateAffiliateSaleStatus,
   updateCommunityUser: () => updateCommunityUser,
   updateMeditation: () => updateMeditation,
+  updatePushMessage: () => updatePushMessage,
   upsertUser: () => upsertUser
 });
 import { eq, desc, sql } from "drizzle-orm";
@@ -400,6 +430,57 @@ async function getAllAffiliatePayouts() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+}
+async function registerPushToken(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(pushTokens).values({
+    token: data.token,
+    platform: data.platform || null,
+    communityEmail: data.communityEmail || null,
+    isActive: 1,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).onConflictDoUpdate({
+    target: pushTokens.token,
+    set: {
+      platform: data.platform || null,
+      communityEmail: data.communityEmail || null,
+      isActive: 1,
+      updatedAt: /* @__PURE__ */ new Date()
+    }
+  });
+}
+async function getAllActivePushTokens() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
+}
+async function deactivatePushToken(token) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushTokens).set({ isActive: 0 }).where(eq(pushTokens.token, token));
+}
+async function createPushMessage(data) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pushMessages).values(data).returning({ id: pushMessages.id });
+  return result[0].id;
+}
+async function updatePushMessage(id, data) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushMessages).set(data).where(eq(pushMessages.id, id));
+}
+async function getPushMessageHistory() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt)).limit(50);
+}
+async function getPushTokenCount() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql`count(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
+  return Number(result[0]?.count || 0);
 }
 async function addAcademyWaitlist(email) {
   const db = await getDb();
@@ -1815,6 +1896,93 @@ var appRouter = router({
       if (input.iban !== void 0) updateData.iban = input.iban;
       await updateAffiliate(input.code, updateData);
       return { success: true };
+    })
+  }),
+  // ── Push-Benachrichtigungen ──
+  push: router({
+    // Token registrieren (wird beim App-Start aufgerufen)
+    registerToken: publicProcedure.input(z2.object({
+      token: z2.string().min(1),
+      platform: z2.string().optional(),
+      communityEmail: z2.string().optional()
+    })).mutation(async ({ input }) => {
+      try {
+        await registerPushToken(input);
+        return { success: true };
+      } catch (e) {
+        return { success: false, error: e.message };
+      }
+    }),
+    // Anzahl registrierter Geräte
+    tokenCount: publicProcedure.query(async () => {
+      return getPushTokenCount();
+    }),
+    // Push-Nachricht an alle senden (Admin)
+    sendToAll: publicProcedure.input(z2.object({
+      title: z2.string().min(1),
+      body: z2.string().min(1),
+      data: z2.string().optional()
+      // JSON-String
+    })).mutation(async ({ input }) => {
+      const tokens = await getAllActivePushTokens();
+      if (tokens.length === 0) {
+        return { success: false, sent: 0, failed: 0, error: "Keine registrierten Ger\xE4te vorhanden." };
+      }
+      const messageId = await createPushMessage({
+        title: input.title,
+        body: input.body,
+        data: input.data || null,
+        sentTo: tokens.length
+      });
+      const messages = tokens.map((t2) => ({
+        to: t2.token,
+        sound: "default",
+        title: input.title,
+        body: input.body,
+        data: input.data ? JSON.parse(input.data) : void 0
+      }));
+      let sentSuccess = 0;
+      let sentFailed = 0;
+      const invalidTokens = [];
+      for (let i = 0; i < messages.length; i += 100) {
+        const chunk = messages.slice(i, i + 100);
+        try {
+          const response = await fetch("https://exp.host/--/api/v2/push/send", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Accept-encoding": "gzip, deflate",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(chunk)
+          });
+          const result = await response.json();
+          if (result.data) {
+            for (const ticket of result.data) {
+              if (ticket.status === "ok") {
+                sentSuccess++;
+              } else {
+                sentFailed++;
+                if (ticket.details?.error === "DeviceNotRegistered") {
+                  const idx = result.data.indexOf(ticket);
+                  if (chunk[idx]) invalidTokens.push(chunk[idx].to);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          sentFailed += chunk.length;
+        }
+      }
+      for (const token of invalidTokens) {
+        await deactivatePushToken(token);
+      }
+      await updatePushMessage(messageId, { sentSuccess, sentFailed });
+      return { success: true, sent: sentSuccess, failed: sentFailed, total: tokens.length };
+    }),
+    // Nachrichten-Historie (Admin)
+    history: publicProcedure.query(async () => {
+      return getPushMessageHistory();
     })
   }),
   academy: router({

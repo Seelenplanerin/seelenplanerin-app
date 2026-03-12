@@ -1,7 +1,7 @@
 import { eq, desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout } from "../drizzle/schema";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -301,6 +301,67 @@ export async function getAllAffiliatePayouts() {
   return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
 }
 
+
+// ── Push-Benachrichtigungen ──
+
+export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Upsert: Token anlegen oder aktualisieren
+  await db.insert(pushTokens).values({
+    token: data.token,
+    platform: data.platform || null,
+    communityEmail: data.communityEmail || null,
+    isActive: 1,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: pushTokens.token,
+    set: {
+      platform: data.platform || null,
+      communityEmail: data.communityEmail || null,
+      isActive: 1,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function getAllActivePushTokens() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
+}
+
+export async function deactivatePushToken(token: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushTokens).set({ isActive: 0 }).where(eq(pushTokens.token, token));
+}
+
+export async function createPushMessage(data: InsertPushMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pushMessages).values(data).returning({ id: pushMessages.id });
+  return result[0].id;
+}
+
+export async function updatePushMessage(id: number, data: Partial<InsertPushMessage>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushMessages).set(data).where(eq(pushMessages.id, id));
+}
+
+export async function getPushMessageHistory() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt)).limit(50);
+}
+
+export async function getPushTokenCount() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
+  return Number(result[0]?.count || 0);
+}
 
 // ─── Academy Waitlist ─────────────────────────────────────────────────────────
 export async function addAcademyWaitlist(email: string) {

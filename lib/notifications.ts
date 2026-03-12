@@ -10,6 +10,8 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
+import { getApiBaseUrl } from "@/constants/oauth";
 
 // ═══════════════════════════════════════════════════════════════
 // STORAGE KEYS
@@ -114,7 +116,7 @@ export function initNotificationHandler(): void {
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: false,
-    }),
+    } as Notifications.NotificationBehavior),
   });
 }
 
@@ -166,9 +168,74 @@ export async function hasNotificationPermissions(): Promise<boolean> {
   return status === "granted";
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SETTINGS MANAGEMENT
-// ═══════════════════════════════════════════════════════════════
+// ═════════════════════════════// ═════════════════════════════════════════════════════════════════
+// PUSH TOKEN REGISTRATION (Server-seitig)
+// ═════════════════════════════════════════════════════════════════
+
+const PUSH_TOKEN_KEY = "seelenplanerin_push_token";
+
+/**
+ * Registriert den Expo Push Token beim Server.
+ * Wird beim App-Start aufgerufen, nachdem Berechtigungen erteilt wurden.
+ */
+export async function registerPushTokenWithServer(communityEmail?: string): Promise<string | null> {
+  if (Platform.OS === "web") return null;
+
+  try {
+    // Berechtigungen prüfen
+    const hasPerms = await hasNotificationPermissions();
+    if (!hasPerms) {
+      const granted = await requestNotificationPermissions();
+      if (!granted) return null;
+    }
+
+    // Expo Push Token holen
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId: projectId || undefined,
+    });
+    const token = tokenData.data;
+
+    if (!token) return null;
+
+    // Prüfen ob Token schon registriert wurde
+    const storedToken = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
+    if (storedToken === token && !communityEmail) {
+      return token; // Bereits registriert
+    }
+
+    // Token an Server senden
+    const API_URL = getApiBaseUrl();
+    await fetch(`${API_URL}/api/trpc/push.registerToken`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        json: {
+          token,
+          platform: Platform.OS,
+          communityEmail: communityEmail || undefined,
+        },
+      }),
+    });
+
+    // Token lokal speichern
+    await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+    return token;
+  } catch (e) {
+    console.warn("[Push] Token-Registrierung fehlgeschlagen:", e);
+    return null;
+  }
+}
+
+/**
+ * Gibt den gespeicherten Push-Token zurück (oder null).
+ */
+export async function getStoredPushToken(): Promise<string | null> {
+  return AsyncStorage.getItem(PUSH_TOKEN_KEY);
+}
+
+// ════════════════════════════════
+// SETTINGS MANAGEMENT// ═══════════════════════════════════════════════════════════════
 
 export async function loadSettings(): Promise<NotificationSettings> {
   try {
