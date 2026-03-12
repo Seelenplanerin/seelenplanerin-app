@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  FlatList, Linking, Dimensions, LayoutAnimation, Platform,
+  FlatList, Image, Linking, Dimensions, LayoutAnimation, Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -24,6 +24,7 @@ interface Product {
   highlight?: string;
   tentaryUrl: string;
   badge?: string;
+  imageUrl?: string;
 }
 
 const RITUAL_SETS: Product[] = [
@@ -33,6 +34,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Schwarzer Turmalin, Bergkristall, Weißer Salbei & schwarze Kerze",
     emoji: "🛡️", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/01-schutz-reinigung_7032068891806368942-1772437515.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-selbstliebe", name: "Selbstliebe & Herzöffnung", kategorie: "ritual-sets",
@@ -40,6 +42,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Rosenquarz, Mondstein, Myrrhe & rosa Kerze",
     emoji: "💗", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/02-selbstliebe-herzoeffnung_380106635895589047-1772437957.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-fuelle", name: "Fülle & Manifestation", kategorie: "ritual-sets",
@@ -47,6 +50,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Citrin, Pyrit, Weihrauch & goldene Kerze",
     emoji: "✨", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/03-fuelle-manifestation_77358612426124021-1772438229.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-transformation", name: "Transformation & Loslassen", kategorie: "ritual-sets",
@@ -54,6 +58,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Labradorit, Amethyst, Palo Santo & violette Kerze",
     emoji: "🦋", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/04-transformation-loslassen_165599632870260090-1772440133.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-kraft", name: "Kraft & Mut", kategorie: "ritual-sets",
@@ -61,6 +66,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Karneol, Sonnenstein, Weihrauch & rote Kerze",
     emoji: "🔥", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/05-kraft-mut_1051342196418700370-1772440449.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-intuition", name: "Intuition & Spiritualität", kategorie: "ritual-sets",
@@ -68,6 +74,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Amethyst, Mondstein, Myrrhe & weiße Kerze",
     emoji: "🔮", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/06-intuition-spiritualitaet_1589606931969366424-1772440508.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-neuanfang", name: "Neuanfang & Klarheit", kategorie: "ritual-sets",
@@ -75,6 +82,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Bergkristall, Citrin, Weißer Salbei & gelbe Kerze",
     emoji: "🌅", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/07-neuanfang-klarheit_8655664392057718360-1772440875.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-erdung", name: "Erdung & Stabilität", kategorie: "ritual-sets",
@@ -82,6 +90,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Schwarzer Turmalin, Karneol, Palo Santo & braune Kerze",
     emoji: "🌿", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/08-erdung-stabilitaet_1373686916141576984-1772441080.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-lebensfreude", name: "Lebensfreude & Energie", kategorie: "ritual-sets",
@@ -89,6 +98,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Sonnenstein, Karneol, Weihrauch & orange Kerze",
     emoji: "☀️", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/09-lebensfreude-energie_40393902163744161-1772441353.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-heilung", name: "Heilung & Balance", kategorie: "ritual-sets",
@@ -96,6 +106,7 @@ const RITUAL_SETS: Product[] = [
     beschreibung: "Rosenquarz, Amethyst, Palo Santo & grüne Kerze",
     emoji: "💚", highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q", badge: "Ritual-Set",
+    imageUrl: "https://img.tentary.com/10-heilung-balance_19296041821404264109-1772441606.png?aspect_ratio=1:1&width=640",
   },
 ];
 
@@ -103,60 +114,36 @@ const OTHER_PRODUCTS: Product[] = [
   // === ARMBÄNDER ===
   {
     id: "runen-armband", name: "Themen-Armband", nameEn: "Theme Bracelet",
-    kategorie: "armbänder", preis: 0, preisDisplay: "",
-    beschreibung: "Silberkette mit 3 Runen-Plättchen, handgraviert von der Seelenplanerin, gefüllt mit echtem Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum.",
-    emoji: "ᚱ", highlight: "Handgraviert von der Seelenplanerin",
+    kategorie: "armbänder", preis: 61.90, preisDisplay: "61,90 \u20ac",
+    beschreibung: "Silberkette mit 3 Runen-Pl\u00e4ttchen, handgraviert von der Seelenplanerin, gef\u00fcllt mit echtem Heilstein-Pulver. Deine pers\u00f6nliche Schutzrune nach Geburtsdatum.",
+    emoji: "\u16b1", highlight: "Handgraviert von der Seelenplanerin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN", badge: "Bestseller",
+    imageUrl: "https://img.tentary.com/dsc_4046_1117335234741787370-1769341559.jpg?aspect_ratio=1:1&width=640",
   },
   {
     id: "schutzarmband-mariposa", name: "Schutzarmband Mariposa", nameEn: "Protection Bracelet Mariposa",
-    kategorie: "armbänder", preis: 24.00, preisDisplay: "24,00 €",
-    beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
-    emoji: "🖤", highlight: "Schwarzer Turmalin",
+    kategorie: "armbänder", preis: 24.00, preisDisplay: "24,00 \u20ac",
+    beschreibung: "Schwarzer Turmalin \u2013 der st\u00e4rkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
+    emoji: "\ud83d\udda4", highlight: "Schwarzer Turmalin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
+    imageUrl: "https://img.tentary.com/7b541a8d-2593-47d8-b4b4-3bcddfcf5efc_1499324952774879867-1771118349.png?aspect_ratio=1:1&width=640",
   },
   {
-    id: "charm-einzeln", name: "Runen-Charm einzeln", nameEn: "Single Rune Charm",
-    kategorie: "armbänder", preis: 24.00, preisDisplay: "24,00 €",
-    beschreibung: "Einzelner Runen-Charm, handgraviert von der Seelenplanerin, gefüllt mit echtem Heilstein-Pulver.",
-    emoji: "✦",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
+    id: "charm-einzeln", name: "Einzelne Runen-Charm", nameEn: "Single Rune Charm",
+    kategorie: "armbänder", preis: 13.90, preisDisplay: "ab 13,90 \u20ac",
+    beschreibung: "Dein pers\u00f6nliches Runen-Charm \u2013 handgefertigt mit Kristallpulver. 1 Schutzrune (11 \u20ac + Versand) oder 2er Themen-Set (22 \u20ac + Versand).",
+    emoji: "\u16b1", highlight: "Handgefertigt & individuell",
+    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/HWnXez", badge: "Unikat",
+    imageUrl: "https://img.tentary.com/design-ohne-titel-9_2975822091557902286-1773332430.png?aspect_ratio=1:1&width=640",
   },
   // === SESSIONS ===
   {
     id: "aura-reading", name: "Aura Reading", kategorie: "sessions",
-    preis: 77.00, preisDisplay: "77,00 €",
+    preis: 69.00, preisDisplay: "69,00 \u20ac",
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
-    emoji: "🌈", highlight: "Persönlich",
+    emoji: "\ud83c\udf08", highlight: "Pers\u00f6nlich",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS", badge: "Beliebt",
-  },
-  {
-    id: "deep-talk-111", name: "Deep Talk – Basis", kategorie: "sessions",
-    preis: 111.00, preisDisplay: "111,00 €",
-    beschreibung: "Ein tiefes 1:1 Gespräch mit der Seelenplanerin. Energiearbeit, erste Impulse und persönliche Transformation.",
-    emoji: "💫", highlight: "1:1 mit der Seelenplanerin",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
-  },
-  {
-    id: "deep-talk-222", name: "Deep Talk – Vertiefung", kategorie: "sessions",
-    preis: 222.00, preisDisplay: "222,00 €",
-    beschreibung: "Intensivere Session mit der Seelenplanerin. Tiefere Energiearbeit, Seelenplanung und Transformation auf mehreren Ebenen.",
-    emoji: "💫", highlight: "Vertiefte Seelenarbeit",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
-  },
-  {
-    id: "deep-talk-444", name: "Deep Talk – Intensiv", kategorie: "sessions",
-    preis: 444.00, preisDisplay: "444,00 €",
-    beschreibung: "Umfassende Intensiv-Session. Tiefgreifende Energiearbeit, Blockaden lösen, Seelenplan erkennen und persönliche Neuausrichtung.",
-    emoji: "💫", highlight: "Intensiv-Transformation",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
-  },
-  {
-    id: "deep-talk-888", name: "Deep Talk – Premium", kategorie: "sessions",
-    preis: 888.00, preisDisplay: "888,00 €",
-    beschreibung: "Das umfassendste Paket. Mehrere Sessions, tiefste Seelenarbeit, komplette Transformation und langfristige Begleitung.",
-    emoji: "💫", highlight: "Premium-Begleitung",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am", badge: "Premium",
+    imageUrl: "https://img.tentary.com/pyrit-2-kopie-3_431346584235124704-1765803454.png?aspect_ratio=1:1&width=640",
   },
   // === KERZEN ===
   {
@@ -165,6 +152,7 @@ const OTHER_PRODUCTS: Product[] = [
     beschreibung: "Handgefertigte Kerze mit deinem persönlichen Heilstein. Jede Kerze ist ein Unikat – wähle deinen Stein im Quiz.",
     emoji: "🕯️", highlight: "Individuell mit Heilstein",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/YQLsh3", badge: "Neu",
+    imageUrl: "https://img.tentary.com/dsc_3934_5475567991227762247-1772375879.jpg?aspect_ratio=1:1&width=640",
   },
   // === DIGITAL ===
   {
@@ -173,6 +161,7 @@ const OTHER_PRODUCTS: Product[] = [
     beschreibung: "Digitaler Impuls für deine Seele. Tiefe Botschaften, Rituale und Übungen für deinen persönlichen Wachstumsprozess.",
     emoji: "✨",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/E6FP1U",
+    imageUrl: "https://img.tentary.com/seelenimpuls-2_1152465159638903276-1771450850.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "soul-talk", name: "Soul Talk", kategorie: "digital",
@@ -332,7 +321,11 @@ export default function ShopScreen() {
                 activeOpacity={0.7}
               >
                 <View style={s.ritualSetLeft}>
-                  <Text style={s.ritualSetEmoji}>{set.emoji}</Text>
+                  {set.imageUrl ? (
+                    <Image source={{ uri: set.imageUrl }} style={{ width: 44, height: 44, borderRadius: 10, marginRight: 12 }} resizeMode="cover" />
+                  ) : (
+                    <Text style={s.ritualSetEmoji}>{set.emoji}</Text>
+                  )}
                   <View style={s.ritualSetInfo}>
                     <Text style={s.ritualSetName}>{set.name}</Text>
                     <Text style={s.ritualSetDesc}>{set.beschreibung}</Text>
@@ -400,6 +393,13 @@ export default function ShopScreen() {
         }
         renderItem={({ item }) => (
           <View style={s.card}>
+            {item.imageUrl && (
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={{ width: "100%", height: 180, borderRadius: 16, marginBottom: 12 }}
+                resizeMode="cover"
+              />
+            )}
             <View style={s.cardTop}>
               <View style={s.emojiBox}>
                 <Text style={s.emojiText}>{item.emoji}</Text>
