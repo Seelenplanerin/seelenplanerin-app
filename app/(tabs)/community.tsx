@@ -469,6 +469,8 @@ export default function CommunityScreen() {
   const [showNewFrage, setShowNewFrage] = useState(false);
   const [newFrage, setNewFrage] = useState("");
   const [frageGesendet, setFrageGesendet] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   // Passwort ändern
   const [resetSent, setResetSent] = useState(false);
@@ -1076,7 +1078,56 @@ export default function CommunityScreen() {
                       </View>
                     </View>
                     <Text style={s.qaFrageText}>{f.frage}</Text>
-                    <Text style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 8 }}>🕒 Die Seelenplanerin wird bald antworten...</Text>
+                    {isAdmin ? (
+                      replyingTo === f.id ? (
+                        <View style={{ marginTop: 10 }}>
+                          <TextInput
+                            style={[s.qaInput, { height: 80, textAlignVertical: "top" }]}
+                            placeholder="Deine Antwort als Seelenplanerin..."
+                            placeholderTextColor={C.muted}
+                            value={replyText}
+                            onChangeText={setReplyText}
+                            multiline
+                            maxLength={500}
+                          />
+                          <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                            <TouchableOpacity
+                              style={[s.qaSendBtn, { flex: 1 }]}
+                              onPress={async () => {
+                                if (!replyText.trim()) return;
+                                const updated = qaFragen.map(q =>
+                                  q.id === f.id ? { ...q, antwort: replyText.trim(), antwortDatum: new Date().toISOString() } : q
+                                );
+                                setQaFragen(updated);
+                                await saveQAFragen(updated);
+                                setReplyingTo(null);
+                                setReplyText("");
+                              }}
+                              activeOpacity={0.85}
+                            >
+                              <Text style={s.qaSendBtnText}>Antworten</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={[s.qaSendBtn, { flex: 0.5, backgroundColor: C.surface }]}
+                              onPress={() => { setReplyingTo(null); setReplyText(""); }}
+                              activeOpacity={0.85}
+                            >
+                              <Text style={[s.qaSendBtnText, { color: C.muted }]}>Abbrechen</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={{ marginTop: 10, backgroundColor: C.goldLight, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: "center", borderWidth: 1, borderColor: "#E8D5B0" }}
+                          onPress={() => { setReplyingTo(f.id); setReplyText(""); }}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={{ color: C.brown, fontWeight: "700", fontSize: 13 }}>💌 Jetzt antworten</Text>
+                        </TouchableOpacity>
+                      )
+                    ) : (
+                      <Text style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 8 }}>🕒 Die Seelenplanerin wird bald antworten...</Text>
+                    )}
                   </View>
                 ))}
               </View>

@@ -1371,9 +1371,15 @@ export default function AdminScreen() {
           {activeTab === "push" && (
             <View style={s.section}>
               <Text style={s.sectionTitle}>📲 Push-Benachrichtigung senden</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: pushTokenCount > 0 ? "#E8F5E9" : "#FFF3E0", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: pushTokenCount > 0 ? "#C8E6C9" : "#FFE0B2" }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: pushTokenCount > 0 ? "#2E7D32" : "#E65100" }}>
+                    {pushTokenCount > 0 ? `✅ ${pushTokenCount} Gerät${pushTokenCount !== 1 ? "e" : ""} registriert` : "⏳ Lade Geräte..."}
+                  </Text>
+                </View>
+              </View>
               <Text style={s.sectionHint}>
                 Sende eine Push-Nachricht direkt auf die Handys deiner Nutzerinnen.
-                {pushTokenCount > 0 ? ` ${pushTokenCount} Ger\u00e4t${pushTokenCount !== 1 ? "e" : ""} registriert.` : " Lade Ger\u00e4te-Anzahl..."}
               </Text>
 
               {/* Token-Count laden */}
@@ -1523,13 +1529,20 @@ export default function AdminScreen() {
                 {pushHistory.length > 0 && (
                   <View style={{ marginTop: 12 }}>
                     {pushHistory.map((msg) => (
-                      <View key={msg.id} style={{ backgroundColor: C.card, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.border }}>
-                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{msg.title}</Text>
-                        <Text style={{ fontSize: 12, color: C.brownMid, marginTop: 4 }} numberOfLines={2}>{msg.body}</Text>
-                        <View style={{ flexDirection: "row", gap: 12, marginTop: 6 }}>
-                          <Text style={{ fontSize: 11, color: C.muted }}>\u2705 {msg.sentSuccess} gesendet</Text>
-                          {msg.sentFailed > 0 && <Text style={{ fontSize: 11, color: "#E53935" }}>\u274c {msg.sentFailed} fehlgeschlagen</Text>}
-                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(msg.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+                      <View key={msg.id} style={{ backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: msg.sentSuccess > 0 ? "#C8E6C9" : C.border, borderLeftWidth: 4, borderLeftColor: msg.sentSuccess > 0 ? "#4CAF50" : "#E53935" }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                          <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown, flex: 1 }}>{msg.title}</Text>
+                          <View style={{ backgroundColor: msg.sentSuccess > 0 ? "#E8F5E9" : "#FFEBEE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                            <Text style={{ fontSize: 11, fontWeight: "700", color: msg.sentSuccess > 0 ? "#2E7D32" : "#C62828" }}>
+                              {msg.sentSuccess > 0 ? `✅ Zugestellt` : `❌ Fehler`}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={{ fontSize: 13, color: C.brownMid, marginTop: 6, lineHeight: 19 }}>{msg.body}</Text>
+                        <View style={{ flexDirection: "row", gap: 12, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.border }}>
+                          <Text style={{ fontSize: 12, color: "#2E7D32", fontWeight: "600" }}>📨 {msg.sentSuccess} empfangen</Text>
+                          {msg.sentFailed > 0 && <Text style={{ fontSize: 12, color: "#E53935", fontWeight: "600" }}>❌ {msg.sentFailed} fehlgeschlagen</Text>}
+                          <Text style={{ fontSize: 11, color: C.muted, marginLeft: "auto" }}>{new Date(msg.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
                         </View>
                       </View>
                     ))}

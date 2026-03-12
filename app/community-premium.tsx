@@ -1113,19 +1113,17 @@ const s = StyleSheet.create({
   premiumSub: { fontSize: 12, color: C.muted },
 
   tabScrollRow: {
-    paddingHorizontal: 16, gap: 6, paddingBottom: 12,
+    paddingHorizontal: 16, gap: 8, paddingBottom: 10, flexDirection: "row",
   },
   tab: {
-    paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10,
-    backgroundColor: C.surface,
+    paddingVertical: 8, paddingHorizontal: 14, borderRadius: 20,
+    backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
   },
   tabActive: {
-    backgroundColor: C.card,
-    shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }, elevation: 2,
+    backgroundColor: C.rose + "18", borderColor: C.rose + "50",
   },
-  tabText: { fontSize: 12, color: C.muted, fontWeight: "600" },
-  tabTextActive: { color: C.brown },
+  tabText: { fontSize: 13, color: C.muted, fontWeight: "600" },
+  tabTextActive: { color: C.rose, fontWeight: "700" },
 
   content: { paddingHorizontal: 16 },
   sectionTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 6 },

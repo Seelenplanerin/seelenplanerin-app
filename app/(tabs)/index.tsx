@@ -534,36 +534,36 @@ const s = StyleSheet.create({
   // Musik-Banner (prominent)
   musikBanner: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: "#1DB954", borderRadius: 20, padding: 18,
+    backgroundColor: "#C9A96E", borderRadius: 20, padding: 18,
     flexDirection: "row" as const, alignItems: "center" as const,
   },
   musikIconCircle: {
-    width: 52, height: 52, borderRadius: 26, backgroundColor: "rgba(255,255,255,0.2)",
+    width: 52, height: 52, borderRadius: 26, backgroundColor: "rgba(255,255,255,0.25)",
     alignItems: "center" as const, justifyContent: "center" as const, marginRight: 14,
   },
   musikContent: { flex: 1 },
   musikTitle: { fontSize: 16, fontWeight: "700" as any, color: "#FFF", marginBottom: 2 },
-  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "rgba(255,255,255,0.85)", marginBottom: 2 },
-  musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
+  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "rgba(255,255,255,0.9)", marginBottom: 2 },
+  musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.7)" },
   musikPlayBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.25)",
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.3)",
     alignItems: "center" as const, justifyContent: "center" as const,
   },
   musikPlayText: { color: "#FFF", fontSize: 18, fontWeight: "700" as any },
 
   // Kategorien
   sectionTitle: { fontSize: 22, fontWeight: "700" as any, color: C.brown, marginHorizontal: 16, marginBottom: 12, fontFamily: "DancingScript" },
-  kategorienGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, paddingHorizontal: 12, gap: 10, marginBottom: 16 },
+  kategorienGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, paddingHorizontal: 12, gap: 8, marginBottom: 16 },
   katCard: {
-    width: (width - 44) / 2,
-    backgroundColor: C.card, borderRadius: 18, padding: 16,
+    width: (width - 48) / 3,
+    backgroundColor: C.card, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 8,
     alignItems: "center" as const, borderWidth: 1, borderColor: C.border,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3,
     elevation: 1,
   },
-  katEmoji: { fontSize: 32, marginBottom: 8 },
-  katLabel: { fontSize: 14, fontWeight: "700" as any, color: C.brown, marginBottom: 4 },
-  katDesc: { fontSize: 11, color: C.muted, textAlign: "center" as const, lineHeight: 15 },
+  katEmoji: { fontSize: 26, marginBottom: 6 },
+  katLabel: { fontSize: 12, fontWeight: "700" as any, color: C.brown, marginBottom: 2 },
+  katDesc: { fontSize: 9, color: C.muted, textAlign: "center" as const, lineHeight: 13 },
 
   // Premium
   premiumCard: {

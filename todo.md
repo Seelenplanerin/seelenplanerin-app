@@ -755,3 +755,14 @@
 ## Runen-Produktbilder einbinden (12.03.2026)
 - [x] Tentary-Seite https://dieseelenplanerin.tentary.com/p/HWnXez besuchen und Produktbilder/Preise extrahieren
 - [x] Einzelne Runen mit Bildern im Shop einbinden (Preis: ab 13,90 €, Bild von Tentary)
+
+## Großes UI-Update Runde 2 (12.03.2026)
+- [x] Hauptseite: Grüne Musik & Meditation Kachel – Farbe geändert (warmes Rosé/Gold)
+- [x] Hauptseite: Kacheln ästhetisch angeordnet (3-Spalten-Grid, kompakter)
+- [x] Community Premium: Kacheln als kompakte Inline-Chips statt riesige Kacheln
+- [x] Community: Admin-Antwort-Funktion direkt bei unbeantworteten Fragen
+- [x] Community: Nächsten Community-Call eingeben (Admin-Bereich mit Datum/Uhrzeit/Link)
+- [x] Shop: Echte Produktbilder für ALLE 16 Produkte von Tentary eingebunden
+- [x] Deep Talk: Komplett aus allen App-Dateien entfernt (nur noch in Doku-Dateien)
+- [x] Admin: Push-Nachrichten-Status verbessert (Zugestellt/Fehler-Badge, Geräte-Zähler)
+- [x] Widgets: Erklärung wird im Ergebnis geliefert

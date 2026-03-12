@@ -43,6 +43,7 @@ const PRODUCTS: Product[] = [
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     badge: "Bestseller",
+    imageUrl: "https://img.tentary.com/01-schutz-reinigung_7032068891806368942-1772437515.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-selbstliebe",
@@ -54,6 +55,7 @@ const PRODUCTS: Product[] = [
     emoji: "💗",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
+    imageUrl: "https://img.tentary.com/02-selbstliebe-herzoeffnung_380106635895589047-1772437957.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-fuelle",
@@ -65,6 +67,7 @@ const PRODUCTS: Product[] = [
     emoji: "✨",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
+    imageUrl: "https://img.tentary.com/03-fuelle-manifestation_77358612426124021-1772438229.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-transformation",
@@ -76,6 +79,7 @@ const PRODUCTS: Product[] = [
     emoji: "🦋",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
+    imageUrl: "https://img.tentary.com/04-transformation-loslassen_165599632870260090-1772440133.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-kraft",
@@ -87,6 +91,7 @@ const PRODUCTS: Product[] = [
     emoji: "🔥",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
+    imageUrl: "https://img.tentary.com/05-kraft-mut_1051342196418700370-1772440449.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-intuition",
@@ -98,6 +103,7 @@ const PRODUCTS: Product[] = [
     emoji: "🔮",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
+    imageUrl: "https://img.tentary.com/06-intuition-spiritualitaet_1589606931969366424-1772440508.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-neuanfang",
@@ -109,6 +115,7 @@ const PRODUCTS: Product[] = [
     emoji: "🌱",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
+    imageUrl: "https://img.tentary.com/07-neuanfang-klarheit_8655664392057718360-1772440875.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-erdung",
@@ -120,6 +127,7 @@ const PRODUCTS: Product[] = [
     emoji: "🌍",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
+    imageUrl: "https://img.tentary.com/08-erdung-stabilitaet_1373686916141576984-1772441080.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-lebensfreude",
@@ -131,6 +139,7 @@ const PRODUCTS: Product[] = [
     emoji: "🌻",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
+    imageUrl: "https://img.tentary.com/09-lebensfreude-energie_40393902163744161-1772441353.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "set-heilung",
@@ -142,6 +151,7 @@ const PRODUCTS: Product[] = [
     emoji: "💚",
     highlight: "Inkl. Versand",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
+    imageUrl: "https://img.tentary.com/10-heilung-balance_19296041821404264109-1772441606.png?aspect_ratio=1:1&width=640",
   },
   // ═══════════════════════════════════════════════
   // ARMBÄNDER
@@ -151,13 +161,14 @@ const PRODUCTS: Product[] = [
     name: "Themen-Armband",
     nameEn: "Theme Bracelet",
     kategorie: "armbänder",
-    preis: 57.00,
-    preisDisplay: "57,00 €",
-    beschreibung: "Silberkette (24 €) mit 3 handgravierten Runen-Charms (je 11 €) + Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum. Zzgl. 4,90 € Versand.",
+    preis: 61.90,
+    preisDisplay: "61,90 €",
+    beschreibung: "Silberkette mit 3 handgravierten Runen-Charms + Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum. Zzgl. Versand.",
     emoji: "ᚱ",
     highlight: "Handgraviert von der Seelenplanerin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN",
     badge: "Bestseller",
+    imageUrl: "https://img.tentary.com/dsc_4046_1117335234741787370-1769341559.jpg?aspect_ratio=1:1&width=640",
   },
   {
     id: "schutzarmband-mariposa",
@@ -170,6 +181,7 @@ const PRODUCTS: Product[] = [
     emoji: "\ud83d\udda4",
     highlight: "Schwarzer Turmalin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
+    imageUrl: "https://img.tentary.com/7b541a8d-2593-47d8-b4b4-3bcddfcf5efc_1499324952774879867-1771118349.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "runen-charm-einzeln",
@@ -183,7 +195,7 @@ const PRODUCTS: Product[] = [
     highlight: "Handgefertigt & individuell",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/HWnXez",
     badge: "Unikat",
-    imageUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/M3PWE7f6T2SxuxdrbesCC6/runen-charm-einzeln_1b598646.png",
+    imageUrl: "https://img.tentary.com/design-ohne-titel-9_2975822091557902286-1773332430.png?aspect_ratio=1:1&width=640",
   },
 
   // ═══════════════════════════════════════════════
@@ -194,13 +206,14 @@ const PRODUCTS: Product[] = [
     name: "Aura Reading",
     nameEn: "Aura Reading",
     kategorie: "sessions",
-    preis: 77.00,
-    preisDisplay: "77,00 €",
+    preis: 69.00,
+    preisDisplay: "69,00 €",
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     emoji: "🌈",
     highlight: "Persönlich",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
     badge: "Beliebt",
+    imageUrl: "https://img.tentary.com/pyrit-2-kopie-3_431346584235124704-1765803454.png?aspect_ratio=1:1&width=640",
   },
 
   // ═══════════════════════════════════════════════
@@ -218,6 +231,7 @@ const PRODUCTS: Product[] = [
     highlight: "Individuell mit Heilstein",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/YQLsh3",
     badge: "Neu",
+    imageUrl: "https://img.tentary.com/dsc_3934_5475567991227762247-1772375879.jpg?aspect_ratio=1:1&width=640",
   },
   // ═══════════════════════════════════════════════
   // DIGITAL
@@ -232,6 +246,7 @@ const PRODUCTS: Product[] = [
     beschreibung: "Digitaler Impuls für deine Seele. Tiefe Botschaften, Rituale und Übungen für deinen persönlichen Wachstumsprozess.",
     emoji: "✨",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/E6FP1U",
+    imageUrl: "https://img.tentary.com/seelenimpuls-2_1152465159638903276-1771450850.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "soul-talk",
