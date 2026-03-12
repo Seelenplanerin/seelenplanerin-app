@@ -1388,8 +1388,9 @@ export default function AdminScreen() {
 
                 {pushFehler !== "" && <Text style={s.formError}>{pushFehler}</Text>}
                 {pushErfolg !== "" && (
-                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 10, padding: 12, marginBottom: 8 }}>
-                    <Text style={{ fontSize: 13, color: "#2E7D32", fontWeight: "600" }}>{pushErfolg}</Text>
+                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#C8E6C9" }}>
+                    <Text style={{ fontSize: 22, textAlign: "center", marginBottom: 6 }}>✅</Text>
+                    <Text style={{ fontSize: 15, color: "#2E7D32", fontWeight: "700", textAlign: "center", lineHeight: 22 }}>{pushErfolg}</Text>
                   </View>
                 )}
 
@@ -1399,45 +1400,43 @@ export default function AdminScreen() {
                     if (!pushTitle.trim()) { setPushFehler("Bitte gib einen Titel ein."); return; }
                     if (!pushBody.trim()) { setPushFehler("Bitte gib eine Nachricht ein."); return; }
 
-                    Alert.alert(
-                      "Push senden?",
-                      `Push-Nachricht an alle registrierten Ger\u00e4te senden?\n\nTitel: ${pushTitle}`,
-                      [
-                        { text: "Abbrechen", style: "cancel" },
-                        {
-                          text: "Senden",
-                          style: "default",
-                          onPress: async () => {
-                            setPushSending(true);
-                            setPushFehler("");
-                            setPushErfolg("");
-                            try {
-                              const API_URL = getApiBaseUrl();
-                              const res = await fetch(`${API_URL}/api/trpc/push.sendToAll`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ json: { title: pushTitle.trim(), body: pushBody.trim() } }),
-                              });
-                              const data = await res.json();
-                              const result = data?.result?.data?.json;
-                              if (result?.success && result?.sent > 0) {
-                                setPushErfolg(`\u2705 ${result.sent} Push-Nachricht${result.sent !== 1 ? "en" : ""} erfolgreich gesendet!${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
-                                setPushTitle("");
-                                setPushBody("");
-                              } else if (result?.error) {
-                                setPushFehler(result.error);
-                              } else {
-                                setPushFehler("Keine Push-Nachrichten konnten gesendet werden.");
-                              }
-                            } catch (e: any) {
-                              setPushFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
-                            } finally {
-                              setPushSending(false);
-                            }
-                          },
-                        },
-                      ]
-                    );
+                    // Web-kompatible Bestätigung
+                    const confirmed = Platform.OS === "web"
+                      ? window.confirm(`Push-Nachricht an alle registrierten Geräte senden?\n\nTitel: ${pushTitle}`)
+                      : await new Promise<boolean>((resolve) => {
+                          Alert.alert("Push senden?", `Push-Nachricht an alle registrierten Geräte senden?\n\nTitel: ${pushTitle}`, [
+                            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+                            { text: "Senden", style: "default", onPress: () => resolve(true) },
+                          ]);
+                        });
+                    if (!confirmed) return;
+
+                    setPushSending(true);
+                    setPushFehler("");
+                    setPushErfolg("");
+                    try {
+                      const API_URL = getApiBaseUrl();
+                      const res = await fetch(`${API_URL}/api/trpc/push.sendToAll`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: { title: pushTitle.trim(), body: pushBody.trim() } }),
+                      });
+                      const data = await res.json();
+                      const result = data?.result?.data?.json;
+                      if (result?.success && result?.sent > 0) {
+                        setPushErfolg(`Erfolgreich gesendet! ${result.sent} Gerät${result.sent !== 1 ? "e" : ""} haben die Nachricht erhalten.${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
+                        setPushTitle("");
+                        setPushBody("");
+                      } else if (result?.error) {
+                        setPushFehler(result.error);
+                      } else {
+                        setPushFehler("Keine Push-Nachrichten konnten gesendet werden. Sind Geräte registriert?");
+                      }
+                    } catch (e: any) {
+                      setPushFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
+                    } finally {
+                      setPushSending(false);
+                    }
                   }}
                   activeOpacity={0.85}
                   disabled={pushSending}>
@@ -1672,10 +1671,7 @@ export default function AdminScreen() {
                         { name: "Aura Reading", price: "77.00" },
                         { name: "Meditationskerze", price: "17.00" },
                         { name: "Seelenimpuls", price: "17.00" },
-                        { name: "Deep Talk Basis", price: "111.00" },
-                        { name: "Deep Talk Vertiefung", price: "222.00" },
-                        { name: "Deep Talk Intensiv", price: "444.00" },
-                        { name: "Deep Talk Premium", price: "888.00" },
+
                         { name: "Vollmond Ritual-Set", price: "29.90" },
                         { name: "Neumond Ritual-Set", price: "29.90" },
                         { name: "Imbolc Ritual-Set", price: "29.90" },

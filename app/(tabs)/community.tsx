@@ -117,7 +117,7 @@ const DEFAULT_POSTS: CommunityPost[] = [
 const ANGEBOTE = [
   { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { emoji: "🔮", titel: "Aura Reading", preis: "77 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
-  { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
+
 ];
 
 const POSTS_KEY = "community_posts";
@@ -885,7 +885,7 @@ export default function CommunityScreen() {
               <View style={s.premiumHeroFeatures}>
                 <View style={s.premiumFeatureRow}>
                   <Text style={s.premiumFeatureIcon}>🌸</Text>
-                  <Text style={s.premiumFeatureText}>Zyklustracker im Flo-Stil</Text>
+                  <Text style={s.premiumFeatureText}>Persönlicher Zyklustracker</Text>
                 </View>
                 <View style={s.premiumFeatureRow}>
                   <Text style={s.premiumFeatureIcon}>🌙</Text>
@@ -1082,15 +1082,15 @@ const s = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
   premiumHeroInner: {
-    backgroundColor: C.brown, borderRadius: 24, padding: 24,
-    alignItems: "center",
+    backgroundColor: "#F9EDE8", borderRadius: 24, padding: 24,
+    alignItems: "center", borderWidth: 1, borderColor: "#EDD9D0",
   },
   premiumHeroTitle: {
-    fontSize: 24, fontWeight: "800", color: "#FFF", marginBottom: 8,
+    fontSize: 24, fontWeight: "800", color: C.brown, marginBottom: 8,
     letterSpacing: 1,
   },
   premiumHeroSub: {
-    fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center",
+    fontSize: 14, color: C.brownMid, textAlign: "center",
     lineHeight: 21, marginBottom: 16, maxWidth: 280,
   },
   premiumHeroFeatures: {
@@ -1102,7 +1102,7 @@ const s = StyleSheet.create({
   },
   premiumFeatureIcon: { fontSize: 18 },
   premiumFeatureText: {
-    fontSize: 14, color: "rgba(255,255,255,0.9)", fontWeight: "600",
+    fontSize: 14, color: C.brownMid, fontWeight: "600",
   },
   premiumHeroBtn: {
     backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,

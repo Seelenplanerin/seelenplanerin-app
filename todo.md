@@ -726,3 +726,21 @@
 - [x] Push-Benachrichtigungen: Server-Seite – Nachrichten an alle Token senden (Expo Push API)
 - [x] Push-Benachrichtigungen: Admin-UI zum Verfassen und Senden von Push-Nachrichten
 - [ ] Homescreen-Widgets: Mondphase / Zyklustag / Tagesimpuls (Expo unterstützt keine nativen Widgets – später mit EAS Build möglich)
+
+## DRINGEND: Änderungen nicht auf Render sichtbar (12.03.2026)
+- [ ] Bug: Premium-Hervorhebung, Zyklustracker, Push-Tab nicht auf Render-URL sichtbar trotz Deploy
+- [ ] Ursache finden: Web-Build (web-dist) prüfen ob neue Dateien enthalten sind
+- [ ] Fix deployen und verifizieren
+
+## UI-Verbesserungen (12.03.2026 - Feedback)
+- [x] Premium-Bereich: Text "Zyklustracker" und "im Flo-Stil" entfernen
+- [x] Premium-Bereich: Tab-Buttons (Zyklus, Kalender, Mondphasen, Med.) viel kleiner machen
+- [x] Premium-Bereich: Dunklen braunen Header-Bereich aufhellen/schöner gestalten
+- [x] Hauptseite: Dunkle Bereiche aufhellen, insgesamt heller und freundlicher
+- [x] Farbpalette: Brauntöne überdenken, evtl. wärmere/sanftere Alternative
+- [ ] Shop: Produktbilder von Etsy-Seite einbinden
+- [x] Shop: Deep Talk komplett entfernen
+- [ ] Shop: Preise prüfen – Runen Charm einzeln = 11 €, alle Preise gegenchecken
+- [x] Admin Push: Klares Feedback wenn Nachricht gesendet wurde (Web-kompatible Bestätigung + große Erfolgsbox)
+- [x] Benachrichtigungs-Erlaubnis: Web-kompatible Bestätigung implementiert
+- [ ] Community: Mehrwert-Ideen für Premium-Bereich überlegen

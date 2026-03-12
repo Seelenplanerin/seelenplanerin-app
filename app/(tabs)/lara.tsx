@@ -142,7 +142,7 @@ export default function LaraScreen() {
               { emoji: "ᚱ", title: "Runen-Armbänder", sub: "Handgraviert & einzigartig" },
               { emoji: "🌈", title: "Aura Reading", sub: "Deine Energiefelder" },
               { emoji: "🌙", title: "Mondrituale", sub: "Im Rhythmus der Natur" },
-              { emoji: "💫", title: "Deep Talk", sub: "1:1 mit der Seelenplanerin" },
+
               { emoji: "🔮", title: "Seelenreset", sub: "Neu beginnen" },
               { emoji: "✨", title: "Seelenimpulse", sub: "Tägliche Weisheit" },
             ].map((item) => (

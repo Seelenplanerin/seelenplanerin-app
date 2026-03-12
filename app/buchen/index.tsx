@@ -53,23 +53,7 @@ const SESSIONS: Session[] = [
     badge: "Beliebt",
     bookingUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
   },
-  {
-    id: "deep-talk",
-    name: "Deep Talk",
-    dauer: "90 Min",
-    preis: "111,00 €",
-    beschreibung: "Ein tiefes 1:1 Gespräch. Energiearbeit, Seelenplanung und persönliche Transformation.",
-    details: [
-      "Intensives 1:1",
-      "Energiearbeit & Seelenplanung",
-      "Tiefe Transformation",
-      "Persönlicher Aktionsplan",
-      "90 Minuten via Zoom",
-      "Nachbereitung per E-Mail",
-    ],
-    emoji: "💫",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
-  },
+
   {
     id: "seelenreset",
     name: "Seelenreset",

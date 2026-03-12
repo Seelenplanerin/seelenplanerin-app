@@ -187,18 +187,7 @@ const PRODUCTS: Product[] = [
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
     badge: "Beliebt",
   },
-  {
-    id: "deep-talk",
-    name: "Deep Talk",
-    nameEn: "Deep Talk",
-    kategorie: "sessions",
-    preis: 111.00,
-    preisDisplay: "111,00 €",
-    beschreibung: "Ein tiefes 1:1 Gespräch. Energiearbeit, Seelenplanung, persönliche Transformation.",
-    emoji: "💫",
-    highlight: "1:1 mit der Seelenplanerin",
-    tentaryUrl: "https://dieseelenplanerin.tentary.com/p/Ciz1am",
-  },
+
   // ═══════════════════════════════════════════════
   // KERZEN
   // ═══════════════════════════════════════════════

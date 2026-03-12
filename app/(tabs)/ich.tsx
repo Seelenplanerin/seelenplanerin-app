@@ -329,7 +329,7 @@ export default function IchScreen() {
             <Text style={s.menuEmoji}>📅</Text>
             <View style={s.menuTextWrap}>
               <Text style={s.menuLabel}>Termin buchen</Text>
-              <Text style={s.menuDesc}>Soul Talk, Aura Reading, Deep Talk</Text>
+              <Text style={s.menuDesc}>Soul Talk, Aura Reading & mehr</Text>
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>

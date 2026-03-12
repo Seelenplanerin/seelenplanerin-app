@@ -249,20 +249,20 @@ export default function AktuellesScreen() {
         <TouchableOpacity
           style={{
             marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
-            backgroundColor: "#1A1F33", borderWidth: 1, borderColor: "rgba(212,168,83,0.4)",
+            backgroundColor: C.goldLight, borderWidth: 1, borderColor: "#E8D5B0",
             padding: 14, flexDirection: "row", alignItems: "center", gap: 12,
           }}
           onPress={() => router.push("/mondtyp-quiz" as any)}
           activeOpacity={0.85}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(212,168,83,0.2)", alignItems: "center", justifyContent: "center" }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(201,169,110,0.2)", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontSize: 22 }}>🌙</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: "700", color: "#D4A853" }}>Dein Mondtyp-Quiz</Text>
-            <Text style={{ fontSize: 11, color: "#8892A8", marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown }}>Dein Mondtyp-Quiz</Text>
+            <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
           </View>
-          <Text style={{ fontSize: 16, color: "#D4A853" }}>›</Text>
+          <Text style={{ fontSize: 16, color: C.gold }}>›</Text>
         </TouchableOpacity>
 
         {/* ── KATEGORIEN ── */}
@@ -288,7 +288,7 @@ export default function AktuellesScreen() {
           activeOpacity={0.85}
         >
           <LinearGradient
-            colors={["#3D2314", "#5C3317", "#6B3A1F"]}
+            colors={["#F9EDE8", "#F5E0D6", "#F0D4C6"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={s.premiumCard}
@@ -350,7 +350,7 @@ export default function AktuellesScreen() {
             ══════════════════════════════════════════════════════════ */}
         <View style={s.academyCard}>
           <LinearGradient
-            colors={["#2C1810", "#3D2314", "#4A2A18"]}
+            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={s.academyGradient}
@@ -400,7 +400,7 @@ export default function AktuellesScreen() {
                 <TextInput
                   style={s.academyInput}
                   placeholder="Deine E-Mail-Adresse"
-                  placeholderTextColor="rgba(201,169,110,0.4)"
+                  placeholderTextColor={C.muted}
                   value={academyEmail}
                   onChangeText={setAcademyEmail}
                   keyboardType="email-address"
@@ -483,22 +483,23 @@ const s = StyleSheet.create({
   // Mondphase (erweitert)
   mondCard: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: C.darkCard, borderRadius: 20, padding: 18,
+    backgroundColor: "#F5EDE6", borderRadius: 20, padding: 18,
     flexDirection: "row", alignItems: "center",
+    borderWidth: 1, borderColor: C.border,
   },
   mondLeft: { width: 70, alignItems: "center" },
   mondSymbol: { fontSize: 44 },
-  mondIllum: { fontSize: 11, color: C.gold, fontWeight: "700", marginTop: 4 },
+  mondIllum: { fontSize: 11, color: C.brownMid, fontWeight: "700", marginTop: 4 },
   mondRight: { flex: 1, marginLeft: 14 },
   mondLabel: {
-    fontSize: 11, color: "rgba(232,213,196,0.6)", fontWeight: "600",
+    fontSize: 11, color: C.muted, fontWeight: "600",
     textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3,
   },
-  mondName: { fontSize: 18, fontWeight: "700", color: C.gold, marginBottom: 2 },
-  mondZodiac: { fontSize: 13, fontWeight: "600", color: "#E8D5C4", marginBottom: 2 },
-  mondEnergie: { fontSize: 12, color: "rgba(232,213,196,0.7)", lineHeight: 17 },
+  mondName: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 2 },
+  mondZodiac: { fontSize: 13, fontWeight: "600", color: C.brownMid, marginBottom: 2 },
+  mondEnergie: { fontSize: 12, color: C.muted, lineHeight: 17 },
   mondCountdown: {
-    fontSize: 11, color: "rgba(201,169,110,0.8)", fontWeight: "600", marginTop: 4,
+    fontSize: 11, color: C.gold, fontWeight: "600", marginTop: 4,
   },
 
   // Kerzen-Quiz (prominent)
@@ -533,19 +534,19 @@ const s = StyleSheet.create({
   // Musik-Banner (prominent)
   musikBanner: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: "#191414", borderRadius: 20, padding: 18,
+    backgroundColor: "#1DB954", borderRadius: 20, padding: 18,
     flexDirection: "row" as const, alignItems: "center" as const,
   },
   musikIconCircle: {
-    width: 52, height: 52, borderRadius: 26, backgroundColor: "#1DB954",
+    width: 52, height: 52, borderRadius: 26, backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center" as const, justifyContent: "center" as const, marginRight: 14,
   },
   musikContent: { flex: 1 },
   musikTitle: { fontSize: 16, fontWeight: "700" as any, color: "#FFF", marginBottom: 2 },
-  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "#1DB954", marginBottom: 2 },
+  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "rgba(255,255,255,0.85)", marginBottom: 2 },
   musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
   musikPlayBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: "#1DB954",
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.25)",
     alignItems: "center" as const, justifyContent: "center" as const,
   },
   musikPlayText: { color: "#FFF", fontSize: 18, fontWeight: "700" as any },
@@ -572,8 +573,8 @@ const s = StyleSheet.create({
     overflow: "hidden" as const,
   },
   premiumCrown: { fontSize: 32, marginBottom: 8 },
-  premiumTitle: { fontSize: 26, fontWeight: "700" as any, color: C.goldLight, marginBottom: 8, fontFamily: "DancingScript" },
-  premiumDesc: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
+  premiumTitle: { fontSize: 26, fontWeight: "700" as any, color: C.brown, marginBottom: 8, fontFamily: "DancingScript" },
+  premiumDesc: { fontSize: 14, color: C.brownMid, textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
   premiumBadge: { backgroundColor: C.gold, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
   premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
 
@@ -588,22 +589,22 @@ const s = StyleSheet.create({
   },
   academyEmoji: { fontSize: 36, marginBottom: 10 },
   academyTitle: {
-    fontSize: 26, fontWeight: "700" as any, color: C.goldLight,
+    fontSize: 26, fontWeight: "700" as any, color: C.brown,
     marginBottom: 4, fontFamily: "DancingScript",
   },
   academySubtitle: {
-    fontSize: 15, fontWeight: "600" as any, color: C.gold,
+    fontSize: 15, fontWeight: "600" as any, color: C.brownMid,
     marginBottom: 12, fontStyle: "italic" as const,
   },
   academyDesc: {
-    fontSize: 14, color: "rgba(255,255,255,0.75)", textAlign: "center" as const,
+    fontSize: 14, color: C.muted, textAlign: "center" as const,
     lineHeight: 22, marginBottom: 16, paddingHorizontal: 8,
   },
   // Academy Kurse
   academyCourses: {
     width: "100%" as any, marginBottom: 20,
-    backgroundColor: "rgba(201,169,110,0.08)", borderRadius: 16,
-    padding: 16, borderWidth: 1, borderColor: "rgba(201,169,110,0.15)",
+    backgroundColor: "#FFFFFF", borderRadius: 16,
+    padding: 16, borderWidth: 1, borderColor: C.border,
   },
   academyCourseRow: {
     flexDirection: "row" as const, alignItems: "center" as const, gap: 12,
@@ -611,30 +612,30 @@ const s = StyleSheet.create({
   },
   academyCourseEmoji: { fontSize: 28 },
   academyCourseName: {
-    fontSize: 15, fontWeight: "700" as any, color: C.goldLight, marginBottom: 2,
+    fontSize: 15, fontWeight: "700" as any, color: C.brown, marginBottom: 2,
   },
   academyCourseStatus: {
-    fontSize: 12, fontWeight: "600" as any, color: C.gold, fontStyle: "italic" as const,
+    fontSize: 12, fontWeight: "600" as any, color: C.rose, fontStyle: "italic" as const,
   },
   academyCourseDivider: {
-    height: 1, backgroundColor: "rgba(201,169,110,0.15)", marginVertical: 4,
+    height: 1, backgroundColor: C.border, marginVertical: 4,
   },
   // Academy Warteliste
   academyWaitlist: {
     width: "100%" as any, alignItems: "center" as const,
   },
   academyWaitlistTitle: {
-    fontSize: 16, fontWeight: "700" as any, color: C.goldLight, marginBottom: 6,
+    fontSize: 16, fontWeight: "700" as any, color: C.brown, marginBottom: 6,
   },
   academyWaitlistDesc: {
-    fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: "center" as const,
+    fontSize: 13, color: C.muted, textAlign: "center" as const,
     lineHeight: 19, marginBottom: 14,
   },
   academyInput: {
-    width: "100%" as any, backgroundColor: "rgba(255,255,255,0.08)",
+    width: "100%" as any, backgroundColor: "#FFFFFF",
     borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
-    fontSize: 15, color: C.goldLight, borderWidth: 1,
-    borderColor: "rgba(201,169,110,0.25)", marginBottom: 12,
+    fontSize: 15, color: C.brown, borderWidth: 1,
+    borderColor: C.border, marginBottom: 12,
   },
   academyBtn: {
     backgroundColor: C.gold, borderRadius: 14,
@@ -647,12 +648,12 @@ const s = StyleSheet.create({
   // Academy Erfolg
   academySuccessBox: {
     width: "100%" as any, alignItems: "center" as const,
-    backgroundColor: "rgba(201,169,110,0.12)", borderRadius: 16,
-    padding: 20, borderWidth: 1, borderColor: "rgba(201,169,110,0.2)",
+    backgroundColor: "#F0F7F0", borderRadius: 16,
+    padding: 20, borderWidth: 1, borderColor: "#C8E6C9",
   },
   academySuccessEmoji: { fontSize: 32, marginBottom: 8 },
   academySuccessText: {
-    fontSize: 14, color: C.goldLight, textAlign: "center" as const, lineHeight: 22,
+    fontSize: 14, color: C.brown, textAlign: "center" as const, lineHeight: 22,
   },
 
   // Instagram

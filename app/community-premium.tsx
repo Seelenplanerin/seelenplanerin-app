@@ -157,7 +157,7 @@ function getSyncLabel(typ: string): string {
   return "Neutral";
 }
 
-// ── Flo-Stil Tageskreis-Komponente ──
+// ── Tageskreis-Komponente ──
 function ZyklusKreis({
   zyklusTag,
   zyklusLaenge,
@@ -652,7 +652,7 @@ export default function CommunityPremiumScreen() {
           <Text style={{ fontSize: 22 }}>👑</Text>
           <View style={{ flex: 1 }}>
             <Text style={s.premiumTitle}>Seelenimpuls Premium</Text>
-            <Text style={s.premiumSub}>Zyklustracker · Mondkalender · Meditationen</Text>
+            <Text style={s.premiumSub}>Mondkalender · Meditationen · Zyklus</Text>
           </View>
         </View>
 
@@ -677,9 +677,7 @@ export default function CommunityPremiumScreen() {
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
 
-          {/* ══════════════════════════════════════════════ */}
-          {/* ── ZYKLUSTRACKER (FLO-STIL) ── */}
-          {/* ══════════════════════════════════════════════ */}
+          {/* ── Zyklustracker ── */}
           {tab === "zyklus" && (
             <View style={s.content}>
               {(!zyklusEinstellungen || showSetup) ? (
@@ -744,7 +742,7 @@ export default function CommunityPremiumScreen() {
                 </View>
               ) : (
                 <>
-                  {/* ── Flo-Stil Tagesansicht ── */}
+                  {/* ── Tagesansicht ── */}
                   {heuteTag && uebersicht && (
                     <>
                       {/* Großer Tageskreis */}
@@ -1107,17 +1105,18 @@ const s = StyleSheet.create({
 
   premiumBadge: {
     marginHorizontal: 16, marginBottom: 12,
-    backgroundColor: C.brown, borderRadius: 16, padding: 16,
+    backgroundColor: C.roseLight, borderRadius: 16, padding: 16,
     flexDirection: "row", alignItems: "center", gap: 12,
+    borderWidth: 1, borderColor: C.rose + "30",
   },
-  premiumTitle: { fontSize: 16, fontWeight: "700", color: "#FFF" },
-  premiumSub: { fontSize: 12, color: "rgba(255,255,255,0.7)" },
+  premiumTitle: { fontSize: 16, fontWeight: "700", color: C.brown },
+  premiumSub: { fontSize: 12, color: C.muted },
 
   tabScrollRow: {
     paddingHorizontal: 16, gap: 6, paddingBottom: 12,
   },
   tab: {
-    paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12,
+    paddingVertical: 7, paddingHorizontal: 12, borderRadius: 10,
     backgroundColor: C.surface,
   },
   tabActive: {
@@ -1125,7 +1124,7 @@ const s = StyleSheet.create({
     shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
-  tabText: { fontSize: 13, color: C.muted, fontWeight: "600" },
+  tabText: { fontSize: 12, color: C.muted, fontWeight: "600" },
   tabTextActive: { color: C.brown },
 
   content: { paddingHorizontal: 16 },
