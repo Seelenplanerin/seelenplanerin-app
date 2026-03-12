@@ -766,3 +766,6 @@
 - [x] Deep Talk: Komplett aus allen App-Dateien entfernt (nur noch in Doku-Dateien)
 - [x] Admin: Push-Nachrichten-Status verbessert (Zugestellt/Fehler-Badge, Geräte-Zähler)
 - [x] Widgets: Erklärung wird im Ergebnis geliefert
+
+## Premium-Kacheln Fix (12.03.2026 - Runde 3)
+- [ ] Premium-Kacheln (Zyklus, Kalender, Mondphasen, Med.) DRASTISCH verkleinern – sind immer noch riesig

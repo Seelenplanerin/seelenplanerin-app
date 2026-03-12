@@ -656,8 +656,8 @@ export default function CommunityPremiumScreen() {
           </View>
         </View>
 
-        {/* Tab-Navigation */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.tabScrollRow}>
+        {/* Tab-Navigation – kompakte Chips */}
+        <View style={{ flexDirection: "row", paddingHorizontal: 12, paddingBottom: 8, gap: 6, flexWrap: "wrap" }}>
           {[
             { key: "zyklus", label: "🌸 Zyklus" },
             { key: "kalender", label: "📅 Kalender" },
@@ -666,14 +666,14 @@ export default function CommunityPremiumScreen() {
           ].map((t) => (
             <TouchableOpacity
               key={t.key}
-              style={[s.tab, tab === t.key && s.tabActive]}
+              style={[{ paddingVertical: 6, paddingHorizontal: 12, borderRadius: 16, backgroundColor: tab === t.key ? C.rose + '18' : C.surface, borderWidth: 1, borderColor: tab === t.key ? C.rose + '50' : C.border }]}
               onPress={() => setTab(t.key as any)}
               activeOpacity={0.8}
             >
-              <Text style={[s.tabText, tab === t.key && s.tabTextActive]}>{t.label}</Text>
+              <Text style={{ fontSize: 12, color: tab === t.key ? C.rose : C.muted, fontWeight: tab === t.key ? '700' : '600' }}>{t.label}</Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
 
