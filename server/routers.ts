@@ -233,6 +233,32 @@ export const appRouter = router({
           affiliateEmail: input.email,
           affiliateCode: code,
         }).catch(err => console.error("[Affiliate] Admin-Benachrichtigung Fehler:", err));
+        // Push-Nachricht an alle registrierten Geräte (Admin bekommt Push)
+        (async () => {
+          try {
+            const tokens = await db.getAllActivePushTokens();
+            if (tokens.length > 0) {
+              const pushMessages = tokens.map(t => ({
+                to: t.token,
+                sound: "default" as const,
+                title: "Neue Affiliate-Anmeldung!",
+                body: `${input.name} hat sich als Affiliate registriert. Code: ${code} – Bitte bei Tentary anlegen!`,
+                data: { type: "affiliate_new", code, name: input.name, email: input.email },
+              }));
+              for (let i = 0; i < pushMessages.length; i += 100) {
+                const chunk = pushMessages.slice(i, i + 100);
+                await fetch("https://exp.host/--/api/v2/push/send", {
+                  method: "POST",
+                  headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                  body: JSON.stringify(chunk),
+                });
+              }
+              console.log(`[Affiliate] Push-Nachricht an ${tokens.length} Geräte gesendet für neuen Affiliate: ${code}`);
+            }
+          } catch (pushErr) {
+            console.error("[Affiliate] Push-Benachrichtigung Fehler:", pushErr);
+          }
+        })();
         return { success: true as const, affiliate };
       }),
 

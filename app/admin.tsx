@@ -1616,15 +1616,29 @@ export default function AdminScreen() {
                   </View>
                 )}
 
-                    {affiliates.length > 0 && affiliates.map(a => (
+                    {affiliates.length > 0 && affiliates.map(a => {
+                      // Prüfe ob Anmeldung in den letzten 7 Tagen war
+                      const isNew = a.createdAt && (Date.now() - new Date(a.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+                      return (
                   <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch", opacity: a.isActive ? 1 : 0.5 }]}>
+                    {/* NEU-Badge für frische Anmeldungen */}
+                    {isNew && (
+                      <View style={{ backgroundColor: "#FFF3E0", borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: "#FFE0B2", flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, marginRight: 8 }}>{"\u26a0\ufe0f"}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: "#E65100" }}>Neue Anmeldung!</Text>
+                          <Text style={{ fontSize: 11, color: "#8B5E3C", lineHeight: 16 }}>Code <Text style={{ fontWeight: "700", color: C.gold }}>{a.code}</Text> bitte bei Tentary als Gutscheincode anlegen.</Text>
+                        </View>
+                      </View>
+                    )}
                     <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
                       <View style={[s.memberAvatar, { backgroundColor: a.isActive ? C.gold : C.muted }]}>
                         <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{a.name.charAt(0)}</Text>
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={s.memberName}>{a.name}</Text>
+                        <Text style={s.memberName}>{a.name}{isNew ? " \ud83c\udd95" : ""}</Text>
                         <Text style={s.memberEmail}>{a.email}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Registriert: {new Date(a.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}</Text>
                       </View>
                       <TouchableOpacity
                         style={{ backgroundColor: a.isActive ? "#E8F5E9" : "#FFEBEE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginRight: 6 }}
@@ -1671,7 +1685,8 @@ export default function AdminScreen() {
                       </Text>
                     )}
                   </View>
-                ))}
+                );
+                })}
                 {affiliates.length === 0 && !affLoading && (
                   <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Affiliates vorhanden.</Text>
                 )}

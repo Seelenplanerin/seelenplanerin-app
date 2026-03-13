@@ -771,8 +771,13 @@
 - [x] Premium-Kacheln (Zyklus, Kalender, Mondphasen, Med.) als kompakte Chips mit flexWrap statt riesige Kacheln
 
 ## Musik & Meditation Pastell-Farben (13.03.2026)
-- [ ] Spotify-Button: Grün → sanftes Pastell-Salbei
-- [ ] Apple Music-Button: Schwarz → sanftes Pastell-Rosa
-- [ ] YouTube-Button: Rot → sanftes Pastell-Terracotta
-- [ ] Play-Buttons: Kräftiges Rot → sanftes Pastell
-- [ ] Alle Farben harmonisch und passend zum Gesamtdesign
+- [x] Spotify-Button: Grün → sanftes Pastell-Salbei
+- [x] Apple Music-Button: Schwarz → sanftes Pastell-Rosa
+- [x] YouTube-Button: Rot → sanftes Pastell-Terracotta
+- [x] Play-Buttons: Kräftiges Rot → sanftes Pastell
+- [x] Alle Farben harmonisch und passend zum Gesamtdesign
+
+## Affiliate-Seite Verbesserungen (13.03.2026)
+- [x] Affiliate-Seite: Direkt Login/Registrierung zeigen statt Erklärungsseite (wenn nicht eingeloggt)
+- [x] Admin-Bereich: Benachrichtigung bei neuer Affiliate-Anmeldung anzeigen (Name + Code + NEU-Badge)
+- [x] Push-Nachricht an Admin senden bei neuer Affiliate-Registrierung
