@@ -191,27 +191,19 @@ export const appRouter = router({
       }),
 
     getOrCreate: publicProcedure
-      .input(z.object({ email: z.string().email(), name: z.string().min(1), wunschCode: z.string().min(2).optional(), password: z.string().min(4).optional() }))
+      .input(z.object({ email: z.string().email(), name: z.string().min(1), password: z.string().min(4).optional() }))
       .mutation(async ({ input }) => {
         let affiliate = await db.getAffiliateByEmail(input.email);
         if (affiliate) {
           // E-Mail existiert bereits - Nutzer soll sich einloggen
           return { success: false as const, error: "already_registered" };
         }
-        // Wunschcode verwenden oder automatisch generieren
-        let code: string;
-        if (input.wunschCode) {
-          code = input.wunschCode.toUpperCase().replace(/[^A-Z\u00C4\u00D6\u00DC0-9]/g, "").slice(0, 20);
-          // Prüfen ob Code schon vergeben ist
-          const existing = await db.getAffiliateByCode(code);
-          if (existing) return { success: false as const, error: "code_taken" };
-        } else {
+        // Code wird automatisch generiert (Admin vergibt den Code)
+        let code = await db.generateAffiliateCode();
+        let attempts = 0;
+        while (await db.getAffiliateByCode(code) && attempts < 10) {
           code = await db.generateAffiliateCode();
-          let attempts = 0;
-          while (await db.getAffiliateByCode(code) && attempts < 10) {
-            code = await db.generateAffiliateCode();
-            attempts++;
-          }
+          attempts++;
         }
         const id = await db.createAffiliate({ email: input.email, name: input.name, code });
         // Passwort speichern

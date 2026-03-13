@@ -46,7 +46,6 @@ export default function AffiliateScreen() {
   // Registrierung
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [wunschCode, setWunschCode] = useState("");
   const [password, setPassword] = useState("");
   const [codeError, setCodeError] = useState("");
 
@@ -75,10 +74,6 @@ export default function AffiliateScreen() {
   const baseUrl = "https://seelenplanerin-app.onrender.com";
   const getLink = (code: string) => `${baseUrl}/ref/${code}`;
 
-  function formatCode(text: string): string {
-    return text.replace(/[^a-zA-Z\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc0-9]/g, "").toUpperCase().slice(0, 20);
-  }
-
   async function handleGetCode() {
     if (!name.trim() || !email.trim()) {
       const msg = "Bitte gib deinen Namen und deine E-Mail ein.";
@@ -87,19 +82,13 @@ export default function AffiliateScreen() {
       return;
     }
     if (!email.includes("@") || !email.includes(".")) {
-      const msg = "Bitte gib eine g\u00fcltige E-Mail-Adresse ein.";
-      if (Platform.OS === "web") window.alert(msg);
-      else Alert.alert("Fehler", msg);
-      return;
-    }
-    if (!wunschCode.trim() || wunschCode.trim().length < 2) {
-      const msg = "Bitte gib einen Wunschcode ein (mindestens 2 Zeichen).";
+      const msg = "Bitte gib eine gültige E-Mail-Adresse ein.";
       if (Platform.OS === "web") window.alert(msg);
       else Alert.alert("Fehler", msg);
       return;
     }
     if (!password.trim() || password.trim().length < 4) {
-      const msg = "Bitte w\u00e4hle ein Passwort (mindestens 4 Zeichen).";
+      const msg = "Bitte wähle ein Passwort (mindestens 4 Zeichen).";
       if (Platform.OS === "web") window.alert(msg);
       else Alert.alert("Fehler", msg);
       return;
@@ -114,7 +103,6 @@ export default function AffiliateScreen() {
         body: JSON.stringify({ json: {
           email: email.trim().toLowerCase(),
           name: name.trim(),
-          wunschCode: wunschCode.trim().toUpperCase(),
           password: password.trim(),
         } }),
       });
@@ -125,14 +113,12 @@ export default function AffiliateScreen() {
         setPaypalEmail(result.affiliate.paypalEmail || "");
         setStep("dashboard");
         loadSales(result.affiliate.code);
-      } else if (result?.error === "code_taken") {
-        setCodeError("Dieser Code ist leider schon vergeben. Bitte w\u00e4hle einen anderen.");
       } else if (result?.error === "already_registered" || result?.error === "wrong_password") {
         setCodeError("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
         setLoginEmail(email.trim().toLowerCase());
         setTimeout(() => setAuthTab("login"), 2000);
       } else {
-        const msg = "Fehler beim Erstellen deines Codes. Bitte versuche es erneut.";
+        const msg = "Fehler beim Erstellen. Bitte versuche es erneut.";
         if (Platform.OS === "web") window.alert(msg);
         else Alert.alert("Fehler", msg);
       }
@@ -434,9 +420,9 @@ export default function AffiliateScreen() {
           {/* ── REGISTRIERUNG TAB ── */}
           {authTab === "register" && (
             <View style={s.formCard}>
-              <Text style={s.formTitle}>Jetzt deinen Code holen</Text>
+              <Text style={s.formTitle}>Jetzt als Affiliate registrieren</Text>
               <Text style={{ fontSize: 14, color: C.brownMid, marginBottom: 16, lineHeight: 20 }}>
-                Erstelle deinen pers\u00f6nlichen Empfehlungscode und starte sofort.
+                Registriere dich und erhalte deinen persönlichen Empfehlungscode per E-Mail.
               </Text>
 
               <Text style={s.inputLabel}>Dein Name</Text>
@@ -462,35 +448,15 @@ export default function AffiliateScreen() {
                 returnKeyType="next"
               />
 
-              <Text style={s.inputLabel}>Dein Wunschcode</Text>
-              <Text style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>
-                W\u00e4hle einen einfachen Code \u2013 z.B. deinen Vornamen.
-              </Text>
-              <TextInput
-                style={[s.input, codeError ? { borderColor: "#EF4444" } : {}]}
-                placeholder="z.B. SARAH, LISA, ANNA"
-                placeholderTextColor={C.muted}
-                value={wunschCode}
-                onChangeText={(t) => { setWunschCode(formatCode(t)); setCodeError(""); }}
-                autoCapitalize="characters"
-                returnKeyType="next"
-              />
               {codeError ? (
-                <View style={{ backgroundColor: "#FEF2F2", borderRadius: 10, padding: 12, marginBottom: 8, marginTop: -4, borderWidth: 1, borderColor: "#EF444440" }}>
+                <View style={{ backgroundColor: "#FEF2F2", borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: "#EF444440" }}>
                   <Text style={{ fontSize: 13, color: "#DC2626", fontWeight: "600", textAlign: "center" }}>{codeError}</Text>
                 </View>
               ) : null}
-              {wunschCode.length >= 2 && !codeError && (
-                <View style={{ backgroundColor: C.goldLight, borderRadius: 10, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: C.gold + "40" }}>
-                  <Text style={{ fontSize: 13, color: C.brown, textAlign: "center" }}>
-                    Dein Code wird: <Text style={{ fontWeight: "700", color: C.gold, fontSize: 16 }}>{wunschCode}</Text>
-                  </Text>
-                </View>
-              )}
 
               <Text style={s.inputLabel}>Dein Passwort</Text>
               <Text style={{ fontSize: 12, color: C.muted, marginBottom: 6 }}>
-                W\u00e4hle ein Passwort f\u00fcr dein Dashboard (mind. 4 Zeichen).
+                Wähle ein Passwort für dein Dashboard (mind. 4 Zeichen).
               </Text>
               <TextInput
                 style={s.input}
@@ -503,6 +469,12 @@ export default function AffiliateScreen() {
                 onSubmitEditing={handleGetCode}
               />
 
+              <View style={{ backgroundColor: C.goldLight, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: C.gold + "40" }}>
+                <Text style={{ fontSize: 13, color: C.brown, textAlign: "center", lineHeight: 20 }}>
+                  Dein persönlicher Empfehlungscode wird automatisch für dich erstellt und dir per E-Mail zugesendet.
+                </Text>
+              </View>
+
               <TouchableOpacity
                 style={[s.primaryBtn, loading && { opacity: 0.6 }]}
                 onPress={handleGetCode}
@@ -512,7 +484,7 @@ export default function AffiliateScreen() {
                 {loading ? (
                   <ActivityIndicator color="#FFF" />
                 ) : (
-                  <Text style={s.primaryBtnText}>Meinen Code erstellen</Text>
+                  <Text style={s.primaryBtnText}>Jetzt registrieren</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -523,7 +495,7 @@ export default function AffiliateScreen() {
             <Text style={s.stepsTitle}>So funktioniert's</Text>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>1</Text></View>
-              <Text style={s.stepText}>W\u00e4hle deinen pers\u00f6nlichen Code \u2013 z.B. deinen Vornamen</Text>
+              <Text style={s.stepText}>Registriere dich – du erhältst deinen persönlichen Code per E-Mail</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>2</Text></View>

@@ -425,7 +425,7 @@ export async function sendAffiliateAdminNotification(params: {
             <table width="100%" style="font-size:14px;color:#5C3317;">
               <tr><td style="padding:6px 0;font-weight:600;">Name:</td><td style="text-align:right;">${params.affiliateName}</td></tr>
               <tr><td style="padding:6px 0;font-weight:600;">E-Mail:</td><td style="text-align:right;">${params.affiliateEmail}</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">Gewählter Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Zugewiesener Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
             </table>
           </td>
         </tr>

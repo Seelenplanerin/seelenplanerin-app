@@ -781,3 +781,10 @@
 - [x] Affiliate-Seite: Direkt Login/Registrierung zeigen statt Erklärungsseite (wenn nicht eingeloggt)
 - [x] Admin-Bereich: Benachrichtigung bei neuer Affiliate-Anmeldung anzeigen (Name + Code + NEU-Badge)
 - [x] Push-Nachricht an Admin senden bei neuer Affiliate-Registrierung
+
+## Affiliate-Code wird von Admin vergeben (13.03.2026)
+- [x] Wunschcode-Feld aus Registrierung entfernen (kein eigener Code mehr)
+- [x] Code wird automatisch generiert bei Registrierung
+- [x] Push-Nachricht zeigt generierten Code klar an
+- [x] E-Mail an Admin zeigt generierten Code klar an
+- [x] Registrierungsformular vereinfachen: nur Name, E-Mail, Passwort

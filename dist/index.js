@@ -890,7 +890,7 @@ async function sendAffiliateAdminNotification(params) {
             <table width="100%" style="font-size:14px;color:#5C3317;">
               <tr><td style="padding:6px 0;font-weight:600;">Name:</td><td style="text-align:right;">${params.affiliateName}</td></tr>
               <tr><td style="padding:6px 0;font-weight:600;">E-Mail:</td><td style="text-align:right;">${params.affiliateEmail}</td></tr>
-              <tr><td style="padding:6px 0;font-weight:600;">Gew\xE4hlter Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
+              <tr><td style="padding:6px 0;font-weight:600;">Zugewiesener Code:</td><td style="text-align:right;font-weight:700;font-size:18px;color:#C9A96E;letter-spacing:2px;">${params.affiliateCode}</td></tr>
             </table>
           </td>
         </tr>
@@ -1708,23 +1708,16 @@ var appRouter = router({
       }
       return { success: true, affiliate };
     }),
-    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), wunschCode: z2.string().min(2).optional(), password: z2.string().min(4).optional() })).mutation(async ({ input }) => {
+    getOrCreate: publicProcedure.input(z2.object({ email: z2.string().email(), name: z2.string().min(1), password: z2.string().min(4).optional() })).mutation(async ({ input }) => {
       let affiliate = await getAffiliateByEmail(input.email);
       if (affiliate) {
         return { success: false, error: "already_registered" };
       }
-      let code;
-      if (input.wunschCode) {
-        code = input.wunschCode.toUpperCase().replace(/[^A-Z\u00C4\u00D6\u00DC0-9]/g, "").slice(0, 20);
-        const existing = await getAffiliateByCode(code);
-        if (existing) return { success: false, error: "code_taken" };
-      } else {
+      let code = await generateAffiliateCode();
+      let attempts = 0;
+      while (await getAffiliateByCode(code) && attempts < 10) {
         code = await generateAffiliateCode();
-        let attempts = 0;
-        while (await getAffiliateByCode(code) && attempts < 10) {
-          code = await generateAffiliateCode();
-          attempts++;
-        }
+        attempts++;
       }
       const id = await createAffiliate({ email: input.email, name: input.name, code });
       if (input.password) {
