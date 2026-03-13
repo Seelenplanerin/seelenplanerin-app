@@ -1743,6 +1743,31 @@ var appRouter = router({
         affiliateEmail: input.email,
         affiliateCode: code
       }).catch((err) => console.error("[Affiliate] Admin-Benachrichtigung Fehler:", err));
+      (async () => {
+        try {
+          const tokens = await getAllActivePushTokens();
+          if (tokens.length > 0) {
+            const pushMessages2 = tokens.map((t2) => ({
+              to: t2.token,
+              sound: "default",
+              title: "Neue Affiliate-Anmeldung!",
+              body: `${input.name} hat sich als Affiliate registriert. Code: ${code} \u2013 Bitte bei Tentary anlegen!`,
+              data: { type: "affiliate_new", code, name: input.name, email: input.email }
+            }));
+            for (let i = 0; i < pushMessages2.length; i += 100) {
+              const chunk = pushMessages2.slice(i, i + 100);
+              await fetch("https://exp.host/--/api/v2/push/send", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify(chunk)
+              });
+            }
+            console.log(`[Affiliate] Push-Nachricht an ${tokens.length} Ger\xE4te gesendet f\xFCr neuen Affiliate: ${code}`);
+          }
+        } catch (pushErr) {
+          console.error("[Affiliate] Push-Benachrichtigung Fehler:", pushErr);
+        }
+      })();
       return { success: true, affiliate };
     }),
     // Affiliate-Daten per Code abrufen
