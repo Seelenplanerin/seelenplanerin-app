@@ -139,7 +139,7 @@ const OTHER_PRODUCTS: Product[] = [
   // === SESSIONS ===
   {
     id: "aura-reading", name: "Aura Reading", kategorie: "sessions",
-    preis: 69.00, preisDisplay: "69,00 \u20ac",
+    preis: 77.00, preisDisplay: "77,00 \u20ac",
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     emoji: "\ud83c\udf08", highlight: "Pers\u00f6nlich",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS", badge: "Beliebt",

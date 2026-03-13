@@ -788,3 +788,6 @@
 - [x] Push-Nachricht zeigt generierten Code klar an
 - [x] E-Mail an Admin zeigt generierten Code klar an
 - [x] Registrierungsformular vereinfachen: nur Name, E-Mail, Passwort
+
+## Aura Reading Preis korrigieren (13.03.2026)
+- [x] Aura Reading Preis überall auf 77 € setzen
