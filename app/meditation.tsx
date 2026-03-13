@@ -204,7 +204,7 @@ export default function MeditationScreen() {
                     <Text style={s.streamBadge}>🟢 Spotify</Text>
                   ) : null}
                   {m.appleMusicUrl ? (
-                    <Text style={[s.streamBadge, { backgroundColor: "#FC3C44" + "20", color: "#FC3C44" }]}>🔴 Apple</Text>
+                    <Text style={[s.streamBadge, { backgroundColor: "#C4826A" + "20", color: "#C4826A" }]}>🎵 Apple</Text>
                   ) : null}
                   {!m.spotifyUrl && !m.appleMusicUrl ? (
                     <Text style={[s.streamBadge, { backgroundColor: C.goldLight, color: C.gold }]}>Bald verfügbar</Text>
@@ -258,8 +258,8 @@ const s = StyleSheet.create({
   meditationDauer: { fontSize: 12, fontWeight: "600", color: C.rose, backgroundColor: C.roseLight, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: "hidden" },
   meditationBeschreibung: { fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 18 },
   streamBadge: {
-    fontSize: 11, fontWeight: "600", color: "#1DB954",
-    backgroundColor: "#1DB954" + "20", paddingHorizontal: 8, paddingVertical: 3,
+    fontSize: 11, fontWeight: "600", color: "#7BA876",
+    backgroundColor: "#7BA876" + "20", paddingHorizontal: 8, paddingVertical: 3,
     borderRadius: 8, overflow: "hidden",
   },
   adminHint: {

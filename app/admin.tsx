@@ -816,9 +816,9 @@ export default function AdminScreen() {
                     <Text style={s.memberEmail}>{song.beschreibung || song.kategorie}</Text>
                     <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
                       {song.mp3Url && <Text style={{ fontSize: 10, color: C.rose }}>● MP3</Text>}
-                      {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#1DB954" }}>● Spotify</Text>}
-                      {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#FC3C44" }}>● Apple</Text>}
-                      {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#FF0000" }}>● YouTube</Text>}
+                      {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#7BA876" }}>● Spotify</Text>}
+                      {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#C4826A" }}>● Apple</Text>}
+                      {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#C4826A" }}>● YouTube</Text>}
                     </View>
                   </View>
                   <TouchableOpacity onPress={() => handleEditSong(song)} style={s.memberAction} activeOpacity={0.7}>

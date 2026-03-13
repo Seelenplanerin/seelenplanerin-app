@@ -769,3 +769,10 @@
 
 ## Premium-Kacheln Fix (12.03.2026 - Runde 3)
 - [x] Premium-Kacheln (Zyklus, Kalender, Mondphasen, Med.) als kompakte Chips mit flexWrap statt riesige Kacheln
+
+## Musik & Meditation Pastell-Farben (13.03.2026)
+- [ ] Spotify-Button: Grün → sanftes Pastell-Salbei
+- [ ] Apple Music-Button: Schwarz → sanftes Pastell-Rosa
+- [ ] YouTube-Button: Rot → sanftes Pastell-Terracotta
+- [ ] Play-Buttons: Kräftiges Rot → sanftes Pastell
+- [ ] Alle Farben harmonisch und passend zum Gesamtdesign
