@@ -531,7 +531,7 @@ function MonatsKalender({
 }
 
 export default function CommunityPremiumScreen() {
-  const [tab, setTab] = useState<"zyklus" | "kalender" | "mondkalender" | "meditation">("zyklus");
+  const [tab, setTab] = useState<"zyklus" | "kalender" | "mondkalender" | "meditation" | "mantra">("zyklus");
   const [zyklusEinstellungen, setZyklusEinstellungen] = useState<ZyklusEinstellungen | null>(null);
   const [showSetup, setShowSetup] = useState(false);
   const [setupDatum, setSetupDatum] = useState("");
@@ -652,7 +652,7 @@ export default function CommunityPremiumScreen() {
           <Text style={{ fontSize: 22 }}>👑</Text>
           <View style={{ flex: 1 }}>
             <Text style={s.premiumTitle}>Seelenimpuls Premium</Text>
-            <Text style={s.premiumSub}>Mondkalender · Meditationen · Zyklus</Text>
+            <Text style={s.premiumSub}>Mondkalender · Meditationen · Mantra · Zyklus</Text>
           </View>
         </View>
 
@@ -663,6 +663,7 @@ export default function CommunityPremiumScreen() {
             { key: "kalender", label: "📅 Kalender" },
             { key: "mondkalender", label: "🌙 Mondphasen" },
             { key: "meditation", label: "🧘 Meditationen" },
+            { key: "mantra", label: "🕊️ Tägliches Mantra" },
           ].map((t) => (
             <TouchableOpacity
               key={t.key}
@@ -1081,6 +1082,72 @@ export default function CommunityPremiumScreen() {
                   </Text>
                 </View>
               )}
+            </View>
+          )}
+
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── TÄGLICHES MANTRA ── */}
+          {/* ══════════════════════════════════════════════ */}
+          {tab === "mantra" && (
+            <View style={s.content}>
+              <View style={{ alignItems: "center", marginBottom: 20 }}>
+                <Text style={{ fontSize: 48, marginBottom: 12 }}>🕊️</Text>
+                <Text style={s.sectionTitle}>Tägliches Mantra</Text>
+                <Text style={s.sectionSub}>
+                  Starte jeden Morgen mit dieser kraftvollen Affirmation. Lass die Worte tief in deine Seele sinken und spüre, wie sich deine Energie verändert.
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={[s.meditationCard, audio.currentUrl === "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3" && { backgroundColor: C.roseLight, borderColor: C.rose }]}
+                onPress={() => audio.play("https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3")}
+                activeOpacity={0.85}
+              >
+                <View style={s.meditationEmoji}>
+                  <Text style={{ fontSize: 28 }}>🕊️</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.meditationTitel}>Morgen-Affirmation</Text>
+                  <Text style={s.meditationBeschreibung}>Kraftvolle Ich-bin-Affirmationen für Glück, Fülle und innere Stärke</Text>
+                  <View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
+                    <View style={{ backgroundColor: C.roseLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
+                      <Text style={{ fontSize: 10, color: C.rose, fontWeight: "700" }}>🎧 In-App abspielen</Text>
+                    </View>
+                    <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 }}>
+                      <Text style={{ fontSize: 10, color: C.gold, fontWeight: "700" }}>10 Min</Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.rose, alignItems: "center", justifyContent: "center" }, audio.currentUrl === "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3" && audio.isPlaying && { backgroundColor: C.brown }]}>
+                  {audio.loading && audio.currentUrl === "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3" ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>{audio.currentUrl === "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3" && audio.isPlaying ? "⏸" : "▶"}</Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+
+              {audio.isPlaying && audio.currentUrl === "https://files.manuscdn.com/user_upload_by_module/session_file/310519663350288528/jEDpvKWUVuUWSAfe.mp3" && (
+                <View style={{ backgroundColor: C.brown, borderRadius: 12, padding: 12, marginBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "#FFF", fontSize: 12, fontWeight: "600" }}>🎧 Mantra läuft...</Text>
+                    <View style={{ height: 3, backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 2, marginTop: 6, overflow: "hidden" }}>
+                      <View style={{ height: "100%", backgroundColor: C.gold, borderRadius: 2, width: `${audio.progress * 100}%` }} />
+                    </View>
+                  </View>
+                  <TouchableOpacity onPress={audio.stop} style={{ marginLeft: 12 }} activeOpacity={0.7}>
+                    <Text style={{ color: C.gold, fontSize: 14, fontWeight: "700" }}>■ Stop</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={s.infoBox}>
+                <Text style={{ fontSize: 18, marginBottom: 8 }}>✨</Text>
+                <Text style={s.infoBoxTitle}>So nutzt du das Mantra</Text>
+                <Text style={s.infoBoxText}>
+                  Höre dir diese Affirmation jeden Morgen an – am besten direkt nach dem Aufwachen. Schließe die Augen, atme tief ein und lass die Worte auf dich wirken. Mit der Zeit verändert sich deine Energie spürbar.
+                </Text>
+              </View>
             </View>
           )}
 
