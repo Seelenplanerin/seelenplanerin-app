@@ -34,7 +34,7 @@ interface SaleData {
 }
 
 function formatCent(cent: number): string {
-  return (cent / 100).toFixed(2).replace(".", ",") + " \u20ac";
+  return (cent / 100).toFixed(2).replace(".", ",") + " €";
 }
 
 export default function AffiliateScreen() {
@@ -194,9 +194,9 @@ export default function AffiliateScreen() {
       } else if (result?.error === "not_found") {
         setLoginError("Diese E-Mail ist nicht registriert.");
       } else if (result?.error === "email_failed") {
-        setLoginError("E-Mail konnte nicht gesendet werden. Bitte versuche es sp\u00e4ter erneut.");
+        setLoginError("E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.");
       } else {
-        setLoginError("Fehler beim Zur\u00fccksetzen. Bitte versuche es erneut.");
+        setLoginError("Fehler beim Zurücksetzen. Bitte versuche es erneut.");
       }
     } catch (e) {
       console.error("[Affiliate] Reset error:", e);
@@ -222,7 +222,7 @@ export default function AffiliateScreen() {
       if (Platform.OS === "web" && navigator.clipboard) {
         await navigator.clipboard.writeText(affiliate.code);
       } else {
-        await Share.share({ message: `Mein Empfehlungscode f\u00fcr Die Seelenplanerin: ${affiliate.code}` });
+        await Share.share({ message: `Mein Empfehlungscode für Die Seelenplanerin: ${affiliate.code}` });
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -233,7 +233,7 @@ export default function AffiliateScreen() {
 
   async function handleShareCode() {
     if (!affiliate) return;
-    const message = `Schau dir Die Seelenplanerin an \u2013 Rituale, Meditationen & spirituelle Begleitung f\u00fcr deine Seele \ud83c\udf38\n\nGib bei deiner Bestellung meinen Code ein: ${affiliate.code}\n\n${getLink(affiliate.code)}`;
+    const message = `Schau dir Die Seelenplanerin an – Rituale, Meditationen & spirituelle Begleitung für deine Seele 🌸\n\nGib bei deiner Bestellung meinen Code ein: ${affiliate.code}\n\n${getLink(affiliate.code)}`;
     try {
       if (Platform.OS === "web") {
         if (navigator.share) {
@@ -271,7 +271,7 @@ export default function AffiliateScreen() {
     if (!affiliate) return;
     if (!oldPw.trim()) { setChangePwMsg("Bitte gib dein aktuelles Passwort ein."); return; }
     if (!newPw.trim() || newPw.trim().length < 4) { setChangePwMsg("Neues Passwort muss mindestens 4 Zeichen haben."); return; }
-    if (newPw !== newPw2) { setChangePwMsg("Die Passw\u00f6rter stimmen nicht \u00fcberein."); return; }
+    if (newPw !== newPw2) { setChangePwMsg("Die Passwörter stimmen nicht überein."); return; }
     setChangePwLoading(true);
     setChangePwMsg("");
     try {
@@ -288,14 +288,14 @@ export default function AffiliateScreen() {
       const data = await res.json();
       const result = data?.result?.data?.json;
       if (result?.success) {
-        const msg = "Passwort erfolgreich ge\u00e4ndert!";
+        const msg = "Passwort erfolgreich geändert!";
         if (Platform.OS === "web") window.alert(msg);
         else Alert.alert("Erfolg", msg);
         setOldPw(""); setNewPw(""); setNewPw2(""); setShowChangePw(false); setChangePwMsg("");
       } else if (result?.error === "wrong_password") {
         setChangePwMsg("Das aktuelle Passwort ist falsch.");
       } else {
-        setChangePwMsg("Fehler beim \u00c4ndern. Bitte versuche es erneut.");
+        setChangePwMsg("Fehler beim Ändern. Bitte versuche es erneut.");
       }
     } catch (e) {
       setChangePwMsg("Verbindungsfehler. Bitte versuche es erneut.");
@@ -315,7 +315,7 @@ export default function AffiliateScreen() {
           {/* Header */}
           <View style={s.header}>
             <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
-              <Text style={{ fontSize: 22, color: C.brown }}>{"\u2039"}</Text>
+              <Text style={{ fontSize: 22, color: C.brown }}>{"‹"}</Text>
             </TouchableOpacity>
             <Text style={s.headerTitle}>Geben & Nehmen</Text>
           </View>
@@ -348,7 +348,7 @@ export default function AffiliateScreen() {
           {/* ── LOGIN TAB ── */}
           {authTab === "login" && (
             <View style={s.formCard}>
-              <Text style={s.formTitle}>Willkommen zur\u00fcck</Text>
+              <Text style={s.formTitle}>Willkommen zurück</Text>
               <Text style={{ fontSize: 14, color: C.brownMid, marginBottom: 16, lineHeight: 20 }}>
                 Melde dich an, um dein Affiliate-Dashboard zu sehen.
               </Text>
@@ -384,7 +384,7 @@ export default function AffiliateScreen() {
               {resetSent && (
                 <View style={{ backgroundColor: C.greenLight, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: C.green + "40" }}>
                   <Text style={{ fontSize: 14, color: "#2E7D32", fontWeight: "600", textAlign: "center", lineHeight: 20 }}>
-                    {"\u2713"} Ein neues Passwort wurde an deine E-Mail gesendet.{"\n"}Pr\u00fcfe deinen Posteingang (auch den Spam-Ordner).
+                    {"✓"} Ein neues Passwort wurde an deine E-Mail gesendet.{"\n"}Prüfe deinen Posteingang (auch den Spam-Ordner).
                   </Text>
                 </View>
               )}
@@ -499,15 +499,15 @@ export default function AffiliateScreen() {
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>2</Text></View>
-              <Text style={s.stepText}>Teile deinen Code per WhatsApp, Instagram oder pers\u00f6nlich</Text>
+              <Text style={s.stepText}>Teile deinen Code per WhatsApp, Instagram oder persönlich</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>3</Text></View>
-              <Text style={s.stepText}>Der K\u00e4ufer gibt deinen Code bei der Bestellung auf Tentary ein</Text>
+              <Text style={s.stepText}>Der Käufer gibt deinen Code bei der Bestellung auf Tentary ein</Text>
             </View>
             <View style={s.stepRow}>
               <View style={s.stepCircle}><Text style={s.stepNum}>4</Text></View>
-              <Text style={s.stepText}>Du erh\u00e4ltst 20% Provision sobald die Zahlung eingegangen ist</Text>
+              <Text style={s.stepText}>Du erhältst 20% Provision sobald die Zahlung eingegangen ist</Text>
             </View>
           </View>
 
@@ -518,7 +518,7 @@ export default function AffiliateScreen() {
             activeOpacity={0.8}
           >
             <Text style={s.richtlinienToggleText}>
-              {showRichtlinien ? "\u25be Richtlinien ausblenden" : "\u25b8 Richtlinien & Bedingungen anzeigen"}
+              {showRichtlinien ? "▾ Richtlinien ausblenden" : "▸ Richtlinien & Bedingungen anzeigen"}
             </Text>
           </TouchableOpacity>
 
@@ -526,22 +526,22 @@ export default function AffiliateScreen() {
             <View style={s.richtlinienCard}>
               <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
               <Text style={s.richtlinienText}>
-                <Text style={{ fontWeight: "700" }}>1. Provisionsh\u00f6he{"\n"}</Text>
-                Du erh\u00e4ltst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die \u00fcber deinen pers\u00f6nlichen Code gekauft werden.{"\n\n"}
-                <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision f\u00e4llig?{"\n"}</Text>
-                Die Provision wird erst f\u00e4llig, sobald die Zahlung des K\u00e4ufers vollst\u00e4ndig eingegangen ist. Bei R\u00fcckerstattungen oder Stornierungen entf\u00e4llt die Provision.{"\n\n"}
+                <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
+                Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten) aller Produkte und Dienstleistungen, die über deinen persönlichen Code gekauft werden.{"\n\n"}
+                <Text style={{ fontWeight: "700" }}>2. Wann wird die Provision fällig?{"\n"}</Text>
+                Die Provision wird erst fällig, sobald die Zahlung des Käufers vollständig eingegangen ist. Bei Rückerstattungen oder Stornierungen entfällt die Provision.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
                 Es gibt keinen Mindestbetrag. Jeder verdiente Betrag wird per PayPal ausgezahlt. Hinterlege dazu deine PayPal-E-Mail-Adresse.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>4. Zuordnung{"\n"}</Text>
-                Ein Verkauf wird dir zugeordnet, wenn der K\u00e4ufer deinen Code bei der Bestellung auf Tentary eingibt.{"\n\n"}
+                Ein Verkauf wird dir zugeordnet, wenn der Käufer deinen Code bei der Bestellung auf Tentary eingibt.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>5. Faire Nutzung{"\n"}</Text>
-                Eigenk\u00e4ufe sind nicht provisionsberechtigt. Spam oder irref\u00fchrende Werbung f\u00fchren zum Ausschluss.{"\n\n"}
+                Eigenkäufe sind nicht provisionsberechtigt. Spam oder irreführende Werbung führen zum Ausschluss.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>6. Transparenz{"\n"}</Text>
-                Du kannst jederzeit in der App deinen Stand einsehen: Verk\u00e4ufe, Provision und Auszahlungen.{"\n\n"}
-                <Text style={{ fontWeight: "700" }}>7. \u00c4nderungen{"\n"}</Text>
-                Die Seelenplanerin beh\u00e4lt sich vor, die Bedingungen jederzeit anzupassen.{"\n\n"}
+                Du kannst jederzeit in der App deinen Stand einsehen: Verkäufe, Provision und Auszahlungen.{"\n\n"}
+                <Text style={{ fontWeight: "700" }}>7. Änderungen{"\n"}</Text>
+                Die Seelenplanerin behält sich vor, die Bedingungen jederzeit anzupassen.{"\n\n"}
                 <Text style={{ fontWeight: "700" }}>8. Steuerliche Hinweise{"\n"}</Text>
-                Provisionseinnahmen k\u00f6nnen steuerpflichtig sein. Du bist selbst f\u00fcr die korrekte Versteuerung verantwortlich.
+                Provisionseinnahmen können steuerpflichtig sein. Du bist selbst für die korrekte Versteuerung verantwortlich.
               </Text>
             </View>
           )}
@@ -561,32 +561,32 @@ export default function AffiliateScreen() {
         {/* Header */}
         <View style={s.header}>
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
-            <Text style={{ fontSize: 22, color: C.brown }}>{"\u2039"}</Text>
+            <Text style={{ fontSize: 22, color: C.brown }}>{"‹"}</Text>
           </TouchableOpacity>
           <Text style={s.headerTitle}>Geben & Nehmen</Text>
         </View>
 
         {/* Willkommen */}
         <View style={s.welcomeCard}>
-          <Text style={s.welcomeEmoji}>{"\ud83c\udf38"}</Text>
+          <Text style={s.welcomeEmoji}>{"🌸"}</Text>
           <Text style={s.welcomeName}>Hallo {affiliate?.name}!</Text>
-          <Text style={s.welcomeText}>Hier ist dein pers\u00f6nlicher Empfehlungscode. Teile ihn und verdiene 20% auf jeden Verkauf.</Text>
+          <Text style={s.welcomeText}>Hier ist dein persönlicher Empfehlungscode. Teile ihn und verdiene 20% auf jeden Verkauf.</Text>
         </View>
 
         {/* Dein Code */}
         <View style={s.linkCard}>
-          <Text style={s.linkTitle}>Dein pers\u00f6nlicher Code</Text>
+          <Text style={s.linkTitle}>Dein persönlicher Code</Text>
           <View style={{ backgroundColor: C.goldLight, borderRadius: 16, padding: 20, borderWidth: 2, borderColor: C.gold, marginBottom: 12, alignItems: "center" }}>
             <Text style={{ fontSize: 32, fontWeight: "800", color: C.gold, letterSpacing: 3 }}>
               {affiliate?.code}
             </Text>
           </View>
           <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginBottom: 12, lineHeight: 18 }}>
-            Der K\u00e4ufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.
+            Der Käufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.
           </Text>
           <View style={s.linkBtnRow}>
             <TouchableOpacity style={[s.linkBtn, copied && { backgroundColor: C.green }]} onPress={handleCopyCode} activeOpacity={0.85}>
-              <Text style={s.linkBtnText}>{copied ? "\u2713 Kopiert!" : "Code kopieren"}</Text>
+              <Text style={s.linkBtnText}>{copied ? "✓ Kopiert!" : "Code kopieren"}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[s.linkBtn, { backgroundColor: C.gold }]} onPress={handleShareCode} activeOpacity={0.85}>
               <Text style={s.linkBtnText}>Teilen</Text>
@@ -596,12 +596,12 @@ export default function AffiliateScreen() {
 
         {/* Wie funktioniert's Hinweis */}
         <View style={{ marginHorizontal: 16, marginBottom: 16, backgroundColor: C.goldLight, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.gold + "40" }}>
-          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "serif" }}>So nutzt der K\u00e4ufer deinen Code</Text>
+          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "serif" }}>So nutzt der Käufer deinen Code</Text>
           <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-            1. Der K\u00e4ufer geht auf den Tentary-Shop der Seelenplanerin{"\n"}
-            2. W\u00e4hlt ein Produkt aus und geht zur Kasse{"\n"}
+            1. Der Käufer geht auf den Tentary-Shop der Seelenplanerin{"\n"}
+            2. Wählt ein Produkt aus und geht zur Kasse{"\n"}
             3. Gibt deinen Code <Text style={{ fontWeight: "700", color: C.gold }}>{affiliate?.code}</Text> im Gutscheinfeld ein{"\n"}
-            4. Du erh\u00e4ltst 20% Provision auf den Produktpreis
+            4. Du erhältst 20% Provision auf den Produktpreis
           </Text>
         </View>
 
@@ -615,7 +615,7 @@ export default function AffiliateScreen() {
             </View>
             <View style={s.statBox}>
               <Text style={s.statNum}>{affiliate?.totalSales || 0}</Text>
-              <Text style={s.statLabel}>Verk\u00e4ufe</Text>
+              <Text style={s.statLabel}>Verkäufe</Text>
             </View>
             <View style={s.statBox}>
               <Text style={[s.statNum, { color: C.green }]}>{formatCent(affiliate?.totalEarnings || 0)}</Text>
@@ -634,10 +634,10 @@ export default function AffiliateScreen() {
           </View>
         </View>
 
-        {/* Letzte Verk\u00e4ufe */}
+        {/* Letzte Verkäufe */}
         {sales.length > 0 && (
           <View style={s.salesCard}>
-            <Text style={s.salesTitle}>Deine Verk\u00e4ufe</Text>
+            <Text style={s.salesTitle}>Deine Verkäufe</Text>
             {sales.map((sale) => (
               <View key={sale.id} style={s.saleRow}>
                 <View style={{ flex: 1 }}>
@@ -649,7 +649,7 @@ export default function AffiliateScreen() {
                   <Text style={[s.saleStatus, {
                     color: sale.status === "paid" ? C.green : sale.status === "confirmed" ? C.gold : C.muted
                   }]}>
-                    {sale.status === "paid" ? "Ausgezahlt" : sale.status === "confirmed" ? "Best\u00e4tigt" : "Ausstehend"}
+                    {sale.status === "paid" ? "Ausgezahlt" : sale.status === "confirmed" ? "Bestätigt" : "Ausstehend"}
                   </Text>
                 </View>
               </View>
@@ -659,15 +659,15 @@ export default function AffiliateScreen() {
 
         {sales.length === 0 && (
           <View style={s.emptySales}>
-            <Text style={s.emptySalesEmoji}>{"\ud83d\udcca"}</Text>
-            <Text style={s.emptySalesText}>Noch keine Verk\u00e4ufe \u2013 teile deinen Code und es geht los!</Text>
+            <Text style={s.emptySalesEmoji}>{"📊"}</Text>
+            <Text style={s.emptySalesText}>Noch keine Verkäufe – teile deinen Code und es geht los!</Text>
           </View>
         )}
 
         {/* Zahlungsdaten */}
         <View style={s.paymentCard}>
           <Text style={s.paymentTitle}>Deine Zahlungsdaten</Text>
-          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen k\u00f6nnen, hinterlege bitte deine PayPal-Adresse.</Text>
+          <Text style={s.paymentDesc}>Damit wir dir deine Provision auszahlen können, hinterlege bitte deine PayPal-Adresse.</Text>
           <Text style={s.inputLabel}>PayPal E-Mail</Text>
           <TextInput
             style={s.input}
@@ -692,15 +692,15 @@ export default function AffiliateScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Passwort \u00e4ndern */}
+        {/* Passwort ändern */}
         <View style={s.paymentCard}>
           <TouchableOpacity
             onPress={() => { setShowChangePw(!showChangePw); setChangePwMsg(""); setOldPw(""); setNewPw(""); setNewPw2(""); }}
             activeOpacity={0.7}
             style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
           >
-            <Text style={s.paymentTitle}>Passwort \u00e4ndern</Text>
-            <Text style={{ fontSize: 18, color: C.gold }}>{showChangePw ? "\u2303" : "\u2304"}</Text>
+            <Text style={s.paymentTitle}>Passwort ändern</Text>
+            <Text style={{ fontSize: 18, color: C.gold }}>{showChangePw ? "⌃" : "⌄"}</Text>
           </TouchableOpacity>
           {showChangePw && (
             <View style={{ marginTop: 12 }}>
@@ -724,7 +724,7 @@ export default function AffiliateScreen() {
                 secureTextEntry
                 returnKeyType="next"
               />
-              <Text style={s.inputLabel}>Neues Passwort best\u00e4tigen</Text>
+              <Text style={s.inputLabel}>Neues Passwort bestätigen</Text>
               <TextInput
                 style={s.input}
                 placeholder="Passwort wiederholen"
@@ -747,7 +747,7 @@ export default function AffiliateScreen() {
                 {changePwLoading ? (
                   <ActivityIndicator color={C.brown} />
                 ) : (
-                  <Text style={s.saveBtnText}>Passwort \u00e4ndern</Text>
+                  <Text style={s.saveBtnText}>Passwort ändern</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -757,23 +757,23 @@ export default function AffiliateScreen() {
         {/* Social-Media-Vorlagen */}
         <View style={s.paymentCard}>
           <Text style={s.paymentTitle}>Fertige Vorlagen zum Teilen</Text>
-          <Text style={s.paymentDesc}>Kopiere eine Vorlage und teile sie direkt. Dein Code ist automatisch eingef\u00fcgt!</Text>
+          <Text style={s.paymentDesc}>Kopiere eine Vorlage und teile sie direkt. Dein Code ist automatisch eingefügt!</Text>
 
           {/* Instagram */}
           <View style={{ marginBottom: 16 }}>
             <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>Instagram Story / Post</Text>
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                Ich habe etwas Wundervolles entdeckt \u2013 Die Seelenplanerin{"\n\n"}
-                Rituale, Mondenergie, Runen und so viel mehr f\u00fcr deine Seele. Wenn du auch auf der Suche bist \u2013 nutze meinen Code{" "}
+                Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin{"\n\n"}
+                Rituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche bist – nutze meinen Code{" "}
                 <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text> bei deiner Bestellung!{"\n\n"}
-                #DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualit\u00e4t
+                #DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität
               </Text>
             </View>
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: C.gold, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `Ich habe etwas Wundervolles entdeckt \u2013 Die Seelenplanerin\n\nRituale, Mondenergie, Runen und so viel mehr f\u00fcr deine Seele. Wenn du auch auf der Suche bist \u2013 nutze meinen Code ${affiliate?.code} bei deiner Bestellung!\n\n#DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualit\u00e4t`;
+                const text = `Ich habe etwas Wundervolles entdeckt – Die Seelenplanerin\n\nRituale, Mondenergie, Runen und so viel mehr für deine Seele. Wenn du auch auf der Suche bist – nutze meinen Code ${affiliate?.code} bei deiner Bestellung!\n\n#DieSeelenplanerin #Seelenimpuls #Mondenergie #Spiritualität`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
@@ -789,7 +789,7 @@ export default function AffiliateScreen() {
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
                 Hey, ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin{"\n\n"}
-                Das ist eine App mit Ritualen, Mondenergie, t\u00e4glichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code{" "}
+                Das ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code{" "}
                 <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text> ein!{"\n\n"}
                 Schau mal hier: {getLink(affiliate?.code || "")}
               </Text>
@@ -797,7 +797,7 @@ export default function AffiliateScreen() {
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: "#7BA876", borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `Hey, ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin\n\nDas ist eine App mit Ritualen, Mondenergie, t\u00e4glichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code ${affiliate?.code} ein!\n\nSchau mal hier: ${getLink(affiliate?.code || "")}`;
+                const text = `Hey, ich wollte dir etwas zeigen, das mir richtig gut tut: Die Seelenplanerin\n\nDas ist eine App mit Ritualen, Mondenergie, täglichen Impulsen und so viel mehr. Wenn du dort etwas bestellst, gib einfach meinen Code ${affiliate?.code} ein!\n\nSchau mal hier: ${getLink(affiliate?.code || "")}`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
@@ -812,14 +812,14 @@ export default function AffiliateScreen() {
             <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 8 }}>Kurze Empfehlung (universal)</Text>
             <View style={{ backgroundColor: C.bg, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: C.border }}>
               <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>
-                Die Seelenplanerin \u2013 Rituale, Mondenergie & Impulse f\u00fcr deine Seele{"\n"}
+                Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele{"\n"}
                 Bestelle mit meinem Code: <Text style={{ fontWeight: "700" }}>{affiliate?.code}</Text>
               </Text>
             </View>
             <TouchableOpacity
               style={{ marginTop: 8, backgroundColor: C.rose, borderRadius: 10, paddingVertical: 10, alignItems: "center" }}
               onPress={() => {
-                const text = `Die Seelenplanerin \u2013 Rituale, Mondenergie & Impulse f\u00fcr deine Seele\nBestelle mit meinem Code: ${affiliate?.code}`;
+                const text = `Die Seelenplanerin – Rituale, Mondenergie & Impulse für deine Seele\nBestelle mit meinem Code: ${affiliate?.code}`;
                 if (Platform.OS === "web" && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
                 else Share.share({ message: text });
               }}
@@ -837,7 +837,7 @@ export default function AffiliateScreen() {
           activeOpacity={0.8}
         >
           <Text style={s.richtlinienToggleText}>
-            {showRichtlinien ? "\u25be Richtlinien ausblenden" : "\u25b8 Richtlinien & Bedingungen anzeigen"}
+            {showRichtlinien ? "▾ Richtlinien ausblenden" : "▸ Richtlinien & Bedingungen anzeigen"}
           </Text>
         </TouchableOpacity>
 
@@ -845,16 +845,16 @@ export default function AffiliateScreen() {
           <View style={s.richtlinienCard}>
             <Text style={s.richtlinienTitle}>Richtlinien & Bedingungen</Text>
             <Text style={s.richtlinienText}>
-              <Text style={{ fontWeight: "700" }}>1. Provisionsh\u00f6he{"\n"}</Text>
-              Du erh\u00e4ltst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten).{"\n\n"}
+              <Text style={{ fontWeight: "700" }}>1. Provisionshöhe{"\n"}</Text>
+              Du erhältst 20% Provision auf den Netto-Produktpreis (ohne Versandkosten).{"\n\n"}
               <Text style={{ fontWeight: "700" }}>2. Zuordnung{"\n"}</Text>
-              Ein Verkauf wird dir zugeordnet, wenn der K\u00e4ufer deinen Code bei der Bestellung eingibt.{"\n\n"}
+              Ein Verkauf wird dir zugeordnet, wenn der Käufer deinen Code bei der Bestellung eingibt.{"\n\n"}
               <Text style={{ fontWeight: "700" }}>3. Auszahlung{"\n"}</Text>
               Kein Mindestbetrag. Auszahlung per PayPal.{"\n\n"}
               <Text style={{ fontWeight: "700" }}>4. Faire Nutzung{"\n"}</Text>
-              Eigenk\u00e4ufe sind nicht provisionsberechtigt.{"\n\n"}
+              Eigenkäufe sind nicht provisionsberechtigt.{"\n\n"}
               <Text style={{ fontWeight: "700" }}>5. Steuerliche Hinweise{"\n"}</Text>
-              Du bist selbst f\u00fcr die korrekte Versteuerung verantwortlich.
+              Du bist selbst für die korrekte Versteuerung verantwortlich.
             </Text>
           </View>
         )}

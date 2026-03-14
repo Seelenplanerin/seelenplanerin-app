@@ -501,7 +501,7 @@ export default function AdminScreen() {
         try {
           result = JSON.parse(responseText);
         } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${responseText.substring(0, 100)}`);
+          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${responseText.substring(0, 100)}`);
           return;
         }
         if (result.success) {
@@ -528,7 +528,7 @@ export default function AdminScreen() {
         try {
           result = JSON.parse(uploadResult.body);
         } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
+          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
           return;
         }
         if (result.success) {
@@ -556,12 +556,12 @@ export default function AdminScreen() {
       const result = await DocumentPicker.getDocumentAsync({ type: ["audio/*", "video/*", "application/octet-stream"], copyToCacheDirectory: true });
       if (result.canceled || !result.assets?.[0]) return;
       const file = result.assets[0];
-      if (file.size && file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 100 MB"); return; }
+      if (file.size && file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 100 MB"); return; }
       await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
     } catch (err: any) {
       if (err.message !== "User canceled document picker") {
         console.error("[PickFile] Error:", err);
-        Alert.alert("Fehler", "Datei konnte nicht ausgew\u00e4hlt werden: " + (err.message || "Unbekannter Fehler"));
+        Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden: " + (err.message || "Unbekannter Fehler"));
       }
     }
   };
@@ -894,7 +894,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setSongMp3Url, setSongMp3FileName, setUploading);
                           }}
@@ -1076,7 +1076,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setMeditMp3Url, setMeditMp3FileName, setMeditUploading);
                           }}
@@ -1281,7 +1281,7 @@ export default function AdminScreen() {
               <View style={s.formBox}>
                 <Text style={s.formLabel}>Betreff *</Text>
                 <TextInput style={s.formInput}
-                  placeholder="z.B. Neuer Seelenimpuls f\u00fcr dich \u{1F338}"
+                  placeholder="z.B. Neuer Seelenimpuls für dich \u{1F338}"
                   placeholderTextColor={C.muted}
                   value={nachrichtBetreff}
                   onChangeText={t => { setNachrichtBetreff(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
@@ -1360,8 +1360,8 @@ export default function AdminScreen() {
               <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
                 <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
                 <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
-                  Die Nachricht wird als sch\u00f6ne E-Mail im Seelenplanerin-Design an jedes Mitglied pers\u00f6nlich gesendet.{"\n"}
-                  Jede E-Mail beginnt mit "Hallo [Name]" und enth\u00e4lt deine Nachricht.
+                  Die Nachricht wird als schöne E-Mail im Seelenplanerin-Design an jedes Mitglied persönlich gesendet.{"\n"}
+                  Jede E-Mail beginnt mit "Hallo [Name]" und enthält deine Nachricht.
                 </Text>
               </View>
             </View>
@@ -1486,10 +1486,10 @@ export default function AdminScreen() {
               <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
                 <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 8 }}>✨ Schnellvorlagen</Text>
                 {[
-                  { title: "\u{1F315} Vollmond-Ritual", body: "Heute Abend ist Vollmond \u2013 dein Ritual wartet auf dich. \u00d6ffne die App und lass dich f\u00fchren." },
-                  { title: "\u{1F311} Neumond-Intention", body: "Heute ist Neumond \u2013 die perfekte Zeit, neue Intentionen zu setzen. Was m\u00f6chtest du manifestieren?" },
-                  { title: "\u2728 Neuer Seelenimpuls", body: "Ein neuer Seelenimpuls wartet auf dich. \u00d6ffne die App und lass dich inspirieren." },
-                  { title: "\u{1F9D8}\u200d\u2640\ufe0f Neue Meditation", body: "Eine neue Meditation ist verf\u00fcgbar. Nimm dir einen Moment der Stille." },
+                  { title: "\u{1F315} Vollmond-Ritual", body: "Heute Abend ist Vollmond – dein Ritual wartet auf dich. Öffne die App und lass dich führen." },
+                  { title: "\u{1F311} Neumond-Intention", body: "Heute ist Neumond – die perfekte Zeit, neue Intentionen zu setzen. Was möchtest du manifestieren?" },
+                  { title: "\u2728 Neuer Seelenimpuls", body: "Ein neuer Seelenimpuls wartet auf dich. Öffne die App und lass dich inspirieren." },
+                  { title: "\u{1F9D8}\u200d\u2640\ufe0f Neue Meditation", body: "Eine neue Meditation ist verfügbar. Nimm dir einen Moment der Stille." },
                   { title: "\u{1F338} Community-Update", body: "Es gibt Neuigkeiten in der Seelenplanerin-Community. Schau vorbei!" },
                 ].map((vorlage, i) => (
                   <TouchableOpacity key={i}
@@ -1554,8 +1554,8 @@ export default function AdminScreen() {
               <View style={[s.formBox, { backgroundColor: C.roseLight, borderColor: C.rose + "40", marginTop: 12 }]}>
                 <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 So funktioniert's</Text>
                 <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
-                  Push-Nachrichten erscheinen direkt auf dem Sperrbildschirm deiner Nutzerinnen \u2013 auch wenn die App geschlossen ist.{"\n"}
-                  Jede Nutzerin muss einmalig die Benachrichtigungen erlauben. Die Anzahl registrierter Ger\u00e4te siehst du oben.
+                  Push-Nachrichten erscheinen direkt auf dem Sperrbildschirm deiner Nutzerinnen – auch wenn die App geschlossen ist.{"\n"}
+                  Jede Nutzerin muss einmalig die Benachrichtigungen erlauben. Die Anzahl registrierter Geräte siehst du oben.
                 </Text>
               </View>
             </View>
@@ -2113,7 +2113,7 @@ export default function AdminScreen() {
                           }}
                           activeOpacity={0.7}
                         >
-                          <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Frage l\u00f6schen</Text>
+                          <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Frage löschen</Text>
                         </TouchableOpacity>
                       </View>
                     ))}
@@ -2154,7 +2154,7 @@ export default function AdminScreen() {
                             }}
                             activeOpacity={0.7}
                           >
-                            <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 L\u00f6schen</Text>
+                            <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Löschen</Text>
                           </TouchableOpacity>
                         </View>
                       </View>

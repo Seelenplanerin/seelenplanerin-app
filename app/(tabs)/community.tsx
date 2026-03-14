@@ -189,7 +189,7 @@ const DEFAULT_QA: QAFrage[] = [
     frage: "Welcher Heilstein passt am besten zu mir, wenn ich gerade eine schwierige Phase durchmache?",
     von: "Sarah M.",
     datum: new Date(Date.now() - 172800000).toISOString(),
-    antwort: "Rosenquarz ist dein treuer Begleiter in schweren Zeiten \u2013 er \u00f6ffnet dein Herz f\u00fcr Selbstliebe und Mitgef\u00fchl. Trage ihn nah am Herzen und sp\u00fcre, wie er dich sanft tr\u00e4gt. Amethyst kann zus\u00e4tzlich helfen, innere Ruhe zu finden. \ud83d\udc9c",
+    antwort: "Rosenquarz ist dein treuer Begleiter in schweren Zeiten – er öffnet dein Herz für Selbstliebe und Mitgefühl. Trage ihn nah am Herzen und spüre, wie er dich sanft trägt. Amethyst kann zusätzlich helfen, innere Ruhe zu finden. 💜",
     antwortDatum: new Date(Date.now() - 86400000).toISOString(),
   },
   {
@@ -197,12 +197,12 @@ const DEFAULT_QA: QAFrage[] = [
     frage: "Wie oft sollte ich meine Runen reinigen?",
     von: "Julia K.",
     datum: new Date(Date.now() - 345600000).toISOString(),
-    antwort: "Ich empfehle, deine Runen bei jedem Vollmond zu reinigen \u2013 lege sie ins Mondlicht oder r\u00e4uchere sie mit wei\u00dfem Salbei. Wenn du sie t\u00e4glich nutzt, kannst du sie auch w\u00f6chentlich kurz unter flie\u00dfendes Wasser halten. H\u00f6re auf deine Intuition! \u2728",
+    antwort: "Ich empfehle, deine Runen bei jedem Vollmond zu reinigen – lege sie ins Mondlicht oder räuchere sie mit weißem Salbei. Wenn du sie täglich nutzt, kannst du sie auch wöchentlich kurz unter fließendes Wasser halten. Höre auf deine Intuition! ✨",
     antwortDatum: new Date(Date.now() - 259200000).toISOString(),
   },
   {
     id: "qa-default-3",
-    frage: "Kann ich das Neumond-Ritual auch alleine machen oder brauche ich jemanden daf\u00fcr?",
+    frage: "Kann ich das Neumond-Ritual auch alleine machen oder brauche ich jemanden dafür?",
     von: "Lena B.",
     datum: new Date(Date.now() - 86400000).toISOString(),
   },
@@ -995,7 +995,7 @@ export default function CommunityScreen() {
                 onPress={() => { setShowNewFrage(!showNewFrage); setFrageGesendet(false); }}
                 activeOpacity={0.8}
               >
-                <Text style={s.qaAskBtnText}>{showNewFrage ? "✕ Schlie\u00dfen" : "✨ Frage stellen"}</Text>
+                <Text style={s.qaAskBtnText}>{showNewFrage ? "✕ Schließen" : "✨ Frage stellen"}</Text>
               </TouchableOpacity>
             </View>
 
@@ -1011,7 +1011,7 @@ export default function CommunityScreen() {
                 <Text style={s.qaInputLabel}>Deine Frage an die Seelenplanerin</Text>
                 <TextInput
                   style={[s.qaInput, { height: 80, textAlignVertical: "top" }]}
-                  placeholder="Was m\u00f6chtest du wissen? Stelle deine Frage..."
+                  placeholder="Was möchtest du wissen? Stelle deine Frage..."
                   placeholderTextColor={C.muted}
                   value={newFrage}
                   onChangeText={setNewFrage}

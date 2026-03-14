@@ -482,7 +482,7 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const tokens = await db.getAllActivePushTokens();
         if (tokens.length === 0) {
-          return { success: false, sent: 0, failed: 0, error: "Keine registrierten Ger\u00e4te vorhanden." };
+          return { success: false, sent: 0, failed: 0, error: "Keine registrierten Geräte vorhanden." };
         }
 
         // Nachricht in Historie speichern

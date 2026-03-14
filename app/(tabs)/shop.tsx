@@ -114,24 +114,24 @@ const OTHER_PRODUCTS: Product[] = [
   // === ARMBÄNDER ===
   {
     id: "runen-armband", name: "Themen-Armband", nameEn: "Theme Bracelet",
-    kategorie: "armbänder", preis: 61.90, preisDisplay: "61,90 \u20ac",
-    beschreibung: "Silberkette mit 3 Runen-Pl\u00e4ttchen, handgraviert von der Seelenplanerin, gef\u00fcllt mit echtem Heilstein-Pulver. Deine pers\u00f6nliche Schutzrune nach Geburtsdatum.",
+    kategorie: "armbänder", preis: 61.90, preisDisplay: "61,90 €",
+    beschreibung: "Silberkette mit 3 Runen-Plättchen, handgraviert von der Seelenplanerin, gefüllt mit echtem Heilstein-Pulver. Deine persönliche Schutzrune nach Geburtsdatum.",
     emoji: "\u16b1", highlight: "Handgraviert von der Seelenplanerin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/qnl3vN", badge: "Bestseller",
     imageUrl: "https://img.tentary.com/dsc_4046_1117335234741787370-1769341559.jpg?aspect_ratio=1:1&width=640",
   },
   {
     id: "schutzarmband-mariposa", name: "Schutzarmband Mariposa", nameEn: "Protection Bracelet Mariposa",
-    kategorie: "armbänder", preis: 24.00, preisDisplay: "24,00 \u20ac",
-    beschreibung: "Schwarzer Turmalin \u2013 der st\u00e4rkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
+    kategorie: "armbänder", preis: 24.00, preisDisplay: "24,00 €",
+    beschreibung: "Schwarzer Turmalin – der stärkste Schutzstein. Elastisches Band in deiner Wunschfarbe. Schutz vor negativen Energien.",
     emoji: "\ud83d\udda4", highlight: "Schwarzer Turmalin",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/gGmtFy",
     imageUrl: "https://img.tentary.com/7b541a8d-2593-47d8-b4b4-3bcddfcf5efc_1499324952774879867-1771118349.png?aspect_ratio=1:1&width=640",
   },
   {
     id: "charm-einzeln", name: "Einzelne Runen-Charm", nameEn: "Single Rune Charm",
-    kategorie: "armbänder", preis: 13.90, preisDisplay: "ab 13,90 \u20ac",
-    beschreibung: "Dein pers\u00f6nliches Runen-Charm \u2013 handgefertigt mit Kristallpulver. 1 Schutzrune (11 \u20ac + Versand) oder 2er Themen-Set (22 \u20ac + Versand).",
+    kategorie: "armbänder", preis: 13.90, preisDisplay: "ab 13,90 €",
+    beschreibung: "Dein persönliches Runen-Charm – handgefertigt mit Kristallpulver. 1 Schutzrune (11 € + Versand) oder 2er Themen-Set (22 € + Versand).",
     emoji: "\u16b1", highlight: "Handgefertigt & individuell",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/HWnXez", badge: "Unikat",
     imageUrl: "https://img.tentary.com/design-ohne-titel-9_2975822091557902286-1773332430.png?aspect_ratio=1:1&width=640",
@@ -139,9 +139,9 @@ const OTHER_PRODUCTS: Product[] = [
   // === SESSIONS ===
   {
     id: "aura-reading", name: "Aura Reading", kategorie: "sessions",
-    preis: 77.00, preisDisplay: "77,00 \u20ac",
+    preis: 77.00, preisDisplay: "77,00 €",
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
-    emoji: "\ud83c\udf08", highlight: "Pers\u00f6nlich",
+    emoji: "\ud83c\udf08", highlight: "Persönlich",
     tentaryUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS", badge: "Beliebt",
     imageUrl: "https://img.tentary.com/pyrit-2-kopie-3_431346584235124704-1765803454.png?aspect_ratio=1:1&width=640",
   },

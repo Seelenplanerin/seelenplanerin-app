@@ -791,3 +791,12 @@
 
 ## Aura Reading Preis korrigieren (13.03.2026)
 - [x] Aura Reading Preis überall auf 77 € setzen
+
+## Unicode-Escape-Fehler beheben (14.03.2026)
+- [x] Alle Unicode-Escape-Sequenzen in affiliate.tsx durch richtige Umlaute ersetzt (85 Ersetzungen)
+- [x] admin.tsx: 23 Ersetzungen
+- [x] community.tsx: 19 Ersetzungen
+- [x] shop.tsx (tabs): 14 Ersetzungen
+- [x] shop/index.tsx: 8 Ersetzungen
+- [x] server/email.ts: 35 Ersetzungen
+- [x] server/routers.ts: 1 Ersetzung

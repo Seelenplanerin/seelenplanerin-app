@@ -193,13 +193,13 @@ export async function sendBroadcastEmail(params: {
             <tr>
               <td style="padding:16px;text-align:center;">
                 <p style="margin:0;font-size:14px;color:#8B5E3C;">
-                  \u00d6ffne die <strong>Seelenplanerin-App</strong> f\u00fcr mehr Inhalte \u2728
+                  Öffne die <strong>Seelenplanerin-App</strong> für mehr Inhalte ✨
                 </p>
               </td>
             </tr>
           </table>
           <p style="margin:0;font-size:13px;color:#A08070;text-align:center;font-style:italic;">
-            "Vertraue deinem Weg \u2013 die Sterne begleiten dich." \u{1F319}
+            "Vertraue deinem Weg – die Sterne begleiten dich." \u{1F319}
           </p>`;
 
         await transporter.sendMail({
@@ -233,34 +233,34 @@ export async function sendAffiliateWelcomeEmail(params: {
     const transporter = createTransporter();
 
     const content = `
-      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei \u201eGeben & Nehmen\u201c, ${params.toName}! \ud83e\udd1d</h2>
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">Willkommen bei „Geben & Nehmen“, ${params.toName}! \ud83e\udd1d</h2>
       <p style="margin:0 0 16px;font-size:15px;color:#8B5E3C;line-height:24px;">
-        Wie wundersch\u00f6n, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin \u2013 und verdienst <strong>20% Provision</strong> auf jeden Verkauf über deinen persönlichen Link (nur auf den Produktpreis, nicht auf Versandkosten).
+        Wie wunderschön, dass du dich entschieden hast, Teil unseres Empfehlungsprogramms zu werden! Du bist jetzt offiziell Botschafterin der Seelenplanerin – und verdienst <strong>20% Provision</strong> auf jeden Verkauf über deinen persönlichen Link (nur auf den Produktpreis, nicht auf Versandkosten).
       </p>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF3E7;border-radius:16px;border:1px solid #E8D5B0;margin:0 0 20px;">
         <tr>
           <td style="padding:20px;text-align:center;">
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein pers\u00f6nlicher Empfehlungscode</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;font-weight:600;">Dein persönlicher Empfehlungscode</p>
             <p style="margin:0 0 16px;font-size:28px;color:#C9A96E;font-weight:700;letter-spacing:3px;">${params.affiliateCode}</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#A08070;">Der K\u00e4ufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#A08070;">Der Käufer gibt diesen Code bei der Bestellung auf Tentary im Gutscheinfeld ein.</p>
             <p style="margin:0;font-size:12px;color:#A08070;">Dein Link: <a href=\"${params.affiliateLink}\" style=\"color:#C4826A;\">${params.affiliateLink}</a></p>
           </td>
         </tr>
       </table>
 
-      <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert\u2019s \u2013 in 3 Schritten:</p>
+      <p style="margin:0 0 12px;font-size:15px;color:#5C3317;font-weight:700;">So funktioniert’s – in 3 Schritten:</p>
 
       <ol style="margin:0 0 20px;padding-left:20px;font-size:14px;color:#8B5E3C;line-height:26px;">
-        <li><strong>Teile deinen Code</strong> \u2013 per WhatsApp, Instagram, Facebook oder pers\u00f6nlich</li>
-        <li><strong>Der K\u00e4ufer gibt deinen Code bei der Bestellung ein</strong> \u2013 egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
-        <li><strong>Du erh\u00e4ltst 20% Provision</strong> \u2013 sobald die Zahlung positiv eingegangen ist</li>
+        <li><strong>Teile deinen Code</strong> – per WhatsApp, Instagram, Facebook oder persönlich</li>
+        <li><strong>Der Käufer gibt deinen Code bei der Bestellung ein</strong> – egal ob Armband, Kerze, Aura Reading, Soul Talk oder Seelenimpuls</li>
+        <li><strong>Du erhältst 20% Provision</strong> – sobald die Zahlung positiv eingegangen ist</li>
       </ol>
 
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9EDE8;border-radius:16px;border:1px solid #EDD9D0;margin:0 0 20px;">
         <tr>
           <td style="padding:16px;">
-            <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele \u2013 was du verdienen kannst:</p>
+            <p style="margin:0 0 8px;font-size:14px;color:#5C3317;font-weight:700;">Beispiele – was du verdienen kannst:</p>
             <table width="100%" style="font-size:13px;color:#8B5E3C;">
               <tr><td style="padding:4px 0;">Seelenimpuls (17 €/Monat)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">3,40 €</td></tr>
               <tr><td style="padding:4px 0;">Schutzarmband Mariposa (24 €)</td><td style="text-align:right;font-weight:700;color:#4CAF50;">4,80 €</td></tr>
@@ -275,17 +275,17 @@ export async function sendAffiliateWelcomeEmail(params: {
       </table>
 
       <p style="margin:0 0 12px;font-size:14px;color:#8B5E3C;line-height:22px;">
-        <strong>Wichtig:</strong> Bitte hinterlege deine <strong>PayPal-E-Mail</strong> in der App unter \u201eGeben & Nehmen\u201c \u2192 \u201eDeine Zahlungsdaten\u201c, damit wir dir deine Provision auszahlen k\u00f6nnen. Es gibt <strong>keinen Mindestbetrag</strong> \u2013 jeder Cent wird ausgezahlt!
+        <strong>Wichtig:</strong> Bitte hinterlege deine <strong>PayPal-E-Mail</strong> in der App unter „Geben & Nehmen“ → „Deine Zahlungsdaten“, damit wir dir deine Provision auszahlen können. Es gibt <strong>keinen Mindestbetrag</strong> – jeder Cent wird ausgezahlt!
       </p>
 
       <p style="margin:0;font-size:14px;color:#A08070;font-style:italic;text-align:center;">
-        \u201eTeile, was dir am Herzen liegt \u2013 und die F\u00fclle kommt zu dir zur\u00fcck.\u201c \ud83c\udf19\u2728
+        „Teile, was dir am Herzen liegt – und die Fülle kommt zu dir zurück.“ \ud83c\udf19✨
       </p>`;
 
     await transporter.sendMail({
       from: `"${config.fromName}" <${config.user}>`,
       to: params.toEmail,
-      subject: `\ud83e\udd1d Willkommen bei \u201eGeben & Nehmen\u201c \u2013 Dein Empfehlungslink ist da, ${params.toName}!`,
+      subject: `\ud83e\udd1d Willkommen bei „Geben & Nehmen“ – Dein Empfehlungslink ist da, ${params.toName}!`,
       html: emailTemplate(content),
     });
 
