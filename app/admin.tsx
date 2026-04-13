@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "einstellungen";
+type AdminTab = "mitglieder" | "seelenjournal" | "musik" | "meditationen" | "impulse" | "einstellungen";
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -574,11 +574,12 @@ export default function AdminScreen() {
 
   // ── ADMIN DASHBOARD ──
   const TABS: { key: AdminTab; label: string; emoji: string }[] = [
-    { key: "mitglieder", label: "Mitglieder", emoji: "👥" },
-    { key: "musik", label: "Musik", emoji: "🎵" },
-    { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
-    { key: "impulse", label: "Impulse", emoji: "✨" },
-    { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
+    { key: "mitglieder", label: "Mitglieder", emoji: "\u{1F465}" },
+    { key: "seelenjournal", label: "Journal", emoji: "\u{1F4C4}" },
+    { key: "musik", label: "Musik", emoji: "\u{1F3B5}" },
+    { key: "meditationen", label: "Meditationen", emoji: "\u{1F9D8}" },
+    { key: "impulse", label: "Impulse", emoji: "\u2728" },
+    { key: "einstellungen", label: "Einstellungen", emoji: "\u2699\uFE0F" },
   ];
 
   return (
@@ -681,6 +682,29 @@ export default function AdminScreen() {
                   </TouchableOpacity>
                 </View>
               )}
+            </View>
+          )}
+
+          {/* ═══════ SEELENJOURNAL TAB ═══════ */}
+          {activeTab === "seelenjournal" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>{"\u{1F4C4}"} Seelenjournal Admin</Text>
+              <Text style={s.sectionHint}>
+                Verwalte deine Klientinnen und lade Seelenjournal-Berichte (PDFs) hoch.
+              </Text>
+              <TouchableOpacity
+                style={[s.submitBtn, { backgroundColor: "#8FA98F" }]}
+                onPress={() => router.push("/seelenjournal-admin" as any)}
+                activeOpacity={0.85}
+              >
+                <Text style={s.submitBtnText}>{"\u{1F4C4}"} Seelenjournal öffnen</Text>
+              </TouchableOpacity>
+              <Text style={[s.sectionHint, { marginTop: 12 }]}>
+                Im Seelenjournal kannst du:{"\n"}
+                {"\u2022"} Klientinnen anlegen und verwalten{"\n"}
+                {"\u2022"} PDF-Formulare und Berichte pro Klientin hochladen{"\n"}
+                {"\u2022"} Klientinnen k\u00f6nnen ihre PDFs in der App einsehen
+              </Text>
             </View>
           )}
 

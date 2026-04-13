@@ -25,6 +25,7 @@ const QUICK_LINKS = [
   { id: "meditation", label: "Meditationen", emoji: "\uD83E\uDDD8\u200D\u2640\uFE0F", route: "/meditation" },
   { id: "kerzen-quiz", label: "Kerzen-Quiz", emoji: "\uD83D\uDD6F\uFE0F", route: "/kerzen-quiz" },
   { id: "aura", label: "Aura Reading", emoji: "\uD83C\uDF08", route: "/aura" },
+  { id: "seelenjournal", label: "Mein Seelenjournal", emoji: "\uD83D\uDCC4", route: "/seelenjournal-kundin" },
 ];
 
 interface UserProfile {

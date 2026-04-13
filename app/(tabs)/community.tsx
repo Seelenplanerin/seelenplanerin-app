@@ -440,15 +440,46 @@ export default function CommunityScreen() {
   };
 
   useEffect(() => {
-    AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
+    AsyncStorage.getItem(CURRENT_USER_KEY).then(async (data) => {
       if (data) {
         const user = JSON.parse(data) as CommunityUser;
         setIsLoggedIn(true);
         setUserName(user.name || user.email.split("@")[0]);
         setCurrentUser(user);
-        // Prüfe ob Passwort geändert werden muss
-        if (user.mustChangePassword) {
-          setShowChangePw(true);
+
+        // Re-verify mustChangePassword from DB (in case it was updated server-side)
+        try {
+          const API_URL = getApiBaseUrl();
+          if (API_URL) {
+            const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ json: { email: user.email, password: user.password } }),
+            });
+            const json = await res.json();
+            const result = json?.result?.data?.json || json?.result?.data;
+            if (result?.success && result?.user) {
+              const needsChange = result.user.mustChangePassword === true;
+              if (needsChange !== !!user.mustChangePassword) {
+                const updatedUser = { ...user, mustChangePassword: needsChange };
+                setCurrentUser(updatedUser);
+                await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+              }
+              if (needsChange) setShowChangePw(true);
+            } else if (result?.error === "wrong_password") {
+              // Password was changed server-side (e.g. password reset), force re-login
+              setIsLoggedIn(false);
+              setCurrentUser(null);
+              await AsyncStorage.removeItem(CURRENT_USER_KEY);
+            } else {
+              if (user.mustChangePassword) setShowChangePw(true);
+            }
+          } else {
+            if (user.mustChangePassword) setShowChangePw(true);
+          }
+        } catch {
+          // Offline: use cached value
+          if (user.mustChangePassword) setShowChangePw(true);
         }
       }
       setChecking(false);
@@ -569,32 +600,47 @@ export default function CommunityScreen() {
   const handleChangePassword = async () => {
     if (!newPw.trim()) { setFehler("Bitte gib ein neues Passwort ein."); return; }
     if (newPw.length < 4) { setFehler("Das Passwort muss mindestens 4 Zeichen haben."); return; }
-    if (newPw !== newPwConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
+    if (newPw !== newPwConfirm) { setFehler("Die Passw\u00f6rter stimmen nicht \u00fcberein."); return; }
 
     if (currentUser) {
       // Passwort in DB aktualisieren
+      let dbUpdateOk = false;
       try {
         const API_URL = getApiBaseUrl();
-        await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+        const res = await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ json: { email: currentUser.email, password: newPw, mustChangePassword: 0 } }),
         });
+        if (res.ok) {
+          const json = await res.json();
+          const result = json?.result?.data?.json || json?.result?.data;
+          dbUpdateOk = result?.success === true;
+        }
       } catch (e) {
-        // Fallback: AsyncStorage
-        const users = await getUsers();
-        const idx = users.findIndex(u => u.email === currentUser.email);
-        if (idx >= 0) { users[idx].password = newPw; users[idx].mustChangePassword = false; await saveUsers(users); }
+        console.error("[Community] Passwort-Update fehlgeschlagen:", e);
       }
+
+      if (!dbUpdateOk) {
+        setFehler("Passwort konnte nicht gespeichert werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es erneut.");
+        return;
+      }
+
       const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
       setCurrentUser(updatedUser);
       await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
+      // Auch in AsyncStorage-Fallback aktualisieren
+      try {
+        const users = await getUsers();
+        const idx = users.findIndex(u => u.email === currentUser.email);
+        if (idx >= 0) { users[idx].password = newPw; users[idx].mustChangePassword = false; await saveUsers(users); }
+      } catch {}
     }
     setShowChangePw(false);
     setNewPw("");
     setNewPwConfirm("");
     setFehler("");
-    Alert.alert("Passwort geändert", "Dein neues Passwort wurde gespeichert.");
+    Alert.alert("Passwort ge\u00e4ndert", "Dein neues Passwort wurde gespeichert. Du kannst dich ab jetzt mit deinem neuen Passwort anmelden.");
   };
 
   const handleCreatePost = async () => {

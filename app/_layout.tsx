@@ -103,6 +103,8 @@ export default function RootLayout() {
             <Stack.Screen name="journal/write" options={{ presentation: "card" }} />
             <Stack.Screen name="kerzen-quiz" options={{ presentation: "card" }} />
             <Stack.Screen name="musik" options={{ presentation: "card" }} />
+            <Stack.Screen name="seelenjournal-admin" options={{ presentation: "card" }} />
+            <Stack.Screen name="seelenjournal-kundin" options={{ presentation: "card" }} />
           </Stack>
           <StatusBar style="auto" />
           </FavoritesProvider>

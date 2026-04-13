@@ -160,3 +160,60 @@ export async function deleteCommunityUser(email: string) {
   if (!db) throw new Error("Database not available");
   await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
 }
+
+// ── Seelenjournal: Klientinnen ──
+import { seelenjournalKlientinnen, seelenjournalPdfs, InsertSeelenjournalKlientin, InsertSeelenjournalPdf } from "../drizzle/schema";
+
+export async function getAllSeelenjournalKlientinnen() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(seelenjournalKlientinnen).orderBy(desc(seelenjournalKlientinnen.createdAt));
+}
+
+export async function getSeelenjournalKlientinByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(seelenjournalKlientinnen).where(eq(seelenjournalKlientinnen.email, email.toLowerCase())).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createSeelenjournalKlientin(data: { name: string; email: string; notizen?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(seelenjournalKlientinnen).values({
+    name: data.name,
+    email: data.email.toLowerCase(),
+    notizen: data.notizen || null,
+  });
+  return result[0].insertId;
+}
+
+export async function deleteSeelenjournalKlientin(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Erst alle PDFs der Klientin löschen
+  await db.delete(seelenjournalPdfs).where(eq(seelenjournalPdfs.klientinId, id));
+  // Dann die Klientin selbst
+  await db.delete(seelenjournalKlientinnen).where(eq(seelenjournalKlientinnen.id, id));
+}
+
+// ── Seelenjournal: PDFs ──
+
+export async function getSeelenjournalPdfs(klientinId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(seelenjournalPdfs).where(eq(seelenjournalPdfs.klientinId, klientinId)).orderBy(desc(seelenjournalPdfs.createdAt));
+}
+
+export async function createSeelenjournalPdf(data: { klientinId: number; titel: string; pdfUrl: string; fileName: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(seelenjournalPdfs).values(data);
+  return result[0].insertId;
+}
+
+export async function deleteSeelenjournalPdf(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(seelenjournalPdfs).where(eq(seelenjournalPdfs.id, id));
+}

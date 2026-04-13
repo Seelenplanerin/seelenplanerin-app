@@ -466,3 +466,18 @@
 - [x] Admin-Screen: Mitglieder anlegen/löschen/PW-Reset nutzen jetzt Server-API
 - [x] laramwille@gmail.com in DB angelegt (temporäres PW: lara2026, muss geändert werden)
 - [x] hallo@seelenplanerin.de in DB angelegt (PW: seelenplanerin2026)
+
+## BUG: Passwort-Reset Login funktioniert nicht (13.04.2026)
+- [x] Passwort-Reset: E-Mail kommt an mit neuem Passwort, aber Login damit schlaegt fehl - BEHOBEN
+- [x] Passwort-Aendern-Flow: Fehlerbehandlung verbessert, DB-Update wird jetzt verifiziert
+- [x] Auto-Login: mustChangePassword wird jetzt vom Server re-verifiziert
+- [x] Wenn Passwort serverseitig geaendert wurde, wird Nutzerin zum Re-Login gezwungen
+
+## BUG: Seelenjournal Admin komplett fehlt + PDF-Viewer (13.04.2026)
+- [x] Seelenjournal Admin Screen: Klientinnen anlegen, suchen, verwalten
+- [x] PDF-Upload: Formulare/Berichte als PDF hochladen und Klientin zuordnen
+- [x] PDF-Viewer fuer Kundinnen mit ordentlichem Zurueck-Button
+- [x] Datenbank-Tabellen fuer Klientinnen und PDFs erstellt
+- [x] Server-API fuer Klientinnen-CRUD und PDF-Upload
+- [x] Zugang zum Seelenjournal Admin im Admin-Bereich verlinkt
+- [x] Kundinnen-Ansicht: Mein Seelenjournal auf der Ich-Seite verlinkt

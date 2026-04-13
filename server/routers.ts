@@ -160,6 +160,57 @@ export const appRouter = router({
       }),
   }),
 
+  seelenjournal: router({
+    listKlientinnen: publicProcedure.query(async () => {
+      return db.getAllSeelenjournalKlientinnen();
+    }),
+
+    createKlientin: publicProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        notizen: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const existing = await db.getSeelenjournalKlientinByEmail(input.email);
+        if (existing) return { success: false as const, error: "exists" };
+        const id = await db.createSeelenjournalKlientin(input);
+        return { success: true as const, id };
+      }),
+
+    deleteKlientin: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteSeelenjournalKlientin(input.id);
+        return { success: true };
+      }),
+
+    listPdfs: publicProcedure
+      .input(z.object({ klientinId: z.number() }))
+      .mutation(async ({ input }) => {
+        return db.getSeelenjournalPdfs(input.klientinId);
+      }),
+
+    deletePdf: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteSeelenjournalPdf(input.id);
+        return { success: true };
+      }),
+
+    createPdf: publicProcedure
+      .input(z.object({
+        klientinId: z.number(),
+        titel: z.string().min(1),
+        pdfUrl: z.string().min(1),
+        fileName: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createSeelenjournalPdf(input);
+        return { success: true as const, id };
+      }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

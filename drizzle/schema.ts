@@ -53,3 +53,28 @@ export const communityUsers = mysqlTable("community_users", {
 
 export type CommunityUser = typeof communityUsers.$inferSelect;
 export type InsertCommunityUser = typeof communityUsers.$inferInsert;
+
+// Seelenjournal: Klientinnen-Tabelle
+export const seelenjournalKlientinnen = mysqlTable("seelenjournal_klientinnen", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  notizen: text("notizen"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SeelenjournalKlientin = typeof seelenjournalKlientinnen.$inferSelect;
+export type InsertSeelenjournalKlientin = typeof seelenjournalKlientinnen.$inferInsert;
+
+// Seelenjournal: PDFs pro Klientin
+export const seelenjournalPdfs = mysqlTable("seelenjournal_pdfs", {
+  id: int("id").autoincrement().primaryKey(),
+  klientinId: int("klientinId").notNull(),
+  titel: varchar("titel", { length: 500 }).notNull(),
+  pdfUrl: text("pdfUrl").notNull(),
+  fileName: varchar("fileName", { length: 500 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SeelenjournalPdf = typeof seelenjournalPdfs.$inferSelect;
+export type InsertSeelenjournalPdf = typeof seelenjournalPdfs.$inferInsert;

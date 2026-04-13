@@ -82,6 +82,39 @@ async function startServer() {
     }
   });
 
+  // PDF-Upload-Route für Seelenjournal
+  app.post("/api/upload-pdf", upload.single("file"), async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ success: false, error: "Keine Datei hochgeladen" });
+        return;
+      }
+      const klientinId = parseInt(req.body?.klientinId || "0", 10);
+      const titel = req.body?.titel || file.originalname?.replace(/\.pdf$/i, "") || "Dokument";
+      if (!klientinId) {
+        res.status(400).json({ success: false, error: "klientinId fehlt" });
+        return;
+      }
+      const randomSuffix = Math.random().toString(36).slice(2, 8);
+      const safeName = (file.originalname || "dokument.pdf").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const fileKey = `seelenjournal/${safeName}-${randomSuffix}`;
+      const result = await storagePut(fileKey, file.buffer, file.mimetype || "application/pdf");
+      // In DB speichern
+      const { createSeelenjournalPdf } = await import("../db");
+      const pdfId = await createSeelenjournalPdf({
+        klientinId,
+        titel,
+        pdfUrl: result.url,
+        fileName: file.originalname || safeName,
+      });
+      res.json({ success: true, url: result.url, key: result.key, pdfId });
+    } catch (err: any) {
+      console.error("PDF Upload error:", err);
+      res.status(500).json({ success: false, error: err.message || "Upload fehlgeschlagen" });
+    }
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({
