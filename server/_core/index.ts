@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
+import { fileURLToPath } from "url";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -122,6 +124,17 @@ async function startServer() {
       createContext,
     }),
   );
+
+  // Serve static web files in production
+  if (process.env.NODE_ENV === "production") {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const webDistPath = path.join(__dirname, "..", "web-dist");
+    app.use(express.static(webDistPath));
+    // SPA fallback: serve index.html for all non-API routes
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(webDistPath, "index.html"));
+    });
+  }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
