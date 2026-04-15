@@ -1,21 +1,56 @@
-import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser } from "../drizzle/schema";
+import { eq, desc, sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _dbRetries = 0;
+const MAX_DB_RETRIES = 3;
+
+// Detect if the DATABASE_URL is a Render-internal URL (no SSL needed)
+function getSslConfig(dbUrl: string): any {
+  // Render internal DBs use hostnames like dpg-xxx-a (no SSL needed)
+  // External DBs (TiDB, Supabase, etc.) need SSL
+  if (dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/)) {
+    console.log('[Database] Render-internal DB detected, SSL disabled');
+    return false;
+  }
+  return 'require';
+}
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
+// Includes retry logic for connection issues.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
-    try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
+    const sslConfig = getSslConfig(process.env.DATABASE_URL);
+    for (let attempt = 1; attempt <= MAX_DB_RETRIES; attempt++) {
+      try {
+        const client = postgres(process.env.DATABASE_URL, {
+          ssl: sslConfig,
+          connect_timeout: 30,
+          idle_timeout: 20,
+          max_lifetime: 60 * 5,
+        });
+        _db = drizzle(client);
+        _dbRetries = 0;
+        console.log(`[Database] Connected successfully (attempt ${attempt})`);
+        break;
+      } catch (error: any) {
+        console.warn(`[Database] Connection attempt ${attempt}/${MAX_DB_RETRIES} failed:`, error.message || error);
+        _db = null;
+        if (attempt < MAX_DB_RETRIES) {
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
     }
   }
   return _db;
+}
+
+// Reset DB connection (useful after connection errors)
+export function resetDb() {
+  _db = null;
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -68,7 +103,9 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    // PostgreSQL upsert using onConflictDoUpdate
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -106,8 +143,8 @@ export async function getActiveMeditations() {
 export async function createMeditation(data: InsertMeditation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(meditations).values(data);
-  return result[0].insertId;
+  const result = await db.insert(meditations).values(data).returning({ id: meditations.id });
+  return result[0].id;
 }
 
 export async function deleteMeditation(id: number) {
@@ -145,8 +182,8 @@ export async function createCommunityUser(data: { email: string; password: strin
     password: data.password,
     name: data.name,
     mustChangePassword: data.mustChangePassword || 0,
-  });
-  return result[0].insertId;
+  }).returning({ id: communityUsers.id });
+  return result[0].id;
 }
 
 export async function updateCommunityUser(email: string, data: Partial<{ password: string; name: string; mustChangePassword: number; isActive: number }>) {
@@ -161,59 +198,239 @@ export async function deleteCommunityUser(email: string) {
   await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
 }
 
-// ── Seelenjournal: Klientinnen ──
-import { seelenjournalKlientinnen, seelenjournalPdfs, InsertSeelenjournalKlientin, InsertSeelenjournalPdf } from "../drizzle/schema";
-
-export async function getAllSeelenjournalKlientinnen() {
+export async function updateCommunityUserEmailConsent(email: string, consent: boolean) {
   const db = await getDb();
-  if (!db) return [];
-  return db.select().from(seelenjournalKlientinnen).orderBy(desc(seelenjournalKlientinnen.createdAt));
+  if (!db) throw new Error("Database not available");
+  await db.update(communityUsers).set({
+    emailConsent: consent ? 1 : 0,
+    emailConsentDate: consent ? new Date() : null,
+  }).where(eq(communityUsers.email, email.toLowerCase()));
 }
 
-export async function getSeelenjournalKlientinByEmail(email: string) {
+export async function getCommunityUsersWithEmailConsent() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(communityUsers).where(eq(communityUsers.emailConsent, 1));
+}
+
+// ── Affiliate-System ──
+
+export async function generateAffiliateCode(): Promise<string> {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "SP-";
+  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+export async function getAffiliateByEmail(email: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(seelenjournalKlientinnen).where(eq(seelenjournalKlientinnen.email, email.toLowerCase())).limit(1);
+  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.email, email.toLowerCase())).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function createSeelenjournalKlientin(data: { name: string; email: string; notizen?: string }) {
+export async function getAffiliateByCode(code: string) {
   const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(seelenjournalKlientinnen).values({
-    name: data.name,
-    email: data.email.toLowerCase(),
-    notizen: data.notizen || null,
-  });
-  return result[0].insertId;
+  if (!db) return undefined;
+  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.code, code.toUpperCase())).limit(1);
+  return result.length > 0 ? result[0] : undefined;
 }
 
-export async function deleteSeelenjournalKlientin(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  // Erst alle PDFs der Klientin löschen
-  await db.delete(seelenjournalPdfs).where(eq(seelenjournalPdfs.klientinId, id));
-  // Dann die Klientin selbst
-  await db.delete(seelenjournalKlientinnen).where(eq(seelenjournalKlientinnen.id, id));
-}
-
-// ── Seelenjournal: PDFs ──
-
-export async function getSeelenjournalPdfs(klientinId: number) {
+export async function getAllAffiliates() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(seelenjournalPdfs).where(eq(seelenjournalPdfs.klientinId, klientinId)).orderBy(desc(seelenjournalPdfs.createdAt));
+  return db.select().from(affiliateCodes).orderBy(desc(affiliateCodes.createdAt));
 }
 
-export async function createSeelenjournalPdf(data: { klientinId: number; titel: string; pdfUrl: string; fileName: string }) {
+export async function createAffiliate(data: { email: string; name: string; code: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(seelenjournalPdfs).values(data);
-  return result[0].insertId;
+  const result = await db.insert(affiliateCodes).values({
+    email: data.email.toLowerCase(),
+    name: data.name,
+    code: data.code.toUpperCase(),
+  }).returning({ id: affiliateCodes.id });
+  return result[0].id;
 }
 
-export async function deleteSeelenjournalPdf(id: number) {
+export async function updateAffiliate(code: string, data: Partial<{ isActive: number; paypalEmail: string; iban: string; totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number; password: string }>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.delete(seelenjournalPdfs).where(eq(seelenjournalPdfs.id, id));
+  await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.code, code.toUpperCase()));
+}
+
+export async function recordAffiliateClick(code: string, ipHash?: string, userAgent?: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(affiliateClicks).values({
+    affiliateCode: code.toUpperCase(),
+    ipHash: ipHash || null,
+    userAgent: userAgent || null,
+  });
+  // Update total clicks
+  await db.update(affiliateCodes)
+    .set({ totalClicks: sql`"totalClicks" + 1` })
+    .where(eq(affiliateCodes.code, code.toUpperCase()));
+}
+
+export async function getAffiliateClicks(code: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateClicks).where(eq(affiliateClicks.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateClicks.createdAt));
+}
+
+export async function createAffiliateSale(data: { affiliateCode: string; productName: string; saleAmount: number; commissionAmount: number; customerEmail?: string; customerName?: string; notes?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(affiliateSales).values({
+    affiliateCode: data.affiliateCode.toUpperCase(),
+    productName: data.productName,
+    saleAmount: data.saleAmount,
+    commissionRate: 20,
+    commissionAmount: data.commissionAmount,
+    customerEmail: data.customerEmail || null,
+    customerName: data.customerName || null,
+    notes: data.notes || null,
+  }).returning({ id: affiliateSales.id });
+  // Update affiliate totals
+  await db.update(affiliateCodes)
+    .set({
+      totalSales: sql`"totalSales" + 1`,
+      totalEarnings: sql`"totalEarnings" + ${data.commissionAmount}`,
+    })
+    .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+  return result[0].id;
+}
+
+export async function getAffiliateSales(code: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateSales).where(eq(affiliateSales.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateSales.createdAt));
+}
+
+export async function getAllAffiliateSales() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliateSales).orderBy(desc(affiliateSales.createdAt));
+}
+
+export async function updateAffiliateSaleStatus(id: number, status: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(affiliateSales).set({ status }).where(eq(affiliateSales.id, id));
+}
+
+export async function createAffiliatePayout(data: { affiliateCode: string; amount: number; method: string; reference?: string; notes?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(affiliatePayouts).values({
+    affiliateCode: data.affiliateCode.toUpperCase(),
+    amount: data.amount,
+    method: data.method,
+    reference: data.reference || null,
+    notes: data.notes || null,
+  }).returning({ id: affiliatePayouts.id });
+  // Update totalPaid
+  await db.update(affiliateCodes)
+    .set({ totalPaid: sql`"totalPaid" + ${data.amount}` })
+    .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+  return result[0].id;
+}
+
+export async function getAffiliatePayouts(code: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliatePayouts).where(eq(affiliatePayouts.affiliateCode, code.toUpperCase())).orderBy(desc(affiliatePayouts.createdAt));
+}
+
+export async function getAllAffiliatePayouts() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+}
+
+
+// ── Push-Benachrichtigungen ──
+
+export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Upsert: Token anlegen oder aktualisieren
+  await db.insert(pushTokens).values({
+    token: data.token,
+    platform: data.platform || null,
+    communityEmail: data.communityEmail || null,
+    isActive: 1,
+    updatedAt: new Date(),
+  }).onConflictDoUpdate({
+    target: pushTokens.token,
+    set: {
+      platform: data.platform || null,
+      communityEmail: data.communityEmail || null,
+      isActive: 1,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+export async function getAllActivePushTokens() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
+}
+
+export async function deactivatePushToken(token: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushTokens).set({ isActive: 0 }).where(eq(pushTokens.token, token));
+}
+
+export async function createPushMessage(data: InsertPushMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(pushMessages).values(data).returning({ id: pushMessages.id });
+  return result[0].id;
+}
+
+export async function updatePushMessage(id: number, data: Partial<InsertPushMessage>) {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(pushMessages).set(data).where(eq(pushMessages.id, id));
+}
+
+export async function getPushMessageHistory() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt)).limit(50);
+}
+
+export async function getPushTokenCount() {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select({ count: sql<number>`count(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
+  return Number(result[0]?.count || 0);
+}
+
+// ─── Academy Waitlist ─────────────────────────────────────────────────────────
+export async function addAcademyWaitlist(email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("No database connection");
+  const client = postgres(process.env.DATABASE_URL!, { ssl: getSslConfig(process.env.DATABASE_URL!) });
+  try {
+    await client`INSERT INTO academy_waitlist (email) VALUES (${email.toLowerCase()}) ON CONFLICT (email) DO NOTHING`;
+  } finally {
+    await client.end();
+  }
+  return { success: true };
+}
+export async function getAcademyWaitlist() {
+  const db = await getDb();
+  if (!db) return [];
+  const client = postgres(process.env.DATABASE_URL!, { ssl: getSslConfig(process.env.DATABASE_URL!) });
+  try {
+    const rows = await client`SELECT id, email, "createdAt" FROM academy_waitlist ORDER BY "createdAt" DESC`;
+    return rows;
+  } finally {
+    await client.end();
+  }
 }

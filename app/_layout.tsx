@@ -1,11 +1,13 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
+import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { Platform } from "react-native";
+import { useFonts } from "expo-font";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import {
@@ -19,6 +21,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
 import { FavoritesProvider } from "@/lib/favorites-store";
+import { initNotificationHandler, setupAndroidChannel, registerPushTokenWithServer } from "@/lib/notifications";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -28,6 +31,11 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'DancingScript': require('@/assets/fonts/DancingScript-Regular.ttf'),
+    'DancingScript-Bold': require('@/assets/fonts/DancingScript-Bold.ttf'),
+  });
+
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
   const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
 
@@ -37,6 +45,17 @@ export default function RootLayout() {
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
     initManusRuntime();
+  }, []);
+
+  // Initialize notification handler + Push-Token registrieren
+  useEffect(() => {
+    initNotificationHandler();
+    setupAndroidChannel();
+    // Push-Token beim Server registrieren (nach kurzem Delay für App-Init)
+    const timer = setTimeout(() => {
+      registerPushTokenWithServer().catch(() => {});
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -81,6 +100,16 @@ export default function RootLayout() {
 
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {Platform.OS === "web" && (
+        <Head>
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="Seelenplanerin" />
+          <meta name="theme-color" content="#C9A96E" />
+        </Head>
+      )}
       <trpc.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           <FavoritesProvider>
@@ -100,11 +129,11 @@ export default function RootLayout() {
             <Stack.Screen name="runen/set/[id]" options={{ presentation: "card" }} />
             <Stack.Screen name="runen-screen" options={{ presentation: "card" }} />
             <Stack.Screen name="admin" options={{ presentation: "card" }} />
+            <Stack.Screen name="affiliate" options={{ presentation: "card" }} />
             <Stack.Screen name="journal/write" options={{ presentation: "card" }} />
             <Stack.Screen name="kerzen-quiz" options={{ presentation: "card" }} />
             <Stack.Screen name="musik" options={{ presentation: "card" }} />
-            <Stack.Screen name="seelenjournal-admin" options={{ presentation: "card" }} />
-            <Stack.Screen name="seelenjournal-kundin" options={{ presentation: "card" }} />
+            <Stack.Screen name="benachrichtigungen" options={{ presentation: "card" }} />
           </Stack>
           <StatusBar style="auto" />
           </FavoritesProvider>

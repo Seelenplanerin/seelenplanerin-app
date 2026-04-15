@@ -22,13 +22,6 @@
       "when": 1772118349533,
       "tag": "0002_lazy_iron_monger",
       "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1776076811307,
-      "tag": "0003_little_swarm",
-      "breakpoints": true
     }
   ]
 }

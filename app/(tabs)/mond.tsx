@@ -604,7 +604,7 @@ const st = StyleSheet.create({
     borderWidth: 1, borderColor: C.border,
   },
   heroEmoji: { fontSize: 80, marginBottom: 8 },
-  heroTitle: { color: C.gold, fontSize: 24, fontWeight: "800", marginBottom: 4 },
+  heroTitle: { color: C.gold, fontSize: 28, fontWeight: "800", marginBottom: 4, fontFamily: "DancingScript" },
   heroZodiac: { color: C.white, fontSize: 16, fontWeight: "600", marginBottom: 2 },
   heroElement: { color: C.muted, fontSize: 13, marginBottom: 12 },
 

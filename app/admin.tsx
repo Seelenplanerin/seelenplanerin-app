@@ -19,7 +19,7 @@ const C = {
   muted: "#A08070", border: "#EDD9D0", surface: "#F5EEE8",
 };
 
-const DEFAULT_PIN = "1234";
+const DEFAULT_PIN = "1306";
 const PIN_KEY = "admin_pin";
 const USERS_KEY = "community_users";
 const SONGS_KEY = "lara_songs";
@@ -140,7 +140,35 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "seelenjournal" | "musik" | "meditationen" | "impulse" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "affiliate" | "academy" | "qa" | "einstellungen";
+
+interface QAFrage {
+  id: string;
+  frage: string;
+  von: string;
+  datum: string;
+  antwort?: string;
+  antwortDatum?: string;
+}
+const QA_KEY = "community_qa_fragen";
+async function getQAFragen(): Promise<QAFrage[]> {
+  const data = await AsyncStorage.getItem(QA_KEY);
+  return data ? JSON.parse(data) : [];
+}
+async function saveQAFragen(fragen: QAFrage[]) {
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
+}
+
+interface AffiliateInfo {
+  id: number; code: string; name: string; email: string;
+  totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number;
+  paypalEmail?: string; isActive: number; createdAt: string;
+}
+interface AffiliateSaleInfo {
+  id: number; affiliateCode: string; productName: string;
+  saleAmount: number; commissionAmount: number; status: string;
+  customerEmail?: string; customerName?: string; createdAt: string;
+}
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -207,9 +235,54 @@ export default function AdminScreen() {
   const [impulsAutor, setImpulsAutor] = useState("Die Seelenplanerin");
   const [impulsFehler, setImpulsFehler] = useState("");
 
+  // Affiliate-Verwaltung
+  const [affiliates, setAffiliates] = useState<AffiliateInfo[]>([]);
+  const [affSales, setAffSales] = useState<AffiliateSaleInfo[]>([]);
+  const [affLoading, setAffLoading] = useState(false);
+  // Verkauf eintragen
+  const [saleCode, setSaleCode] = useState("");
+  const [saleProduct, setSaleProduct] = useState("");
+  const [saleAmount, setSaleAmount] = useState("");
+  const [saleCustomer, setSaleCustomer] = useState("");
+  const [saleAdding, setSaleAdding] = useState(false);
+  // Auszahlung
+  const [payoutCode, setPayoutCode] = useState("");
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutMethod, setPayoutMethod] = useState("paypal");
+  const [payoutRef, setPayoutRef] = useState("");
+  const [payoutAdding, setPayoutAdding] = useState(false);
+
+  // Nachrichten (Broadcast)
+  const [nachrichtBetreff, setNachrichtBetreff] = useState("");
+  const [nachrichtText, setNachrichtText] = useState("");
+  const [nachrichtFehler, setNachrichtFehler] = useState("");
+  const [nachrichtSending, setNachrichtSending] = useState(false);
+  const [nachrichtErfolg, setNachrichtErfolg] = useState("");
+
+  // Push-Benachrichtigungen
+  const [pushTitle, setPushTitle] = useState("");
+  const [pushBody, setPushBody] = useState("");
+  const [pushFehler, setPushFehler] = useState("");
+  const [pushSending, setPushSending] = useState(false);
+  const [pushErfolg, setPushErfolg] = useState("");
+  const [pushTokenCount, setPushTokenCount] = useState(0);
+  const [pushHistory, setPushHistory] = useState<Array<{ id: number; title: string; body: string; sentTo: number; sentSuccess: number; sentFailed: number; createdAt: string }>>([]);
+  const [pushHistoryLoading, setPushHistoryLoading] = useState(false);
+
+  // Academy-Warteliste
+  const [academyWaitlist, setAcademyWaitlist] = useState<{ id: number; email: string; createdAt: string }[]>([]);
+  const [academyLoading, setAcademyLoading] = useState(false);
+
+  // Q&A Fragen-Verwaltung
+  const [qaFragen, setQaFragen] = useState<QAFrage[]>([]);
+  const [qaLoading, setQaLoading] = useState(false);
+  const [qaAntwortId, setQaAntwortId] = useState<string | null>(null);
+  const [qaAntwortText, setQaAntwortText] = useState("");
+
   // tRPC mutations
   const sendWelcomeMutation = trpc.email.sendWelcome.useMutation();
   const sendResetMutation = trpc.email.sendPasswordReset.useMutation();
+  const sendBroadcastMutation = trpc.email.sendBroadcast.useMutation();
   const uploadAudioMutation = trpc.storage.uploadAudio.useMutation();
 
   useEffect(() => {
@@ -227,6 +300,7 @@ export default function AdminScreen() {
       getSongs().then(setSongs);
       getMeditationen().then(setMeditationen);
       getImpulse().then(setImpulse);
+      getQAFragen().then(setQaFragen);
     }
   }, [isLoggedIn]);
 
@@ -274,95 +348,116 @@ export default function AdminScreen() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newMemberEmail.trim())) {
       setMemberFehler("Bitte gib eine gültige E-Mail-Adresse ein."); return;
     }
-    const users = await getUsers();
-    if (users.find(u => u.email.toLowerCase() === newMemberEmail.trim().toLowerCase())) {
-      setMemberFehler("Diese E-Mail ist bereits registriert."); return;
-    }
     const tempPw = newMemberPw.trim() || generateTempPassword();
-    const newUser: CommunityUser = {
-      email: newMemberEmail.trim().toLowerCase(), password: tempPw,
-      name: newMemberName.trim(), mustChangePassword: true,
-    };
-    // Nutzer in DB speichern
+    const emailLower = newMemberEmail.trim().toLowerCase();
+    setSendingEmail(true);
+    setMemberFehler("");
     try {
+      // 1. Mitglied in DB speichern
       const API_URL = getApiBaseUrl();
-      await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
+      const createRes = await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: newUser.email, password: newUser.password, name: newUser.name, mustChangePassword: newUser.mustChangePassword ? 1 : 0 } }),
+        body: JSON.stringify({ json: { email: emailLower, password: tempPw, name: newMemberName.trim(), mustChangePassword: 1 } }),
       });
-    } catch (e) {
-      users.push(newUser);
-      await saveUsers(users);
+      const createData = await createRes.json();
+      const createResult = createData?.result?.data?.json;
+      if (createResult?.error === "exists") {
+        setMemberFehler("Diese E-Mail ist bereits registriert.");
+        setSendingEmail(false);
+        return;
+      }
+      if (!createResult?.success) {
+        setMemberFehler("Fehler beim Speichern. Bitte versuche es erneut.");
+        setSendingEmail(false);
+        return;
+      }
+      // 2. Liste neu laden
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+      // 3. Willkommens-E-Mail senden
+      try {
+        const mailResult = await sendWelcomeMutation.mutateAsync({
+          toEmail: emailLower, toName: newMemberName.trim(), tempPassword: tempPw,
+        });
+        Alert.alert(
+          mailResult.success ? "Mitglied angelegt ✨" : "Mitglied angelegt – E-Mail fehlgeschlagen",
+          mailResult.success
+            ? `${newMemberName.trim()} wurde angelegt.\n📧 E-Mail gesendet an ${emailLower}!`
+            : `Angelegt, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}\nBitte manuell senden.`,
+        );
+      } catch {
+        Alert.alert("Mitglied angelegt ✓", `Gespeichert, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`);
+      }
+      setNewMemberName(""); setNewMemberEmail(""); setNewMemberPw(""); setShowAddMember(false);
+    } catch (e: any) {
+      setMemberFehler("Verbindungsfehler. Bitte prüfe deine Internetverbindung.");
+    } finally {
+      setSendingEmail(false);
     }
-    // Liste neu laden
-    const updatedUsers = await getUsers();
-    setMembers(updatedUsers);
-    setMemberFehler("");
-    setSendingEmail(true);
+  };
+
+  const handleDeleteMember = async (email: string, name: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`${name} (${email}) wirklich entfernen?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Entfernen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
     try {
-      const result = await sendWelcomeMutation.mutateAsync({
-        toEmail: newUser.email, toName: newUser.name, tempPassword: tempPw,
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email } }),
       });
-      Alert.alert(
-        result.success ? "Mitglied angelegt ✨" : "Mitglied angelegt – E-Mail fehlgeschlagen",
-        result.success
-          ? `${newUser.name} wurde angelegt.\n📧 E-Mail gesendet an ${newUser.email}!`
-          : `Angelegt, aber E-Mail fehlgeschlagen.\nPasswort: ${tempPw}\nBitte manuell senden.`,
-      );
-    } catch {
-      Alert.alert("Mitglied angelegt", `E-Mail konnte nicht gesendet werden.\nPasswort: ${tempPw}`);
-    } finally { setSendingEmail(false); }
-    setNewMemberName(""); setNewMemberEmail(""); setNewMemberPw(""); setShowAddMember(false);
+      if (!res.ok) throw new Error("Server-Fehler");
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+      if (Platform.OS === "web") { window.alert(`${name} wurde aus der Community entfernt.`); }
+      else { Alert.alert("Entfernt ✓", `${name} wurde aus der Community entfernt.`); }
+    } catch (e) {
+      if (Platform.OS === "web") { window.alert("Mitglied konnte nicht entfernt werden. Bitte versuche es erneut."); }
+      else { Alert.alert("Fehler", "Mitglied konnte nicht entfernt werden. Bitte versuche es erneut."); }
+    }
   };
 
-  const handleDeleteMember = (email: string, name: string) => {
-    Alert.alert("Mitglied entfernen", `${name} (${email}) wirklich entfernen?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Entfernen", style: "destructive", onPress: async () => {
-        try {
-          const API_URL = getApiBaseUrl();
-          await fetch(`${API_URL}/api/trpc/communityUsers.delete`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ json: { email } }),
-          });
-        } catch (e) {
-          const users = (await getUsers()).filter(u => u.email !== email);
-          await saveUsers(users);
-        }
-        const updatedUsers = await getUsers();
-        setMembers(updatedUsers);
-      }},
-    ]);
-  };
-
-  const handleResetMemberPw = (email: string, name: string) => {
+  const handleResetMemberPw = async (email: string, name: string) => {
     const tempPw = generateTempPassword();
-    Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Zurücksetzen & senden", onPress: async () => {
-        try {
-          const API_URL = getApiBaseUrl();
-          await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ json: { email, password: tempPw, mustChangePassword: 1 } }),
-          });
-          const updatedUsers = await getUsers();
-          setMembers(updatedUsers);
-        } catch (e) {
-          const users = await getUsers();
-          const idx = users.findIndex(u => u.email === email);
-          if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
-        }
-        try {
-          const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
-          Alert.alert(result.success ? "Passwort zurückgesetzt ✨" : "Zurückgesetzt – E-Mail fehlgeschlagen",
-            result.success ? `E-Mail an ${email} gesendet.` : `Passwort: ${tempPw}\nBitte manuell senden.`);
-        } catch { Alert.alert("Zurückgesetzt", `E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`); }
-      }},
-    ]);
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`Neues Passwort für ${name} per E-Mail senden?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Passwort zurücksetzen", `Neues Passwort für ${name} per E-Mail senden?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Zurücksetzen & senden", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    try {
+      const API_URL = getApiBaseUrl();
+      await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email, password: tempPw, mustChangePassword: 1 } }),
+      });
+      const updatedUsers = await getUsers();
+      setMembers(updatedUsers);
+    } catch (e) {
+      const users = await getUsers();
+      const idx = users.findIndex(u => u.email === email);
+      if (idx >= 0) { users[idx].password = tempPw; users[idx].mustChangePassword = true; await saveUsers(users); setMembers([...users]); }
+    }
+    try {
+      const result = await sendResetMutation.mutateAsync({ toEmail: email, toName: name, tempPassword: tempPw });
+      const msg = result.success ? `E-Mail an ${email} gesendet.` : `Passwort: ${tempPw}\nBitte manuell senden.`;
+      if (Platform.OS === "web") { window.alert(msg); } else { Alert.alert(result.success ? "Passwort zurückgesetzt \u2728" : "Zurückgesetzt", msg); }
+    } catch {
+      const msg = `E-Mail fehlgeschlagen.\nPasswort: ${tempPw}`;
+      if (Platform.OS === "web") { window.alert(msg); } else { Alert.alert("Zurückgesetzt", msg); }
+    }
   };
 
   // ── Musik ──
@@ -406,7 +501,7 @@ export default function AdminScreen() {
         try {
           result = JSON.parse(responseText);
         } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${responseText.substring(0, 100)}`);
+          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${responseText.substring(0, 100)}`);
           return;
         }
         if (result.success) {
@@ -433,7 +528,7 @@ export default function AdminScreen() {
         try {
           result = JSON.parse(uploadResult.body);
         } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ung\u00fcltige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
+          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
           return;
         }
         if (result.success) {
@@ -461,12 +556,12 @@ export default function AdminScreen() {
       const result = await DocumentPicker.getDocumentAsync({ type: ["audio/*", "video/*", "application/octet-stream"], copyToCacheDirectory: true });
       if (result.canceled || !result.assets?.[0]) return;
       const file = result.assets[0];
-      if (file.size && file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Maximale Dateigr\u00f6\u00dfe: 100 MB"); return; }
+      if (file.size && file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Maximale Dateigröße: 100 MB"); return; }
       await processAndUploadFile(file.uri, file.name, file.mimeType || "audio/mpeg", setUrl, setFileName, setIsUploading);
     } catch (err: any) {
       if (err.message !== "User canceled document picker") {
         console.error("[PickFile] Error:", err);
-        Alert.alert("Fehler", "Datei konnte nicht ausgew\u00e4hlt werden: " + (err.message || "Unbekannter Fehler"));
+        Alert.alert("Fehler", "Datei konnte nicht ausgewählt werden: " + (err.message || "Unbekannter Fehler"));
       }
     }
   };
@@ -506,14 +601,18 @@ export default function AdminScreen() {
     setShowAddSong(true);
   };
 
-  const handleDeleteSong = (id: string, titel: string) => {
-    Alert.alert("Song löschen", `"${titel}" wirklich löschen?`, [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
-        const allSongs = (await getSongs()).filter(s => s.id !== id);
-        await saveSongs(allSongs); setSongs(allSongs);
-      }},
-    ]);
+  const handleDeleteSong = async (id: string, titel: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm(`"${titel}" wirklich löschen?`)
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Song löschen", `"${titel}" wirklich löschen?`, [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    const allSongs = (await getSongs()).filter(s => s.id !== id);
+    await saveSongs(allSongs); setSongs(allSongs);
   };
 
   // ── Tagesimpulse ──
@@ -529,14 +628,18 @@ export default function AdminScreen() {
     Alert.alert("Impuls gespeichert ✓", "Der neue Tagesimpuls ist jetzt aktiv.");
   };
 
-  const handleDeleteImpuls = (id: string) => {
-    Alert.alert("Impuls löschen", "Diesen Impuls wirklich löschen?", [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
-        const all = (await getImpulse()).filter(i => i.id !== id);
-        await saveImpulse(all); setImpulse(all);
-      }},
-    ]);
+  const handleDeleteImpuls = async (id: string) => {
+    const confirmed = Platform.OS === "web"
+      ? window.confirm("Diesen Impuls wirklich löschen?")
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert("Impuls löschen", "Diesen Impuls wirklich löschen?", [
+            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+          ]);
+        });
+    if (!confirmed) return;
+    const all = (await getImpulse()).filter(i => i.id !== id);
+    await saveImpulse(all); setImpulse(all);
   };
 
   const handleSetActiveImpuls = async (impuls: Tagesimpuls) => {
@@ -574,12 +677,16 @@ export default function AdminScreen() {
 
   // ── ADMIN DASHBOARD ──
   const TABS: { key: AdminTab; label: string; emoji: string }[] = [
-    { key: "mitglieder", label: "Mitglieder", emoji: "\u{1F465}" },
-    { key: "seelenjournal", label: "Journal", emoji: "\u{1F4C4}" },
-    { key: "musik", label: "Musik", emoji: "\u{1F3B5}" },
-    { key: "meditationen", label: "Meditationen", emoji: "\u{1F9D8}" },
-    { key: "impulse", label: "Impulse", emoji: "\u2728" },
-    { key: "einstellungen", label: "Einstellungen", emoji: "\u2699\uFE0F" },
+    { key: "mitglieder", label: "Mitglieder", emoji: "👥" },
+    { key: "musik", label: "Musik", emoji: "🎵" },
+    { key: "meditationen", label: "Meditationen", emoji: "🧘‍♀️" },
+    { key: "impulse", label: "Impulse", emoji: "✨" },
+    { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
+    { key: "push", label: "Push", emoji: "📲" },
+    { key: "affiliate", label: "Affiliate", emoji: "🤝" },
+    { key: "academy", label: "Academy", emoji: "🎓" },
+    { key: "qa", label: "Q&A", emoji: "🌙" },
+    { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
   return (
@@ -636,8 +743,13 @@ export default function AdminScreen() {
                       <TouchableOpacity onPress={() => handleResetMemberPw(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
                         <Text style={{ fontSize: 12, color: C.gold }}>🔑</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity onPress={() => handleDeleteMember(m.email, m.name)} style={s.memberAction} activeOpacity={0.7}>
-                        <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteMember(m.email, m.name)}
+                        style={s.memberDeleteBtn}
+                        activeOpacity={0.6}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text style={{ fontSize: 16, color: "#C87C82", fontWeight: "700" }}>✕</Text>
                       </TouchableOpacity>
                     </View>
                   ))}
@@ -685,29 +797,6 @@ export default function AdminScreen() {
             </View>
           )}
 
-          {/* ═══════ SEELENJOURNAL TAB ═══════ */}
-          {activeTab === "seelenjournal" && (
-            <View style={s.section}>
-              <Text style={s.sectionTitle}>{"\u{1F4C4}"} Seelenjournal Admin</Text>
-              <Text style={s.sectionHint}>
-                Verwalte deine Klientinnen und lade Seelenjournal-Berichte (PDFs) hoch.
-              </Text>
-              <TouchableOpacity
-                style={[s.submitBtn, { backgroundColor: "#8FA98F" }]}
-                onPress={() => router.push("/seelenjournal-admin" as any)}
-                activeOpacity={0.85}
-              >
-                <Text style={s.submitBtnText}>{"\u{1F4C4}"} Seelenjournal öffnen</Text>
-              </TouchableOpacity>
-              <Text style={[s.sectionHint, { marginTop: 12 }]}>
-                Im Seelenjournal kannst du:{"\n"}
-                {"\u2022"} Klientinnen anlegen und verwalten{"\n"}
-                {"\u2022"} PDF-Formulare und Berichte pro Klientin hochladen{"\n"}
-                {"\u2022"} Klientinnen k\u00f6nnen ihre PDFs in der App einsehen
-              </Text>
-            </View>
-          )}
-
           {/* ═══════ MUSIK TAB ═══════ */}
           {activeTab === "musik" && (
             <View style={s.section}>
@@ -727,9 +816,9 @@ export default function AdminScreen() {
                     <Text style={s.memberEmail}>{song.beschreibung || song.kategorie}</Text>
                     <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
                       {song.mp3Url && <Text style={{ fontSize: 10, color: C.rose }}>● MP3</Text>}
-                      {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#1DB954" }}>● Spotify</Text>}
-                      {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#FC3C44" }}>● Apple</Text>}
-                      {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#FF0000" }}>● YouTube</Text>}
+                      {song.spotifyUrl && <Text style={{ fontSize: 10, color: "#7BA876" }}>● Spotify</Text>}
+                      {song.appleMusicUrl && <Text style={{ fontSize: 10, color: "#C4826A" }}>● Apple</Text>}
+                      {song.youtubeUrl && <Text style={{ fontSize: 10, color: "#C4826A" }}>● YouTube</Text>}
                     </View>
                   </View>
                   <TouchableOpacity onPress={() => handleEditSong(song)} style={s.memberAction} activeOpacity={0.7}>
@@ -805,7 +894,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setSongMp3Url, setSongMp3FileName, setUploading);
                           }}
@@ -909,26 +998,29 @@ export default function AdminScreen() {
                   }} style={s.memberAction} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, color: C.gold }}>✏️</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
-                    Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
-                      { text: "Abbrechen", style: "cancel" },
-                      { text: "Löschen", style: "destructive", onPress: async () => {
-                        // Aus Datenbank löschen
-                        try {
-                          const API_URL = `${getApiBaseUrl()}/api/trpc`;
-                          const numId = parseInt(m.id);
-                          if (!isNaN(numId)) {
-                            await fetch(`${API_URL}/meditations.delete`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ json: { id: numId } }),
-                            });
-                          }
-                        } catch (e) { console.error("[Admin] DB-Löschen fehlgeschlagen:", e); }
-                        const all = (await getMeditationen()).filter(x => x.id !== m.id);
-                        await saveMeditationen(all); setMeditationen(all);
-                      }},
-                    ]);
+                  <TouchableOpacity onPress={async () => {
+                    const confirmed = Platform.OS === "web"
+                      ? window.confirm(`"${m.titel}" wirklich löschen?`)
+                      : await new Promise<boolean>((resolve) => {
+                          Alert.alert("Meditation löschen", `"${m.titel}" wirklich löschen?`, [
+                            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+                            { text: "Löschen", style: "destructive", onPress: () => resolve(true) },
+                          ]);
+                        });
+                    if (!confirmed) return;
+                    try {
+                      const API_URL = `${getApiBaseUrl()}/api/trpc`;
+                      const numId = parseInt(m.id);
+                      if (!isNaN(numId)) {
+                        await fetch(`${API_URL}/meditations.delete`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ json: { id: numId } }),
+                        });
+                      }
+                    } catch (e) { console.error("[Admin] DB-Löschen fehlgeschlagen:", e); }
+                    const all = (await getMeditationen()).filter(x => x.id !== m.id);
+                    await saveMeditationen(all); setMeditationen(all);
                   }} style={s.memberAction} activeOpacity={0.7}>
                     <Text style={{ fontSize: 12, color: "#C87C82" }}>✕</Text>
                   </TouchableOpacity>
@@ -984,7 +1076,7 @@ export default function AdminScreen() {
                           onChange={(e: any) => {
                             const file = e.target?.files?.[0];
                             if (!file) return;
-                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu gro\u00df", "Max. 200 MB"); return; }
+                            if (file.size > 200 * 1024 * 1024) { Alert.alert("Datei zu groß", "Max. 200 MB"); return; }
                             const uri = URL.createObjectURL(file);
                             processAndUploadFile(uri, file.name, file.type || "audio/mpeg", setMeditMp3Url, setMeditMp3FileName, setMeditUploading);
                           }}
@@ -1033,45 +1125,42 @@ export default function AdminScreen() {
                   <TouchableOpacity style={s.submitBtn} onPress={async () => {
                     if (!meditTitel.trim()) { setMeditFehler("Bitte gib einen Titel ein."); return; }
                     if (!meditMp3Url) { setMeditFehler("Bitte lade eine MP3-Datei hoch."); return; }
-                    const all = await getMeditationen();
-                    const meditData: Song = {
-                      id: editMeditId || generateId(),
-                      titel: meditTitel.trim(), beschreibung: meditBeschreibung.trim(),
-                      mp3Url: meditMp3Url, mp3FileName: meditMp3FileName,
-                      emoji: meditEmoji, kategorie: "meditation", verfuegbar: meditVerfuegbar,
-                    };
-                    if (editMeditId) {
-                      const idx = all.findIndex(m => m.id === editMeditId);
-                      if (idx >= 0) all[idx] = meditData;
-                    } else {
-                      all.push(meditData);
-                    }
-                    // In Datenbank speichern (sichtbar auf ALLEN Geräten)
+                    setMeditUploading(true);
                     try {
                       const API_URL = `${getApiBaseUrl()}/api/trpc`;
                       if (editMeditId) {
+                        // Update in DB
                         const numId = parseInt(editMeditId);
                         if (!isNaN(numId)) {
-                          await fetch(`${API_URL}/meditations.update`, {
+                          const res = await fetch(`${API_URL}/meditations.update`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ json: { id: numId, title: meditData.titel, description: meditData.beschreibung, emoji: meditData.emoji, isActive: meditData.verfuegbar ? 1 : 0 } }),
+                            body: JSON.stringify({ json: { id: numId, title: meditTitel.trim(), description: meditBeschreibung.trim(), emoji: meditEmoji, isActive: meditVerfuegbar ? 1 : 0 } }),
                           });
+                          if (!res.ok) throw new Error("Update fehlgeschlagen");
                         }
                       } else {
-                        await fetch(`${API_URL}/meditations.create`, {
+                        // Neu in DB erstellen
+                        const res = await fetch(`${API_URL}/meditations.create`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ json: { title: meditData.titel, description: meditData.beschreibung || "", emoji: meditData.emoji, audioUrl: meditData.mp3Url || "", isPremium: 1 } }),
+                          body: JSON.stringify({ json: { title: meditTitel.trim(), description: meditBeschreibung.trim() || "", emoji: meditEmoji, audioUrl: meditMp3Url, isPremium: 1 } }),
                         });
+                        if (!res.ok) throw new Error("Erstellen fehlgeschlagen");
+                        const resData = await res.json();
+                        if (!resData?.result?.data?.json?.success) throw new Error("Erstellen fehlgeschlagen");
                       }
-                    } catch (e) {
-                      console.error("[Admin] DB-Speichern fehlgeschlagen:", e);
+                      // Liste neu laden
+                      const updated = await getMeditationen();
+                      setMeditationen(updated);
+                      setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
+                      setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
+                      Alert.alert("Gespeichert ✓", editMeditId ? "Meditation wurde aktualisiert." : "Neue Meditation wurde hinzugefügt.");
+                    } catch (e: any) {
+                      setMeditFehler("Fehler beim Speichern: " + (e?.message || "Bitte versuche es erneut."));
+                    } finally {
+                      setMeditUploading(false);
                     }
-                    await saveMeditationen(all); setMeditationen(all);
-                    setShowAddMedit(false); setEditMeditId(null); setMeditTitel(""); setMeditBeschreibung("");
-                    setMeditEmoji("🧘‍♀️"); setMeditVerfuegbar(true); setMeditMp3Url(""); setMeditMp3FileName(""); setMeditFehler("");
-                    Alert.alert("Gespeichert ✓", editMeditId ? "Meditation wurde aktualisiert." : "Neue Meditation wurde hinzugefügt.");
                   }} activeOpacity={0.85}>
                     <Text style={s.submitBtnText}>{editMeditId ? "✓ Meditation aktualisieren" : "🧘‍♀️ Meditation hinzufügen"}</Text>
                   </TouchableOpacity>
@@ -1178,6 +1267,912 @@ export default function AdminScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+          )}
+
+          {/* ═══════ NACHRICHTEN TAB ═══════ */}
+          {activeTab === "nachrichten" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>📬 Nachricht an alle Mitglieder</Text>
+              <Text style={s.sectionHint}>
+                Sende eine E-Mail-Nachricht an alle Community-Mitglieder gleichzeitig.
+                {members.length > 0 ? ` Aktuell ${members.length} Mitglied${members.length !== 1 ? "er" : ""}.` : ""}
+              </Text>
+
+              <View style={s.formBox}>
+                <Text style={s.formLabel}>Betreff *</Text>
+                <TextInput style={s.formInput}
+                  placeholder="z.B. Neuer Seelenimpuls für dich \u{1F338}"
+                  placeholderTextColor={C.muted}
+                  value={nachrichtBetreff}
+                  onChangeText={t => { setNachrichtBetreff(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
+                  returnKeyType="next" />
+
+                <Text style={s.formLabel}>Nachricht *</Text>
+                <TextInput style={[s.formInput, { height: 140, textAlignVertical: "top" }]}
+                  placeholder="Deine Nachricht an die Community..."
+                  placeholderTextColor={C.muted}
+                  value={nachrichtText}
+                  onChangeText={t => { setNachrichtText(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
+                  multiline />
+
+                {nachrichtFehler !== "" && <Text style={s.formError}>{nachrichtFehler}</Text>}
+                {nachrichtErfolg !== "" && (
+                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 10, padding: 12, marginBottom: 8 }}>
+                    <Text style={{ fontSize: 13, color: "#2E7D32", fontWeight: "600" }}>{nachrichtErfolg}</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[s.submitBtn, nachrichtSending && { opacity: 0.6 }]}
+                  onPress={async () => {
+                    if (!nachrichtBetreff.trim()) { setNachrichtFehler("Bitte gib einen Betreff ein."); return; }
+                    if (!nachrichtText.trim()) { setNachrichtFehler("Bitte gib eine Nachricht ein."); return; }
+                    if (members.length === 0) { setNachrichtFehler("Keine Mitglieder vorhanden."); return; }
+
+                    // Web-kompatible Bestätigung
+                    const confirmed = Platform.OS === "web"
+                      ? window.confirm(`E-Mail an ${members.length} Mitglied${members.length !== 1 ? "er" : ""} senden?\n\nBetreff: ${nachrichtBetreff}`)
+                      : await new Promise<boolean>((resolve) => {
+                          Alert.alert(
+                            "Nachricht senden?",
+                            `E-Mail an ${members.length} Mitglied${members.length !== 1 ? "er" : ""} senden?\n\nBetreff: ${nachrichtBetreff}`,
+                            [
+                              { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+                              { text: "Senden", style: "default", onPress: () => resolve(true) },
+                            ]
+                          );
+                        });
+                    if (!confirmed) return;
+
+                    setNachrichtSending(true);
+                    setNachrichtFehler("");
+                    setNachrichtErfolg("");
+                    try {
+                      const result = await sendBroadcastMutation.mutateAsync({
+                        subject: nachrichtBetreff.trim(),
+                        message: nachrichtText.trim(),
+                      });
+                      if (result.sent > 0) {
+                        setNachrichtErfolg(`✅ ${result.sent} E-Mail${result.sent !== 1 ? "s" : ""} erfolgreich gesendet!${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
+                        setNachrichtBetreff("");
+                        setNachrichtText("");
+                      } else {
+                        setNachrichtFehler("Keine E-Mails konnten gesendet werden. " + (result.errors?.[0] || ""));
+                      }
+                    } catch (e: any) {
+                      setNachrichtFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
+                    } finally {
+                      setNachrichtSending(false);
+                    }
+                  }}
+                  activeOpacity={0.85}
+                  disabled={nachrichtSending}>
+                  {nachrichtSending ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={s.submitBtnText}>Wird gesendet...</Text>
+                    </View>
+                  ) : (
+                    <Text style={s.submitBtnText}>📨 An alle {members.length} Mitglieder senden</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 Tipp</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Die Nachricht wird als schöne E-Mail im Seelenplanerin-Design an jedes Mitglied persönlich gesendet.{"\n"}
+                  Jede E-Mail beginnt mit "Hallo [Name]" und enthält deine Nachricht.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ PUSH TAB ═══════ */}
+          {activeTab === "push" && (
+            <View style={s.section}>
+              <Text style={s.sectionTitle}>📲 Push-Benachrichtigung senden</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <View style={{ backgroundColor: pushTokenCount > 0 ? "#E8F5E9" : "#FFF3E0", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: pushTokenCount > 0 ? "#C8E6C9" : "#FFE0B2" }}>
+                  <Text style={{ fontSize: 13, fontWeight: "700", color: pushTokenCount > 0 ? "#2E7D32" : "#E65100" }}>
+                    {pushTokenCount > 0 ? `✅ ${pushTokenCount} Gerät${pushTokenCount !== 1 ? "e" : ""} registriert` : "⏳ Lade Geräte..."}
+                  </Text>
+                </View>
+              </View>
+              <Text style={s.sectionHint}>
+                Sende eine Push-Nachricht direkt auf die Handys deiner Nutzerinnen.
+              </Text>
+
+              {/* Token-Count laden */}
+              <TouchableOpacity
+                style={[s.actionBtn, { borderColor: C.gold, marginBottom: 12 }]}
+                onPress={async () => {
+                  try {
+                    const API_URL = getApiBaseUrl();
+                    const res = await fetch(`${API_URL}/api/trpc/push.tokenCount`);
+                    const data = await res.json();
+                    const count = data?.result?.data?.json ?? data?.result?.data ?? 0;
+                    setPushTokenCount(Number(count));
+                  } catch (e) {
+                    setPushTokenCount(0);
+                  }
+                }}
+                activeOpacity={0.8}>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>🔄 Geräte-Anzahl aktualisieren</Text>
+              </TouchableOpacity>
+
+              <View style={s.formBox}>
+                <Text style={s.formLabel}>Titel *</Text>
+                <TextInput style={s.formInput}
+                  placeholder="z.B. Vollmond-Ritual heute Abend \u{1F315}"
+                  placeholderTextColor={C.muted}
+                  value={pushTitle}
+                  onChangeText={t => { setPushTitle(t); setPushFehler(""); setPushErfolg(""); }}
+                  returnKeyType="next" />
+
+                <Text style={s.formLabel}>Nachricht *</Text>
+                <TextInput style={[s.formInput, { height: 100, textAlignVertical: "top" }]}
+                  placeholder="Deine Push-Nachricht..."
+                  placeholderTextColor={C.muted}
+                  value={pushBody}
+                  onChangeText={t => { setPushBody(t); setPushFehler(""); setPushErfolg(""); }}
+                  multiline />
+
+                {pushFehler !== "" && <Text style={s.formError}>{pushFehler}</Text>}
+                {pushErfolg !== "" && (
+                  <View style={{ backgroundColor: "#E8F5E9", borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#C8E6C9" }}>
+                    <Text style={{ fontSize: 22, textAlign: "center", marginBottom: 6 }}>✅</Text>
+                    <Text style={{ fontSize: 15, color: "#2E7D32", fontWeight: "700", textAlign: "center", lineHeight: 22 }}>{pushErfolg}</Text>
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[s.submitBtn, pushSending && { opacity: 0.6 }]}
+                  onPress={async () => {
+                    if (!pushTitle.trim()) { setPushFehler("Bitte gib einen Titel ein."); return; }
+                    if (!pushBody.trim()) { setPushFehler("Bitte gib eine Nachricht ein."); return; }
+
+                    // Web-kompatible Bestätigung
+                    const confirmed = Platform.OS === "web"
+                      ? window.confirm(`Push-Nachricht an alle registrierten Geräte senden?\n\nTitel: ${pushTitle}`)
+                      : await new Promise<boolean>((resolve) => {
+                          Alert.alert("Push senden?", `Push-Nachricht an alle registrierten Geräte senden?\n\nTitel: ${pushTitle}`, [
+                            { text: "Abbrechen", style: "cancel", onPress: () => resolve(false) },
+                            { text: "Senden", style: "default", onPress: () => resolve(true) },
+                          ]);
+                        });
+                    if (!confirmed) return;
+
+                    setPushSending(true);
+                    setPushFehler("");
+                    setPushErfolg("");
+                    try {
+                      const API_URL = getApiBaseUrl();
+                      const res = await fetch(`${API_URL}/api/trpc/push.sendToAll`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: { title: pushTitle.trim(), body: pushBody.trim() } }),
+                      });
+                      const data = await res.json();
+                      const result = data?.result?.data?.json;
+                      if (result?.success && result?.sent > 0) {
+                        setPushErfolg(`Erfolgreich gesendet! ${result.sent} Gerät${result.sent !== 1 ? "e" : ""} haben die Nachricht erhalten.${result.failed > 0 ? ` (${result.failed} fehlgeschlagen)` : ""}`);
+                        setPushTitle("");
+                        setPushBody("");
+                      } else if (result?.error) {
+                        setPushFehler(result.error);
+                      } else {
+                        setPushFehler("Keine Push-Nachrichten konnten gesendet werden. Sind Geräte registriert?");
+                      }
+                    } catch (e: any) {
+                      setPushFehler("Fehler: " + (e?.message || "Bitte versuche es erneut."));
+                    } finally {
+                      setPushSending(false);
+                    }
+                  }}
+                  activeOpacity={0.85}
+                  disabled={pushSending}>
+                  {pushSending ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={s.submitBtnText}>Wird gesendet...</Text>
+                    </View>
+                  ) : (
+                    <Text style={s.submitBtnText}>📲 Push an alle senden</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Vorlagen */}
+              <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: "#E8D5B0", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 8 }}>✨ Schnellvorlagen</Text>
+                {[
+                  { title: "\u{1F315} Vollmond-Ritual", body: "Heute Abend ist Vollmond – dein Ritual wartet auf dich. Öffne die App und lass dich führen." },
+                  { title: "\u{1F311} Neumond-Intention", body: "Heute ist Neumond – die perfekte Zeit, neue Intentionen zu setzen. Was möchtest du manifestieren?" },
+                  { title: "\u2728 Neuer Seelenimpuls", body: "Ein neuer Seelenimpuls wartet auf dich. Öffne die App und lass dich inspirieren." },
+                  { title: "\u{1F9D8}\u200d\u2640\ufe0f Neue Meditation", body: "Eine neue Meditation ist verfügbar. Nimm dir einen Moment der Stille." },
+                  { title: "\u{1F338} Community-Update", body: "Es gibt Neuigkeiten in der Seelenplanerin-Community. Schau vorbei!" },
+                ].map((vorlage, i) => (
+                  <TouchableOpacity key={i}
+                    style={{ paddingVertical: 8, paddingHorizontal: 10, backgroundColor: C.card, borderRadius: 8, marginBottom: 6, borderWidth: 1, borderColor: C.border }}
+                    onPress={() => { setPushTitle(vorlage.title); setPushBody(vorlage.body); setPushFehler(""); setPushErfolg(""); }}
+                    activeOpacity={0.7}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>{vorlage.title}</Text>
+                    <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }} numberOfLines={1}>{vorlage.body}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Historie */}
+              <View style={{ marginTop: 16 }}>
+                <TouchableOpacity
+                  style={[s.actionBtn, { borderColor: C.rose }]}
+                  onPress={async () => {
+                    setPushHistoryLoading(true);
+                    try {
+                      const API_URL = getApiBaseUrl();
+                      const res = await fetch(`${API_URL}/api/trpc/push.history`);
+                      const data = await res.json();
+                      const history = data?.result?.data?.json ?? data?.result?.data ?? [];
+                      setPushHistory(Array.isArray(history) ? history : []);
+                    } catch (e) {
+                      setPushHistory([]);
+                    } finally {
+                      setPushHistoryLoading(false);
+                    }
+                  }}
+                  activeOpacity={0.8}>
+                  <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>📜 Gesendete Nachrichten laden</Text>
+                </TouchableOpacity>
+
+                {pushHistoryLoading && <ActivityIndicator style={{ marginTop: 12 }} color={C.rose} />}
+
+                {pushHistory.length > 0 && (
+                  <View style={{ marginTop: 12 }}>
+                    {pushHistory.map((msg) => (
+                      <View key={msg.id} style={{ backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: msg.sentSuccess > 0 ? "#C8E6C9" : C.border, borderLeftWidth: 4, borderLeftColor: msg.sentSuccess > 0 ? "#4CAF50" : "#E53935" }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                          <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown, flex: 1 }}>{msg.title}</Text>
+                          <View style={{ backgroundColor: msg.sentSuccess > 0 ? "#E8F5E9" : "#FFEBEE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                            <Text style={{ fontSize: 11, fontWeight: "700", color: msg.sentSuccess > 0 ? "#2E7D32" : "#C62828" }}>
+                              {msg.sentSuccess > 0 ? `✅ Zugestellt` : `❌ Fehler`}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={{ fontSize: 13, color: C.brownMid, marginTop: 6, lineHeight: 19 }}>{msg.body}</Text>
+                        <View style={{ flexDirection: "row", gap: 12, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: C.border }}>
+                          <Text style={{ fontSize: 12, color: "#2E7D32", fontWeight: "600" }}>📨 {msg.sentSuccess} empfangen</Text>
+                          {msg.sentFailed > 0 && <Text style={{ fontSize: 12, color: "#E53935", fontWeight: "600" }}>❌ {msg.sentFailed} fehlgeschlagen</Text>}
+                          <Text style={{ fontSize: 11, color: C.muted, marginLeft: "auto" }}>{new Date(msg.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Tipp */}
+              <View style={[s.formBox, { backgroundColor: C.roseLight, borderColor: C.rose + "40", marginTop: 12 }]}>
+                <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 4 }}>💡 So funktioniert's</Text>
+                <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18 }}>
+                  Push-Nachrichten erscheinen direkt auf dem Sperrbildschirm deiner Nutzerinnen – auch wenn die App geschlossen ist.{"\n"}
+                  Jede Nutzerin muss einmalig die Benachrichtigungen erlauben. Die Anzahl registrierter Geräte siehst du oben.
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ═══════ AFFILIATE TAB ═══════ */}
+          {activeTab === "affiliate" && (
+            <>
+              {/* Affiliates Übersicht */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🤝 Affiliate-Übersicht</Text>
+                <Text style={s.sectionHint}>Alle Affiliates und deren Statistiken auf einen Blick. Volle Transparenz: Wer hat was empfohlen und wie viel Provision fällt an.</Text>
+                <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
+                  setAffLoading(true);
+                  try {
+                    const API = getApiBaseUrl();
+                    const res = await fetch(`${API}/api/trpc/affiliate.list`);
+                    const d = await res.json();
+                    if (d?.result?.data?.json) setAffiliates(d.result.data.json);
+                    const res2 = await fetch(`${API}/api/trpc/affiliate.listAllSales`);
+                    const d2 = await res2.json();
+                    if (d2?.result?.data?.json) setAffSales(d2.result.data.json);
+                  } catch (e) { console.error(e); }
+                  setAffLoading(false);
+                }} activeOpacity={0.85}>
+                  <Text style={{ fontSize: 18, marginRight: 10 }}>🔄</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                    {affLoading ? "Lade..." : "Daten laden"}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Gesamt-Statistik */}
+                {affiliates.length > 0 && (
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: "#E8D5B0" }}>
+                    <Text style={{ fontSize: 13, fontWeight: "700", color: C.brown, marginBottom: 6 }}>📊 Gesamt-Statistik</Text>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.length}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Affiliates</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.reduce((s, a) => s + a.totalClicks, 0)}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Klicks</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: C.brown }}>{affiliates.reduce((s, a) => s + a.totalSales, 0)}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verkäufe</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: "#4CAF50" }}>{(affiliates.reduce((s, a) => s + a.totalEarnings, 0) / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Provision</Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, fontWeight: "700", color: "#E65100" }}>{((affiliates.reduce((s, a) => s + a.totalEarnings, 0) - affiliates.reduce((s, a) => s + a.totalPaid, 0)) / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Offen</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                    {affiliates.length > 0 && affiliates.map(a => {
+                      // Prüfe ob Anmeldung in den letzten 7 Tagen war
+                      const isNew = a.createdAt && (Date.now() - new Date(a.createdAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+                      return (
+                  <View key={a.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch", opacity: a.isActive ? 1 : 0.5 }]}>
+                    {/* NEU-Badge für frische Anmeldungen */}
+                    {isNew && (
+                      <View style={{ backgroundColor: "#FFF3E0", borderRadius: 10, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: "#FFE0B2", flexDirection: "row", alignItems: "center" }}>
+                        <Text style={{ fontSize: 16, marginRight: 8 }}>{"\u26a0\ufe0f"}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: "#E65100" }}>Neue Anmeldung!</Text>
+                          <Text style={{ fontSize: 11, color: "#8B5E3C", lineHeight: 16 }}>Code <Text style={{ fontWeight: "700", color: C.gold }}>{a.code}</Text> bitte bei Tentary als Gutscheincode anlegen.</Text>
+                        </View>
+                      </View>
+                    )}
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 6 }}>
+                      <View style={[s.memberAvatar, { backgroundColor: a.isActive ? C.gold : C.muted }]}>
+                        <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{a.name.charAt(0)}</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.memberName}>{a.name}{isNew ? " \ud83c\udd95" : ""}</Text>
+                        <Text style={s.memberEmail}>{a.email}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Registriert: {new Date(a.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })}</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={{ backgroundColor: a.isActive ? "#E8F5E9" : "#FFEBEE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, marginRight: 6 }}
+                        onPress={async () => {
+                          try {
+                            const API = getApiBaseUrl();
+                            await fetch(`${API}/api/trpc/affiliate.toggleActive`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ json: { code: a.code, isActive: a.isActive ? 0 : 1 } }),
+                            });
+                            setAffiliates(prev => prev.map(af => af.code === a.code ? { ...af, isActive: af.isActive ? 0 : 1 } : af));
+                          } catch (e) { console.error(e); }
+                        }} activeOpacity={0.7}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: a.isActive ? "#4CAF50" : "#F44336" }}>
+                          {a.isActive ? "Aktiv" : "Inaktiv"}
+                        </Text>
+                      </TouchableOpacity>
+                      <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                        <Text style={{ fontSize: 12, fontWeight: "700", color: C.gold }}>{a.code}</Text>
+                      </View>
+                    </View>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{a.totalClicks}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Klicks</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{a.totalSales}</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verkäufe</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: "#4CAF50" }}>{(a.totalEarnings / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Verdient</Text>
+                      </View>
+                      <View style={{ flex: 1, backgroundColor: C.bg, borderRadius: 8, padding: 8, alignItems: "center" }}>
+                        <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>{(a.totalPaid / 100).toFixed(2)} €</Text>
+                        <Text style={{ fontSize: 10, color: C.muted }}>Bezahlt</Text>
+                      </View>
+                    </View>
+                    {a.paypalEmail && (
+                      <Text style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
+                        PayPal: {a.paypalEmail}
+                      </Text>
+                    )}
+                  </View>
+                );
+                })}
+                {affiliates.length === 0 && !affLoading && (
+                  <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Affiliates vorhanden.</Text>
+                )}
+              </View>
+
+              {/* Verkauf eintragen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>💰 Verkauf eintragen</Text>
+                <Text style={s.sectionHint}>Trage einen Verkauf ein, der über einen Affiliate-Link zustande kam. Die 20% Provision wird automatisch berechnet (nur auf Produktpreis, nicht auf Versand).</Text>
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Affiliate auswählen</Text>
+                  {affiliates.length > 0 ? (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                      <View style={{ flexDirection: "row", gap: 6 }}>
+                        {affiliates.map(a => (
+                          <TouchableOpacity key={a.code}
+                            style={[s.katBtn, saleCode === a.code && s.katBtnActive]}
+                            onPress={() => setSaleCode(a.code)} activeOpacity={0.8}>
+                            <Text style={[s.katText, saleCode === a.code && s.katTextActive]}>{a.name} ({a.code})</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  ) : (
+                    <TextInput style={s.formInput} placeholder="Code eingeben" placeholderTextColor={C.muted}
+                      value={saleCode} onChangeText={setSaleCode} autoCapitalize="characters" />
+                  )}
+                  <Text style={s.formLabel}>Produkt auswählen</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 4 }}>
+                    <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
+                      {[
+                        { name: "Schutzarmband", price: "24.00" },
+                        { name: "Runen-Armband (Kette + 3 Charms)", price: "57.00" },
+
+                        { name: "Aura Reading", price: "77.00" },
+                        { name: "Meditationskerze", price: "17.00" },
+                        { name: "Seelenimpuls", price: "17.00" },
+
+                        { name: "Vollmond Ritual-Set", price: "29.90" },
+                        { name: "Neumond Ritual-Set", price: "29.90" },
+                        { name: "Imbolc Ritual-Set", price: "29.90" },
+                        { name: "Ostara Ritual-Set", price: "29.90" },
+                        { name: "Beltane Ritual-Set", price: "29.90" },
+                        { name: "Litha Ritual-Set", price: "29.90" },
+                        { name: "Lammas Ritual-Set", price: "29.90" },
+                        { name: "Mabon Ritual-Set", price: "29.90" },
+                        { name: "Samhain Ritual-Set", price: "29.90" },
+                        { name: "Yule Ritual-Set", price: "29.90" },
+                      ].map(p => (
+                        <TouchableOpacity key={p.name}
+                          style={[s.katBtn, saleProduct === p.name && s.katBtnActive, { marginBottom: 4 }]}
+                          onPress={() => { setSaleProduct(p.name); setSaleAmount(p.price); }} activeOpacity={0.8}>
+                          <Text style={[s.katText, saleProduct === p.name && s.katTextActive]}>{p.name} ({p.price}€)</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
+                  <Text style={s.formLabel}>Oder manuell eingeben:</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. Seelenimpuls, Armband, Aura Reading" placeholderTextColor={C.muted}
+                    value={saleProduct} onChangeText={setSaleProduct} />
+                  <Text style={s.formLabel}>Betrag in Euro (z.B. 17.00)</Text>
+                  <TextInput style={s.formInput} placeholder="17.00" placeholderTextColor={C.muted}
+                    value={saleAmount} onChangeText={setSaleAmount} keyboardType="decimal-pad" />
+                  <Text style={s.formLabel}>Kundenname (optional)</Text>
+                  <TextInput style={s.formInput} placeholder="Name des Käufers" placeholderTextColor={C.muted}
+                    value={saleCustomer} onChangeText={setSaleCustomer} />
+                  {saleAmount ? (
+                    <Text style={{ fontSize: 13, color: "#4CAF50", fontWeight: "600", marginBottom: 8 }}>
+                      Provision: {(parseFloat(saleAmount.replace(",", ".")) * 0.20).toFixed(2)} € (20%)
+                    </Text>
+                  ) : null}
+                  <TouchableOpacity style={[s.submitBtn, saleAdding && { opacity: 0.6 }]} onPress={async () => {
+                    if (!saleCode.trim() || !saleProduct.trim() || !saleAmount.trim()) {
+                      if (Platform.OS === "web") window.alert("Bitte fülle alle Pflichtfelder aus.");
+                      else Alert.alert("Fehler", "Bitte fülle alle Pflichtfelder aus.");
+                      return;
+                    }
+                    const amountEuro = parseFloat(saleAmount.replace(",", "."));
+                    if (isNaN(amountEuro) || amountEuro <= 0) {
+                      if (Platform.OS === "web") window.alert("Bitte gib einen gültigen Betrag ein.");
+                      else Alert.alert("Fehler", "Bitte gib einen gültigen Betrag ein.");
+                      return;
+                    }
+                    setSaleAdding(true);
+                    try {
+                      const API = getApiBaseUrl();
+                      const res = await fetch(`${API}/api/trpc/affiliate.createSale`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: {
+                          affiliateCode: saleCode.trim().toUpperCase(),
+                          productName: saleProduct.trim(),
+                          saleAmount: Math.round(amountEuro * 100),
+                          customerName: saleCustomer.trim() || undefined,
+                        } }),
+                      });
+                      const d = await res.json();
+                      if (d?.result?.data?.json?.success) {
+                        const comm = (d.result.data.json.commissionAmount / 100).toFixed(2);
+                        if (Platform.OS === "web") window.alert(`Verkauf eingetragen! Provision: ${comm} €`);
+                        else Alert.alert("Erfolg", `Verkauf eingetragen! Provision: ${comm} €`);
+                        setSaleCode(""); setSaleProduct(""); setSaleAmount(""); setSaleCustomer("");
+                      } else {
+                        const err = d?.result?.data?.json?.error === "code_not_found" ? "Affiliate-Code nicht gefunden!" : "Fehler beim Eintragen.";
+                        if (Platform.OS === "web") window.alert(err);
+                        else Alert.alert("Fehler", err);
+                      }
+                    } catch (e) {
+                      if (Platform.OS === "web") window.alert("Verbindungsfehler.");
+                      else Alert.alert("Fehler", "Verbindungsfehler.");
+                    }
+                    setSaleAdding(false);
+                  }} disabled={saleAdding} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{saleAdding ? "Wird eingetragen..." : "💰 Verkauf eintragen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Auszahlung erstellen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>💸 Auszahlung erstellen</Text>
+                <Text style={s.sectionHint}>Wenn du eine Provision ausgezahlt hast, trage es hier ein.</Text>
+                <View style={s.formBox}>
+                  <Text style={s.formLabel}>Affiliate-Code</Text>
+                  {affiliates.length > 0 ? (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                      <View style={{ flexDirection: "row", gap: 6 }}>
+                        {affiliates.map(a => (
+                          <TouchableOpacity key={a.code}
+                            style={[s.katBtn, payoutCode === a.code && s.katBtnActive]}
+                            onPress={() => setPayoutCode(a.code)} activeOpacity={0.8}>
+                            <Text style={[s.katText, payoutCode === a.code && s.katTextActive]}>{a.name} ({a.code})</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  ) : (
+                    <TextInput style={s.formInput} placeholder="Code eingeben" placeholderTextColor={C.muted}
+                      value={payoutCode} onChangeText={setPayoutCode} autoCapitalize="characters" />
+                  )}
+                  <Text style={s.formLabel}>Betrag in Euro</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. 25.50" placeholderTextColor={C.muted}
+                    value={payoutAmount} onChangeText={setPayoutAmount} keyboardType="decimal-pad" />
+                  <Text style={s.formLabel}>Methode</Text>
+                  <Text style={{ fontSize: 13, color: C.muted, marginBottom: 8 }}>Methode: PayPal</Text>
+                  <Text style={s.formLabel}>Referenz / Notiz (optional)</Text>
+                  <TextInput style={s.formInput} placeholder="z.B. PayPal Transaktions-ID" placeholderTextColor={C.muted}
+                    value={payoutRef} onChangeText={setPayoutRef} />
+                  <TouchableOpacity style={[s.submitBtn, payoutAdding && { opacity: 0.6 }]} onPress={async () => {
+                    if (!payoutCode.trim() || !payoutAmount.trim()) {
+                      if (Platform.OS === "web") window.alert("Bitte fülle Code und Betrag aus.");
+                      else Alert.alert("Fehler", "Bitte fülle Code und Betrag aus.");
+                      return;
+                    }
+                    const amountEuro = parseFloat(payoutAmount.replace(",", "."));
+                    if (isNaN(amountEuro) || amountEuro <= 0) {
+                      if (Platform.OS === "web") window.alert("Bitte gib einen gültigen Betrag ein.");
+                      else Alert.alert("Fehler", "Bitte gib einen gültigen Betrag ein.");
+                      return;
+                    }
+                    setPayoutAdding(true);
+                    try {
+                      const API = getApiBaseUrl();
+                      const res = await fetch(`${API}/api/trpc/affiliate.createPayout`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ json: {
+                          affiliateCode: payoutCode.trim().toUpperCase(),
+                          amount: Math.round(amountEuro * 100),
+                          method: payoutMethod,
+                          reference: payoutRef.trim() || undefined,
+                        } }),
+                      });
+                      const d = await res.json();
+                      if (d?.result?.data?.json?.success) {
+                        if (Platform.OS === "web") window.alert("Auszahlung eingetragen!");
+                        else Alert.alert("Erfolg", "Auszahlung eingetragen!");
+                        setPayoutCode(""); setPayoutAmount(""); setPayoutRef("");
+                      } else {
+                        if (Platform.OS === "web") window.alert("Fehler beim Eintragen.");
+                        else Alert.alert("Fehler", "Fehler beim Eintragen.");
+                      }
+                    } catch (e) {
+                      if (Platform.OS === "web") window.alert("Verbindungsfehler.");
+                      else Alert.alert("Fehler", "Verbindungsfehler.");
+                    }
+                    setPayoutAdding(false);
+                  }} disabled={payoutAdding} activeOpacity={0.85}>
+                    <Text style={s.submitBtnText}>{payoutAdding ? "Wird eingetragen..." : "💸 Auszahlung eintragen"}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Letzte Verkäufe */}
+              {affSales.length > 0 && (
+                <View style={s.section}>
+                  <Text style={s.sectionTitle}>📊 Alle Verkäufe – Volle Transparenz</Text>
+                  <Text style={s.sectionHint}>Hier siehst du jeden einzelnen Verkauf: Wer hat empfohlen, was wurde gekauft, wie viel Provision fällt an.</Text>
+                  {affSales.map(sale => {
+                    const affName = affiliates.find(a => a.code === sale.affiliateCode)?.name || sale.affiliateCode;
+                    const affEmail = affiliates.find(a => a.code === sale.affiliateCode)?.email || "";
+                    const saleDate = new Date(sale.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                    return (
+                      <View key={sale.id} style={[s.memberRow, { flexDirection: "column", alignItems: "stretch" }]}>
+                        {/* Zeile 1: Produkt + Provision */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 4 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown, flex: 1 }}>{sale.productName}</Text>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: "#4CAF50" }}>+{(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                        </View>
+                        {/* Zeile 2: Empfohlen von (Affiliate-Name) */}
+                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 3 }}>
+                          <View style={{ backgroundColor: C.goldLight, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, marginRight: 6 }}>
+                            <Text style={{ fontSize: 10, fontWeight: "700", color: C.gold }}>{sale.affiliateCode}</Text>
+                          </View>
+                          <Text style={{ fontSize: 12, fontWeight: "600", color: C.brownMid }}>Empfohlen von: {affName}</Text>
+                        </View>
+                        {affEmail ? <Text style={{ fontSize: 10, color: C.muted, marginBottom: 3 }}>{affEmail}</Text> : null}
+                        {/* Zeile 3: Betrag */}
+                        <Text style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>Betrag: {(sale.saleAmount / 100).toFixed(2)} € · 20% = {(sale.commissionAmount / 100).toFixed(2)} €</Text>
+                        {/* Zeile 3b: Status-Buttons */}
+                        <View style={{ flexDirection: "row", gap: 6, marginBottom: 2 }}>
+                          {["pending", "confirmed", "paid"].map(st => (
+                            <TouchableOpacity key={st}
+                              style={{ flex: 1, backgroundColor: sale.status === st ? (st === "paid" ? "#E8F5E9" : st === "confirmed" ? C.goldLight : C.surface) : "#F5F5F5", borderRadius: 8, paddingVertical: 6, alignItems: "center", borderWidth: sale.status === st ? 1.5 : 0.5, borderColor: sale.status === st ? (st === "paid" ? "#4CAF50" : st === "confirmed" ? C.gold : C.muted) : C.border }}
+                              onPress={async () => {
+                                if (sale.status === st) return;
+                                try {
+                                  const API = getApiBaseUrl();
+                                  await fetch(`${API}/api/trpc/affiliate.updateSaleStatus`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ json: { id: sale.id, status: st } }),
+                                  });
+                                  setAffSales(prev => prev.map(s2 => s2.id === sale.id ? { ...s2, status: st } : s2));
+                                } catch (e) { console.error(e); }
+                              }} activeOpacity={0.7}>
+                              <Text style={{ fontSize: 10, fontWeight: "700", color: sale.status === st ? (st === "paid" ? "#4CAF50" : st === "confirmed" ? C.gold : C.muted) : "#999" }}>
+                                {st === "paid" ? "✓ Bezahlt" : st === "confirmed" ? "Bestätigt" : "Ausstehend"}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                        {/* Zeile 4: Kunde + Datum */}
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 3 }}>
+                          {sale.customerName ? <Text style={{ fontSize: 11, color: C.muted }}>Kunde: {sale.customerName}</Text> : <View />}
+                          <Text style={{ fontSize: 10, color: C.muted }}>{saleDate}</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </>
+          )}
+
+          {/* ═══════ ACADEMY TAB ═══════ */}
+          {activeTab === "academy" && (
+            <>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🎓 Seelen Academy – Warteliste</Text>
+                <Text style={s.sectionHint}>Alle Interessentinnen, die sich für die Academy-Ausbildungen auf die Warteliste eingetragen haben.</Text>
+                <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
+                  setAcademyLoading(true);
+                  try {
+                    const API = getApiBaseUrl();
+                    const res = await fetch(`${API}/api/trpc/academy.listWaitlist`);
+                    const d = await res.json();
+                    if (d?.result?.data?.json) setAcademyWaitlist(d.result.data.json);
+                    else if (d?.result?.data) setAcademyWaitlist(d.result.data);
+                  } catch (e) { console.error(e); }
+                  setAcademyLoading(false);
+                }} activeOpacity={0.85}>
+                  <Text style={{ fontSize: 18, marginRight: 10 }}>🔄</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: C.brown, fontWeight: "600" }}>
+                    {academyLoading ? "Lade..." : "Warteliste laden"}
+                  </Text>
+                </TouchableOpacity>
+
+                {academyWaitlist.length > 0 && (
+                  <View style={{ marginTop: 8 }}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 4 }}>
+                      <Text style={{ fontSize: 14, fontWeight: "700", color: C.gold }}>
+                        {academyWaitlist.length} Einträg{academyWaitlist.length === 1 ? "" : "e"}
+                      </Text>
+                    </View>
+                    {academyWaitlist.map((entry, idx) => (
+                      <View key={entry.id || idx} style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                        <View style={[s.memberAvatar, { backgroundColor: C.gold }]}>
+                          <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 14 }}>{idx + 1}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.memberName}>{entry.email}</Text>
+                          <Text style={s.memberEmail}>
+                            Eingetragen am {new Date(entry.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {academyWaitlist.length === 0 && !academyLoading && (
+                  <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Einträge auf der Warteliste.</Text>
+                )}
+              </View>
+
+              {/* Geplante Ausbildungen */}
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>📚 Geplante Ausbildungen</Text>
+                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>👁️</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>Aura Reading Ausbildung</Text>
+                    <Text style={s.memberEmail}>Coming Soon</Text>
+                  </View>
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
+                  </View>
+                </View>
+                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>🌀</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>Theta Healing Ausbildung</Text>
+                    <Text style={s.memberEmail}>Coming Soon</Text>
+                  </View>
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* ═══════ Q&A FRAGEN TAB ═══════ */}
+          {activeTab === "qa" && (
+            <>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🌙 Fragen der Community</Text>
+                <Text style={s.sectionHint}>Hier siehst du alle Fragen deiner Community. Tippe auf eine Frage, um sie zu beantworten.</Text>
+
+                <TouchableOpacity
+                  style={[s.addBtn, { marginBottom: 16 }]}
+                  onPress={async () => {
+                    setQaLoading(true);
+                    const fragen = await getQAFragen();
+                    setQaFragen(fragen);
+                    setQaLoading(false);
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={s.addBtnText}>🔄 Fragen aktualisieren</Text>
+                </TouchableOpacity>
+
+                {qaLoading && <ActivityIndicator color={C.rose} style={{ marginVertical: 12 }} />}
+
+                {/* Unbeantwortete Fragen zuerst */}
+                {qaFragen.filter(f => !f.antwort).length > 0 && (
+                  <View style={{ marginBottom: 16 }}>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: "#C87C82", marginBottom: 10 }}>⏳ Warten auf deine Antwort ({qaFragen.filter(f => !f.antwort).length})</Text>
+                    {qaFragen.filter(f => !f.antwort).map(f => (
+                      <View key={f.id} style={[s.memberCard, { borderColor: "#E8D5B0", borderWidth: 1.5 }]}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>🙋 {f.von}</Text>
+                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(f.datum).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}</Text>
+                        </View>
+                        <Text style={{ fontSize: 14, color: C.brownMid, lineHeight: 21, marginBottom: 10 }}>{f.frage}</Text>
+
+                        {qaAntwortId === f.id ? (
+                          <View>
+                            <TextInput
+                              style={[s.input, { height: 100, textAlignVertical: "top" }]}
+                              placeholder="Deine Antwort..."
+                              placeholderTextColor={C.muted}
+                              value={qaAntwortText}
+                              onChangeText={setQaAntwortText}
+                              multiline
+                              maxLength={500}
+                            />
+                            <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                              <TouchableOpacity
+                                style={[s.addBtn, { flex: 1 }]}
+                                onPress={async () => {
+                                  if (!qaAntwortText.trim()) return;
+                                  const updated = qaFragen.map(q =>
+                                    q.id === f.id ? { ...q, antwort: qaAntwortText.trim(), antwortDatum: new Date().toISOString() } : q
+                                  );
+                                  setQaFragen(updated);
+                                  await saveQAFragen(updated);
+                                  setQaAntwortId(null);
+                                  setQaAntwortText("");
+                                }}
+                                activeOpacity={0.85}
+                              >
+                                <Text style={s.addBtnText}>✅ Antwort senden</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                                style={[s.addBtn, { flex: 1, backgroundColor: C.surface }]}
+                                onPress={() => { setQaAntwortId(null); setQaAntwortText(""); }}
+                                activeOpacity={0.85}
+                              >
+                                <Text style={[s.addBtnText, { color: C.muted }]}>✕ Abbrechen</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            style={[s.addBtn, { backgroundColor: C.gold }]}
+                            onPress={() => { setQaAntwortId(f.id); setQaAntwortText(""); }}
+                            activeOpacity={0.85}
+                          >
+                            <Text style={s.addBtnText}>✏️ Antworten</Text>
+                          </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity
+                          style={{ marginTop: 8, alignItems: "center" }}
+                          onPress={async () => {
+                            const updated = qaFragen.filter(q => q.id !== f.id);
+                            setQaFragen(updated);
+                            await saveQAFragen(updated);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Frage löschen</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Beantwortete Fragen */}
+                {qaFragen.filter(f => f.antwort).length > 0 && (
+                  <View>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: "#7A9E7E", marginBottom: 10 }}>✅ Beantwortet ({qaFragen.filter(f => f.antwort).length})</Text>
+                    {qaFragen.filter(f => f.antwort).map(f => (
+                      <View key={f.id} style={[s.memberCard, { borderColor: "#C8E6C9", borderWidth: 1 }]}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                          <Text style={{ fontSize: 14, fontWeight: "700", color: C.brown }}>🙋 {f.von}</Text>
+                          <Text style={{ fontSize: 11, color: C.muted }}>{new Date(f.datum).toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" })}</Text>
+                        </View>
+                        <Text style={{ fontSize: 14, color: C.brownMid, lineHeight: 21, marginBottom: 8 }}>{f.frage}</Text>
+                        <View style={{ backgroundColor: C.roseLight, borderRadius: 12, padding: 12, borderLeftWidth: 3, borderLeftColor: C.rose }}>
+                          <Text style={{ fontSize: 12, fontWeight: "700", color: C.brown, marginBottom: 4 }}>🌸 Deine Antwort:</Text>
+                          <Text style={{ fontSize: 13, color: C.brownMid, lineHeight: 20 }}>{f.antwort}</Text>
+                          {f.antwortDatum && <Text style={{ fontSize: 10, color: C.muted, marginTop: 6 }}>{new Date(f.antwortDatum).toLocaleDateString("de-DE", { day: "numeric", month: "short" })}</Text>}
+                        </View>
+
+                        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                          <TouchableOpacity
+                            style={{ flex: 1, alignItems: "center" }}
+                            onPress={() => { setQaAntwortId(f.id); setQaAntwortText(f.antwort || ""); }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={{ fontSize: 12, color: C.rose }}>✏️ Bearbeiten</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={{ flex: 1, alignItems: "center" }}
+                            onPress={async () => {
+                              const updated = qaFragen.filter(q => q.id !== f.id);
+                              setQaFragen(updated);
+                              await saveQAFragen(updated);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={{ fontSize: 12, color: "#C87C82" }}>🗑 Löschen</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {qaFragen.length === 0 && !qaLoading && (
+                  <View style={{ alignItems: "center", paddingVertical: 30 }}>
+                    <Text style={{ fontSize: 40, marginBottom: 12 }}>🌙</Text>
+                    <Text style={{ fontSize: 15, color: C.muted, textAlign: "center" }}>Noch keine Fragen von deiner Community.</Text>
+                    <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 4 }}>Sobald jemand eine Frage stellt, erscheint sie hier.</Text>
+                  </View>
+                )}
+              </View>
+            </>
           )}
 
           {/* ═══════ EINSTELLUNGEN TAB ═══════ */}
@@ -1289,6 +2284,7 @@ const s = StyleSheet.create({
   memberName: { fontSize: 14, fontWeight: "700", color: C.brown },
   memberEmail: { fontSize: 11, color: C.muted },
   memberAction: { width: 30, height: 30, borderRadius: 15, backgroundColor: C.card, alignItems: "center", justifyContent: "center", marginLeft: 6, borderWidth: 1, borderColor: C.border },
+  memberDeleteBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FDE8E8", alignItems: "center", justifyContent: "center", marginLeft: 8, borderWidth: 1, borderColor: "#C87C82" },
 
   // Switch
   switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -1300,6 +2296,12 @@ const s = StyleSheet.create({
   katBtnActive: { backgroundColor: C.rose, borderColor: C.rose },
   katText: { fontSize: 12, fontWeight: "600", color: C.muted },
   katTextActive: { color: "#FFF" },
+
+  // Q&A / shared styles
+  addBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 12, alignItems: "center" },
+  addBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
+  memberCard: { backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.border },
+  input: { backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 8 },
 
   // Bottom buttons
   speichernBtn: { margin: 16, backgroundColor: C.rose, borderRadius: 16, paddingVertical: 16, alignItems: "center" },

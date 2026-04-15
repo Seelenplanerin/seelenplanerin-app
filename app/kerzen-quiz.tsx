@@ -120,18 +120,18 @@ const HEILSTEINE: Heilstein[] = [
     wirkung: ["Schützt die Aura", "Stärkt übersinnliche Fähigkeiten", "Begleitet Veränderungen", "Fördert Kreativität", "Verbindet mit höheren Dimensionen"],
   },
   {
-    id: "sunstone",
-    name: "Sunstone (Sonnenstein)",
-    emoji: "🌞",
-    farbe: "Warmes Orange-Gold",
-    farbCode: "#F5C28A",
-    chakra: "Sakralchakra & Solarplexus",
-    element: "Feuer",
-    themen: ["lebenskraft", "optimismus", "unabhängigkeit", "stärke"],
-    kurzBeschreibung: "Der Stein der Lebenskraft und inneren Stärke",
-    langBeschreibung: "Der Sonnenstein strahlt wie die Sonne selbst und bringt Wärme, Lebenskraft und Optimismus in dein Leben. Er stärkt dein Selbstwertgefühl, hilft dir, unabhängig zu sein und dein wahres Selbst zu leben. Er vertreibt Ängste und Selbstzweifel und erinnert dich an deine innere Stärke und Schönheit.",
-    affirmation: "Ich strahle von innen heraus und lebe mein wahres Selbst mit Kraft und Freude.",
-    wirkung: ["Bringt Lebenskraft und Vitalität", "Stärkt Optimismus", "Fördert Unabhängigkeit", "Vertreibt Ängste", "Aktiviert innere Stärke"],
+    id: "pyrit",
+    name: "Pyrit",
+    emoji: "✨",
+    farbe: "Goldenes Metallic",
+    farbCode: "#B8860B",
+    chakra: "Solarplexuschakra",
+    element: "Erde & Feuer",
+    themen: ["fülle", "manifestation", "schutz", "willenskraft"],
+    kurzBeschreibung: "Der Stein der Fülle und Manifestation",
+    langBeschreibung: "Pyrit, auch Katzengold genannt, ist ein kraftvoller Manifestationsstein. Er hilft dir, deine Ziele zu verwirklichen, Fülle in dein Leben zu ziehen und dein Selbstvertrauen zu stärken. Er schützt vor negativen Energien und fördert Willenskraft und Durchsetzungsvermögen.",
+    affirmation: "Ich bin es wert, in Fülle und Wohlstand zu leben. Alles was ich brauche, fließt zu mir.",
+    wirkung: ["Zieht Fülle und Wohlstand an", "Stärkt Selbstvertrauen", "Schützt vor negativen Energien", "Fördert Willenskraft", "Unterstützt Manifestation"],
   },
   {
     id: "carneol",
@@ -460,7 +460,7 @@ export default function KerzenQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.tentary.com");
+                Linking.openURL("https://dieseelenplanerin.tentary.com/p/YQLsh3");
               }}
               activeOpacity={0.85}
             >

@@ -51,7 +51,7 @@ function useCommunityAudio() {
     if (Platform.OS === "web") {
       const audio = new Audio();
       audioRef.current = audio;
-      audio.crossOrigin = "anonymous";
+      // No crossOrigin - causes CORS issues on iOS Safari with CDN audio
       audio.addEventListener("loadedmetadata", () => { setDuration(audio.duration); setLoading(false); });
       audio.addEventListener("canplaythrough", () => setLoading(false));
       audio.addEventListener("error", () => { setLoading(false); setIsPlaying(false); });
@@ -59,8 +59,12 @@ function useCommunityAudio() {
       intervalRef.current = setInterval(() => {
         if (audio && !audio.paused) { setCurrentTime(audio.currentTime); if (audio.duration) setDuration(audio.duration); }
       }, 250);
-      audio.src = url; audio.load();
-      setTimeout(() => { audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => setLoading(false)); }, 300);
+      audio.src = url;
+      // Play immediately within user gesture context (no setTimeout)
+      audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => {
+        // Fallback: try after brief delay
+        setTimeout(() => { audio.play().then(() => { setIsPlaying(true); setLoading(false); }).catch(() => setLoading(false)); }, 100);
+      });
     }
   }, [currentUrl, isPlaying, cleanup]);
 
@@ -85,6 +89,15 @@ interface CommunityPost {
   datum: string;
   von: string;
   istLara: boolean;
+}
+
+interface QAFrage {
+  id: string;
+  frage: string;
+  von: string;
+  datum: string;
+  antwort?: string;
+  antwortDatum?: string;
 }
 
 const DEFAULT_POSTS: CommunityPost[] = [
@@ -113,12 +126,13 @@ const DEFAULT_POSTS: CommunityPost[] = [
 const ANGEBOTE = [
   { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { emoji: "🔮", titel: "Aura Reading", preis: "77 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
-  { emoji: "💫", titel: "Deep Talk", preis: "111 €", beschreibung: "Intensives 60-Min. Seelengespräch", url: "https://dieseelenplanerin.tentary.com/p/Ciz1am" },
+
 ];
 
 const POSTS_KEY = "community_posts";
 const USERS_KEY = "community_users";
 const CURRENT_USER_KEY = "community_current_user";
+const QA_KEY = "community_qa_fragen";
 
 const POST_EMOJIS = ["🌸", "🌙", "✨", "💎", "🔮", "🌿", "🦋", "💫", "🕯️", "🌈"];
 
@@ -167,6 +181,45 @@ async function getPosts(): Promise<CommunityPost[]> {
 
 async function savePosts(posts: CommunityPost[]) {
   await AsyncStorage.setItem(POSTS_KEY, JSON.stringify(posts));
+}
+
+const DEFAULT_QA: QAFrage[] = [
+  {
+    id: "qa-default-1",
+    frage: "Welcher Heilstein passt am besten zu mir, wenn ich gerade eine schwierige Phase durchmache?",
+    von: "Sarah M.",
+    datum: new Date(Date.now() - 172800000).toISOString(),
+    antwort: "Rosenquarz ist dein treuer Begleiter in schweren Zeiten – er öffnet dein Herz für Selbstliebe und Mitgefühl. Trage ihn nah am Herzen und spüre, wie er dich sanft trägt. Amethyst kann zusätzlich helfen, innere Ruhe zu finden. 💜",
+    antwortDatum: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "qa-default-2",
+    frage: "Wie oft sollte ich meine Runen reinigen?",
+    von: "Julia K.",
+    datum: new Date(Date.now() - 345600000).toISOString(),
+    antwort: "Ich empfehle, deine Runen bei jedem Vollmond zu reinigen – lege sie ins Mondlicht oder räuchere sie mit weißem Salbei. Wenn du sie täglich nutzt, kannst du sie auch wöchentlich kurz unter fließendes Wasser halten. Höre auf deine Intuition! ✨",
+    antwortDatum: new Date(Date.now() - 259200000).toISOString(),
+  },
+  {
+    id: "qa-default-3",
+    frage: "Kann ich das Neumond-Ritual auch alleine machen oder brauche ich jemanden dafür?",
+    von: "Lena B.",
+    datum: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+async function getQAFragen(): Promise<QAFrage[]> {
+  const data = await AsyncStorage.getItem(QA_KEY);
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  }
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(DEFAULT_QA));
+  return DEFAULT_QA;
+}
+
+async function saveQAFragen(fragen: QAFrage[]) {
+  await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
 }
 
 function formatDatum(isoString: string): string {
@@ -247,7 +300,9 @@ function MeditationenSektion({ audio }: { audio: ReturnType<typeof useCommunityA
 
   const handlePlay = (song: Song) => {
     if (song.mp3Url) {
-      audio.play(song.mp3Url);
+      // Proxy the audio through our server to avoid CORS issues on iOS Safari
+      const proxyUrl = `${getApiBaseUrl()}/api/audio-proxy?url=${encodeURIComponent(song.mp3Url)}`;
+      audio.play(proxyUrl);
       setPlayingSongId(audio.currentUrl === song.mp3Url && audio.isPlaying ? null : song.id);
     } else if (song.spotifyUrl) {
       Linking.openURL(song.spotifyUrl);
@@ -409,10 +464,23 @@ export default function CommunityScreen() {
   const [newPostText, setNewPostText] = useState("");
   const [selectedEmoji, setSelectedEmoji] = useState("🌸");
 
+  // Q&A – Frage an die Seelenplanerin
+  const [qaFragen, setQaFragen] = useState<QAFrage[]>([]);
+  const [showNewFrage, setShowNewFrage] = useState(false);
+  const [newFrage, setNewFrage] = useState("");
+  const [frageGesendet, setFrageGesendet] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
   // Passwort ändern
+  const [resetSent, setResetSent] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
   const [newPw, setNewPw] = useState("");
   const [newPwConfirm, setNewPwConfirm] = useState("");
+
+  // E-Mail-Einwilligung
+  const [emailConsent, setEmailConsent] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
 
   // Audio für Meditationen
   const audio = useCommunityAudio();
@@ -439,57 +507,65 @@ export default function CommunityScreen() {
     );
   };
 
+  // E-Mail-Einwilligung vom Server laden
+  const loadEmailConsent = async (userEmail: string) => {
+    try {
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.getEmailConsent?input=${encodeURIComponent(JSON.stringify({ json: { email: userEmail } }))}`);
+      const data = await res.json();
+      const result = data?.result?.data?.json || data?.result?.data;
+      if (result) {
+        setEmailConsent(result.consent === true);
+      }
+    } catch (e) {
+      // Fallback: lokalen Wert laden
+      const stored = await AsyncStorage.getItem(`email_consent_${userEmail}`);
+      if (stored !== null) setEmailConsent(stored === "true");
+    }
+  };
+
+  const handleToggleEmailConsent = async (newValue: boolean) => {
+    if (!currentUser || consentLoading) return;
+    setConsentLoading(true);
+    setEmailConsent(newValue);
+    try {
+      const API_URL = getApiBaseUrl();
+      await fetch(`${API_URL}/api/trpc/communityUsers.updateEmailConsent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: currentUser.email, consent: newValue } }),
+      });
+      await AsyncStorage.setItem(`email_consent_${currentUser.email}`, String(newValue));
+    } catch (e) {
+      // Bei Fehler: trotzdem lokal speichern
+      await AsyncStorage.setItem(`email_consent_${currentUser.email}`, String(newValue));
+    } finally {
+      setConsentLoading(false);
+    }
+  };
+
   useEffect(() => {
-    AsyncStorage.getItem(CURRENT_USER_KEY).then(async (data) => {
+    AsyncStorage.getItem(CURRENT_USER_KEY).then((data) => {
       if (data) {
         const user = JSON.parse(data) as CommunityUser;
         setIsLoggedIn(true);
         setUserName(user.name || user.email.split("@")[0]);
         setCurrentUser(user);
-
-        // Re-verify mustChangePassword from DB (in case it was updated server-side)
-        try {
-          const API_URL = getApiBaseUrl();
-          if (API_URL) {
-            const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ json: { email: user.email, password: user.password } }),
-            });
-            const json = await res.json();
-            const result = json?.result?.data?.json || json?.result?.data;
-            if (result?.success && result?.user) {
-              const needsChange = result.user.mustChangePassword === true;
-              if (needsChange !== !!user.mustChangePassword) {
-                const updatedUser = { ...user, mustChangePassword: needsChange };
-                setCurrentUser(updatedUser);
-                await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
-              }
-              if (needsChange) setShowChangePw(true);
-            } else if (result?.error === "wrong_password") {
-              // Password was changed server-side (e.g. password reset), force re-login
-              setIsLoggedIn(false);
-              setCurrentUser(null);
-              await AsyncStorage.removeItem(CURRENT_USER_KEY);
-            } else {
-              if (user.mustChangePassword) setShowChangePw(true);
-            }
-          } else {
-            if (user.mustChangePassword) setShowChangePw(true);
-          }
-        } catch {
-          // Offline: use cached value
-          if (user.mustChangePassword) setShowChangePw(true);
+        loadEmailConsent(user.email);
+        // Prüfe ob Passwort geändert werden muss
+        if (user.mustChangePassword) {
+          setShowChangePw(true);
         }
       }
       setChecking(false);
     });
   }, []);
 
-  // Posts laden bei Focus
+  // Posts und Q&A laden bei Focus
   useFocusEffect(
     useCallback(() => {
       getPosts().then(setPosts);
+      getQAFragen().then(setQaFragen);
     }, [])
   );
 
@@ -502,58 +578,59 @@ export default function CommunityScreen() {
 
     try {
       const API_URL = getApiBaseUrl();
+      // Direkt die Server-Login-Route nutzen (prüft Passwort in der DB)
       const res = await fetch(`${API_URL}/api/trpc/communityUsers.login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password } }),
+        body: JSON.stringify({ json: { email: email.trim().toLowerCase(), password: password } }),
       });
-      const json = await res.json();
-      const result = json?.result?.data?.json || json?.result?.data;
-      
-      if (!result?.success) {
-        if (result?.error === "not_found") {
-          setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
-        } else if (result?.error === "wrong_password") {
-          setFehler("Falsches Passwort. Bitte versuche es erneut.");
-        } else {
-          setFehler("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
-        }
-        return;
-      }
+      const data = await res.json();
+      const result = data?.result?.data?.json || data?.result?.data;
 
-      const found: CommunityUser = {
-        email: result.user.email,
-        name: result.user.name,
-        password: password,
-        mustChangePassword: result.user.mustChangePassword,
-      };
-      setIsLoggedIn(true);
-      setUserName(found.name || found.email.split("@")[0]);
-      setCurrentUser(found);
-      setFehler("");
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
-      if (found.mustChangePassword) {
-        setShowChangePw(true);
-      }
-    } catch (e) {
-      // Fallback: AsyncStorage-basierter Login
-      const users = await getUsers();
-      const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (!found) {
+      if (result?.error === "not_found") {
         setFehler("Kein Konto mit dieser E-Mail gefunden. Dein Zugang wird von der Seelenplanerin angelegt.");
         return;
       }
-      if (found.password !== password) {
+      if (result?.error === "wrong_password") {
         setFehler("Falsches Passwort. Bitte versuche es erneut.");
         return;
       }
-      setIsLoggedIn(true);
-      setUserName(found.name || found.email.split("@")[0]);
-      setCurrentUser(found);
-      setFehler("");
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
-      if (found.mustChangePassword) {
-        setShowChangePw(true);
+      if (result?.success && result.user) {
+        const found: CommunityUser = {
+          email: result.user.email,
+          password: password,
+          name: result.user.name,
+          mustChangePassword: result.user.mustChangePassword === true,
+        };
+        setIsLoggedIn(true);
+        setUserName(found.name || found.email.split("@")[0]);
+        setCurrentUser(found);
+        setFehler("");
+        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        if (found.mustChangePassword) {
+          setShowChangePw(true);
+        }
+      } else {
+        setFehler("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
+      }
+    } catch (e: any) {
+      console.error('Login error:', e?.message || e);
+      // Fallback: versuche mit gecachten Daten
+      try {
+        const cached = await AsyncStorage.getItem(USERS_KEY);
+        const users: CommunityUser[] = cached ? JSON.parse(cached) : [];
+        const emailLower = email.trim().toLowerCase();
+        const found = users.find(u => u.email.toLowerCase() === emailLower);
+        if (!found) { setFehler("Verbindungsfehler und kein lokaler Cache vorhanden."); return; }
+        if (found.password !== password) { setFehler("Falsches Passwort."); return; }
+        setIsLoggedIn(true);
+        setUserName(found.name || found.email.split("@")[0]);
+        setCurrentUser(found);
+        setFehler("");
+        await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        if (found.mustChangePassword) setShowChangePw(true);
+      } catch {
+        setFehler("Verbindungsfehler. Bitte versuche es erneut.");
       }
     }
   };
@@ -600,47 +677,49 @@ export default function CommunityScreen() {
   const handleChangePassword = async () => {
     if (!newPw.trim()) { setFehler("Bitte gib ein neues Passwort ein."); return; }
     if (newPw.length < 4) { setFehler("Das Passwort muss mindestens 4 Zeichen haben."); return; }
-    if (newPw !== newPwConfirm) { setFehler("Die Passw\u00f6rter stimmen nicht \u00fcberein."); return; }
+    if (newPw !== newPwConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
 
     if (currentUser) {
       // Passwort in DB aktualisieren
-      let dbUpdateOk = false;
       try {
         const API_URL = getApiBaseUrl();
-        const res = await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
+        await fetch(`${API_URL}/api/trpc/communityUsers.update`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ json: { email: currentUser.email, password: newPw, mustChangePassword: 0 } }),
         });
-        if (res.ok) {
-          const json = await res.json();
-          const result = json?.result?.data?.json || json?.result?.data;
-          dbUpdateOk = result?.success === true;
-        }
       } catch (e) {
-        console.error("[Community] Passwort-Update fehlgeschlagen:", e);
-      }
-
-      if (!dbUpdateOk) {
-        setFehler("Passwort konnte nicht gespeichert werden. Bitte pr\u00fcfe deine Internetverbindung und versuche es erneut.");
-        return;
-      }
-
-      const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
-      setCurrentUser(updatedUser);
-      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
-      // Auch in AsyncStorage-Fallback aktualisieren
-      try {
+        // Fallback: AsyncStorage
         const users = await getUsers();
         const idx = users.findIndex(u => u.email === currentUser.email);
         if (idx >= 0) { users[idx].password = newPw; users[idx].mustChangePassword = false; await saveUsers(users); }
-      } catch {}
+      }
+      const updatedUser = { ...currentUser, password: newPw, mustChangePassword: false };
+      setCurrentUser(updatedUser);
+      await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
     }
     setShowChangePw(false);
     setNewPw("");
     setNewPwConfirm("");
     setFehler("");
-    Alert.alert("Passwort ge\u00e4ndert", "Dein neues Passwort wurde gespeichert. Du kannst dich ab jetzt mit deinem neuen Passwort anmelden.");
+    Alert.alert("Passwort geändert", "Dein neues Passwort wurde gespeichert.");
+  };
+
+  const handleSendFrage = async () => {
+    if (!newFrage.trim()) return;
+    const frage: QAFrage = {
+      id: `qa-${Date.now()}`,
+      frage: newFrage.trim(),
+      von: userName,
+      datum: new Date().toISOString(),
+    };
+    const updated = [frage, ...qaFragen];
+    setQaFragen(updated);
+    await saveQAFragen(updated);
+    setNewFrage("");
+    setShowNewFrage(false);
+    setFrageGesendet(true);
+    setTimeout(() => setFrageGesendet(false), 4000);
   };
 
   const handleCreatePost = async () => {
@@ -853,10 +932,7 @@ export default function CommunityScreen() {
                         });
                       } catch (e) { /* E-Mail-Fehler ignorieren, PW wurde trotzdem geändert */ }
                       setFehler("");
-                      Alert.alert(
-                        "E-Mail gesendet ✉️",
-                        `Ein neues temporäres Passwort wurde an ${email.trim()} gesendet. Prüfe deinen Posteingang (auch Spam-Ordner).`,
-                      );
+                      setResetSent(true);
                     } catch {
                       Alert.alert("Fehler", "Beim Zurücksetzen ist ein Fehler aufgetreten.");
                     }
@@ -865,6 +941,13 @@ export default function CommunityScreen() {
                 >
                   <Text style={s.forgotText}>Passwort vergessen?</Text>
                 </TouchableOpacity>
+                {resetSent && (
+                  <View style={{ backgroundColor: "#F0F7F0", borderRadius: 12, padding: 14, marginTop: 12, borderWidth: 1, borderColor: "#C8E6C9" }}>
+                    <Text style={{ fontSize: 14, color: "#2E7D32", textAlign: "center", fontWeight: "600", lineHeight: 20 }}>
+                      ✉️ Ein neues Passwort wurde an {email.trim()} gesendet. Prüfe deinen Posteingang (auch den Spam-Ordner).
+                    </Text>
+                  </View>
+                )}
             </View>
 
             <TouchableOpacity
@@ -902,22 +985,196 @@ export default function CommunityScreen() {
             </View>
           </View>
 
-          {/* Premium-Inhalte Banner */}
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── PREMIUM-BEREICH – GROSS & AUFFÄLLIG ── */}
+          {/* ══════════════════════════════════════════════ */}
           <TouchableOpacity
-            style={s.premiumBanner}
+            style={s.premiumHero}
             onPress={() => router.push("/community-premium" as any)}
             activeOpacity={0.85}
           >
-            <Text style={{ fontSize: 22 }}>👑</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={s.premiumBannerTitle}>Premium Inhalte</Text>
-              <Text style={s.premiumBannerSub}>Mondkalender · Meditationen · Mond & Zyklus</Text>
+            <View style={s.premiumHeroInner}>
+              <Text style={{ fontSize: 40, marginBottom: 8 }}>👑</Text>
+              <Text style={s.premiumHeroTitle}>Premium Bereich</Text>
+              <Text style={s.premiumHeroSub}>
+                Dein exklusiver Zugang zu Zyklustracker, Mondkalender & geführten Meditationen
+              </Text>
+              <View style={s.premiumHeroFeatures}>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🌸</Text>
+                  <Text style={s.premiumFeatureText}>Persönlicher Zyklustracker</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🌙</Text>
+                  <Text style={s.premiumFeatureText}>Mondphasen-Kalender 2026</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>🧘</Text>
+                  <Text style={s.premiumFeatureText}>Exklusive Meditationen</Text>
+                </View>
+                <View style={s.premiumFeatureRow}>
+                  <Text style={s.premiumFeatureIcon}>📝</Text>
+                  <Text style={s.premiumFeatureText}>Symptom- & Stimmungstracking</Text>
+                </View>
+              </View>
+              <View style={s.premiumHeroBtn}>
+                <Text style={s.premiumHeroBtnText}>Jetzt entdecken →</Text>
+              </View>
             </View>
-            <Text style={{ fontSize: 18, color: C.gold }}>›</Text>
           </TouchableOpacity>
 
           {/* ── Meditationen Sektion ── */}
           <MeditationenSektion audio={audio} />
+
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── FRAGE AN DIE SEELENPLANERIN ── */}
+          {/* ══════════════════════════════════════════════ */}
+          <View style={s.qaSection}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <Text style={s.sec}>🌙 Frage an die Seelenplanerin</Text>
+              <TouchableOpacity
+                style={s.qaAskBtn}
+                onPress={() => { setShowNewFrage(!showNewFrage); setFrageGesendet(false); }}
+                activeOpacity={0.8}
+              >
+                <Text style={s.qaAskBtnText}>{showNewFrage ? "✕ Schließen" : "✨ Frage stellen"}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {frageGesendet && (
+              <View style={s.qaSuccessBox}>
+                <Text style={{ fontSize: 18, marginBottom: 4 }}>✅</Text>
+                <Text style={s.qaSuccessText}>Deine Frage wurde gesendet! Die Seelenplanerin wird sie bald beantworten.</Text>
+              </View>
+            )}
+
+            {showNewFrage && (
+              <View style={s.qaInputCard}>
+                <Text style={s.qaInputLabel}>Deine Frage an die Seelenplanerin</Text>
+                <TextInput
+                  style={[s.qaInput, { height: 80, textAlignVertical: "top" }]}
+                  placeholder="Was möchtest du wissen? Stelle deine Frage..."
+                  placeholderTextColor={C.muted}
+                  value={newFrage}
+                  onChangeText={setNewFrage}
+                  multiline
+                  maxLength={300}
+                />
+                <Text style={s.qaCharCount}>{newFrage.length}/300</Text>
+                <TouchableOpacity
+                  style={[s.qaSendBtn, !newFrage.trim() && { opacity: 0.5 }]}
+                  onPress={handleSendFrage}
+                  disabled={!newFrage.trim()}
+                  activeOpacity={0.85}
+                >
+                  <Text style={s.qaSendBtnText}>Frage senden \u2192</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Beantwortete Fragen */}
+            {qaFragen.filter(f => f.antwort).length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                {qaFragen.filter(f => f.antwort).map(f => (
+                  <View key={f.id} style={s.qaCard}>
+                    <View style={s.qaFrageRow}>
+                      <View style={s.qaFrageAvatar}>
+                        <Text style={{ fontSize: 14 }}>🙋</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.qaFrageVon}>{f.von}</Text>
+                        <Text style={s.qaFrageDatum}>{formatDatum(f.datum)}</Text>
+                      </View>
+                    </View>
+                    <Text style={s.qaFrageText}>{f.frage}</Text>
+                    {f.antwort && (
+                      <View style={s.qaAntwortBox}>
+                        <View style={s.qaAntwortHeader}>
+                          <View style={s.qaAntwortAvatar}>
+                            <Text style={{ fontSize: 12 }}>🌸</Text>
+                          </View>
+                          <Text style={s.qaAntwortVon}>Die Seelenplanerin</Text>
+                          {f.antwortDatum && <Text style={s.qaAntwortDatum}>{formatDatum(f.antwortDatum)}</Text>}
+                        </View>
+                        <Text style={s.qaAntwortText}>{f.antwort}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Unbeantwortete Fragen */}
+            {qaFragen.filter(f => !f.antwort).length > 0 && (
+              <View style={{ marginBottom: 8 }}>
+                <Text style={{ fontSize: 13, color: C.muted, marginHorizontal: 16, marginBottom: 8, fontStyle: "italic" }}>Warten auf Antwort...</Text>
+                {qaFragen.filter(f => !f.antwort).map(f => (
+                  <View key={f.id} style={[s.qaCard, { borderStyle: "dashed" as any }]}>
+                    <View style={s.qaFrageRow}>
+                      <View style={s.qaFrageAvatar}>
+                        <Text style={{ fontSize: 14 }}>🙋</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={s.qaFrageVon}>{f.von}</Text>
+                        <Text style={s.qaFrageDatum}>{formatDatum(f.datum)}</Text>
+                      </View>
+                    </View>
+                    <Text style={s.qaFrageText}>{f.frage}</Text>
+                    {isAdmin ? (
+                      replyingTo === f.id ? (
+                        <View style={{ marginTop: 10 }}>
+                          <TextInput
+                            style={[s.qaInput, { height: 80, textAlignVertical: "top" }]}
+                            placeholder="Deine Antwort als Seelenplanerin..."
+                            placeholderTextColor={C.muted}
+                            value={replyText}
+                            onChangeText={setReplyText}
+                            multiline
+                            maxLength={500}
+                          />
+                          <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+                            <TouchableOpacity
+                              style={[s.qaSendBtn, { flex: 1 }]}
+                              onPress={async () => {
+                                if (!replyText.trim()) return;
+                                const updated = qaFragen.map(q =>
+                                  q.id === f.id ? { ...q, antwort: replyText.trim(), antwortDatum: new Date().toISOString() } : q
+                                );
+                                setQaFragen(updated);
+                                await saveQAFragen(updated);
+                                setReplyingTo(null);
+                                setReplyText("");
+                              }}
+                              activeOpacity={0.85}
+                            >
+                              <Text style={s.qaSendBtnText}>Antworten</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                              style={[s.qaSendBtn, { flex: 0.5, backgroundColor: C.surface }]}
+                              onPress={() => { setReplyingTo(null); setReplyText(""); }}
+                              activeOpacity={0.85}
+                            >
+                              <Text style={[s.qaSendBtnText, { color: C.muted }]}>Abbrechen</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ) : (
+                        <TouchableOpacity
+                          style={{ marginTop: 10, backgroundColor: C.goldLight, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, alignItems: "center", borderWidth: 1, borderColor: "#E8D5B0" }}
+                          onPress={() => { setReplyingTo(f.id); setReplyText(""); }}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={{ color: C.brown, fontWeight: "700", fontSize: 13 }}>💌 Jetzt antworten</Text>
+                        </TouchableOpacity>
+                      )
+                    ) : (
+                      <Text style={{ fontSize: 12, color: C.muted, fontStyle: "italic", marginTop: 8 }}>🕒 Die Seelenplanerin wird bald antworten...</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
 
           <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
@@ -1019,6 +1276,34 @@ export default function CommunityScreen() {
             </View>
           ))}
 
+          {/* ══════════════════════════════════════════════ */}
+          {/* ── E-MAIL-EINWILLIGUNG (DSGVO) ── */}
+          {/* ══════════════════════════════════════════════ */}
+          <View style={s.consentSection}>
+            <Text style={s.sec}>✉️ E-Mail-Benachrichtigungen</Text>
+            <View style={s.consentCard}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={s.consentTitle}>Ich möchte E-Mails von der Seelenplanerin erhalten</Text>
+                <Text style={s.consentDesc}>
+                  Neuigkeiten, Rituale, Mondphasen-Tipps und exklusive Inhalte direkt in dein Postfach.
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[s.toggleTrack, emailConsent && s.toggleTrackActive]}
+                onPress={() => handleToggleEmailConsent(!emailConsent)}
+                activeOpacity={0.8}
+                disabled={consentLoading}
+              >
+                <View style={[s.toggleThumb, emailConsent && s.toggleThumbActive]} />
+              </TouchableOpacity>
+            </View>
+            <Text style={s.consentHint}>
+              {emailConsent
+                ? "✅ Du erhältst E-Mails von der Seelenplanerin. Du kannst dies jederzeit hier deaktivieren."
+                : "Du erhältst aktuell keine E-Mails. Aktiviere den Toggle, um dabei zu sein."}
+            </Text>
+          </View>
+
           <TouchableOpacity
             style={s.instagramCard}
             onPress={() => Linking.openURL("https://www.instagram.com/die.seelenplanerin")}
@@ -1042,7 +1327,7 @@ export default function CommunityScreen() {
 const s = StyleSheet.create({
   loginContainer: { flexGrow: 1, backgroundColor: C.bg, padding: 24, justifyContent: "center", alignItems: "center", minHeight: 600 },
   loginEmoji: { fontSize: 60, marginBottom: 16 },
-  loginTitel: { fontSize: 28, fontWeight: "700", color: C.brown, marginBottom: 8 },
+  loginTitel: { fontSize: 32, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "DancingScript" },
   loginSub: { fontSize: 14, color: C.muted, textAlign: "center", lineHeight: 21, marginBottom: 20, maxWidth: 300 },
   tabRow: { flexDirection: "row", marginBottom: 16, backgroundColor: C.surface, borderRadius: 12, padding: 3, width: "100%" },
   tab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: "center" },
@@ -1060,7 +1345,7 @@ const s = StyleSheet.create({
   seelenimpulsBtn: { backgroundColor: C.goldLight, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20, borderWidth: 1, borderColor: "#E8D5B0", width: "100%" },
   seelenimpulsBtnText: { fontSize: 14, color: C.brown, fontWeight: "700", textAlign: "center" },
   header: { backgroundColor: C.roseLight, padding: 20, paddingTop: 24 },
-  headerTitle: { fontSize: 26, fontWeight: "700", color: C.brown },
+  headerTitle: { fontSize: 30, fontWeight: "700", color: C.brown, fontFamily: "DancingScript" },
   headerSub: { fontSize: 14, color: C.muted, marginTop: 4 },
   logoutBtn: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: C.card, borderRadius: 10, borderWidth: 1, borderColor: C.border },
   logoutText: { fontSize: 12, color: C.muted },
@@ -1085,13 +1370,95 @@ const s = StyleSheet.create({
   instagramCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: C.card, borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: C.border },
   instagramTitel: { fontSize: 14, fontWeight: "700", color: C.brown },
   instagramHandle: { fontSize: 13, color: C.rose },
-  premiumBanner: {
-    marginHorizontal: 16, marginTop: 16, backgroundColor: C.goldLight,
-    borderRadius: 16, padding: 16, flexDirection: "row", alignItems: "center",
-    gap: 12, borderWidth: 1, borderColor: "#E8D5B0",
+  premiumHero: {
+    marginHorizontal: 16, marginTop: 16, marginBottom: 4,
+    borderRadius: 24, overflow: "hidden",
+    shadowColor: "#C9A96E", shadowOpacity: 0.25, shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
-  premiumBannerTitle: { fontSize: 15, fontWeight: "700", color: C.brown },
-  premiumBannerSub: { fontSize: 12, color: C.muted },
+  premiumHeroInner: {
+    backgroundColor: "#F9EDE8", borderRadius: 24, padding: 24,
+    alignItems: "center", borderWidth: 1, borderColor: "#EDD9D0",
+  },
+  premiumHeroTitle: {
+    fontSize: 24, fontWeight: "800", color: C.brown, marginBottom: 8,
+    letterSpacing: 1,
+  },
+  premiumHeroSub: {
+    fontSize: 14, color: C.brownMid, textAlign: "center",
+    lineHeight: 21, marginBottom: 16, maxWidth: 280,
+  },
+  premiumHeroFeatures: {
+    width: "100%", marginBottom: 16,
+  },
+  premiumFeatureRow: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingVertical: 6, paddingHorizontal: 12,
+  },
+  premiumFeatureIcon: { fontSize: 18 },
+  premiumFeatureText: {
+    fontSize: 14, color: C.brownMid, fontWeight: "600",
+  },
+  premiumHeroBtn: {
+    backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+    paddingHorizontal: 32, alignItems: "center", width: "100%",
+  },
+  premiumHeroBtnText: {
+    color: "#FFF", fontSize: 16, fontWeight: "700",
+  },
+
+  // Q&A – Frage an die Seelenplanerin
+  qaSection: { marginTop: 8 },
+  qaAskBtn: {
+    backgroundColor: C.goldLight, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8,
+    marginRight: 16, borderWidth: 1, borderColor: "#E8D5B0",
+  },
+  qaAskBtnText: { color: C.brown, fontSize: 13, fontWeight: "700" },
+  qaSuccessBox: {
+    marginHorizontal: 16, marginBottom: 12, backgroundColor: "#F0F7F0",
+    borderRadius: 16, padding: 16, alignItems: "center",
+    borderWidth: 1, borderColor: "#C8E6C9",
+  },
+  qaSuccessText: { fontSize: 13, color: "#2E7D32", textAlign: "center", fontWeight: "600", lineHeight: 20 },
+  qaInputCard: {
+    marginHorizontal: 16, marginBottom: 16, backgroundColor: C.card,
+    borderRadius: 20, padding: 20, borderWidth: 1, borderColor: C.gold,
+  },
+  qaInputLabel: { fontSize: 13, color: C.brownMid, fontWeight: "600", marginBottom: 8 },
+  qaInput: {
+    backgroundColor: C.surface, borderRadius: 12, padding: 14, fontSize: 14,
+    color: C.brown, borderWidth: 1, borderColor: C.border, marginBottom: 4,
+  },
+  qaCharCount: { fontSize: 11, color: C.muted, textAlign: "right", marginBottom: 8 },
+  qaSendBtn: {
+    backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+    alignItems: "center", marginTop: 4,
+  },
+  qaSendBtnText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
+  qaCard: {
+    marginHorizontal: 16, marginBottom: 12, backgroundColor: C.card,
+    borderRadius: 16, padding: 16, borderWidth: 1, borderColor: C.border,
+  },
+  qaFrageRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
+  qaFrageAvatar: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: C.goldLight,
+    alignItems: "center", justifyContent: "center",
+  },
+  qaFrageVon: { fontSize: 14, fontWeight: "700", color: C.brown },
+  qaFrageDatum: { fontSize: 11, color: C.muted },
+  qaFrageText: { fontSize: 14, color: C.brownMid, lineHeight: 21 },
+  qaAntwortBox: {
+    marginTop: 12, backgroundColor: C.roseLight, borderRadius: 14,
+    padding: 14, borderLeftWidth: 3, borderLeftColor: C.rose,
+  },
+  qaAntwortHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  qaAntwortAvatar: {
+    width: 28, height: 28, borderRadius: 14, backgroundColor: C.rose,
+    alignItems: "center", justifyContent: "center",
+  },
+  qaAntwortVon: { fontSize: 13, fontWeight: "700", color: C.brown },
+  qaAntwortDatum: { fontSize: 11, color: C.muted, marginLeft: "auto" },
+  qaAntwortText: { fontSize: 13, color: C.brownMid, lineHeight: 20 },
 
   // Neuer Beitrag
   newPostSection: { marginTop: 4 },
@@ -1124,4 +1491,31 @@ const s = StyleSheet.create({
     alignItems: "center", justifyContent: "center", marginLeft: 8,
   },
   deleteBtnText: { fontSize: 14, color: "#C87C82", fontWeight: "700" },
+
+  // E-Mail-Einwilligung
+  consentSection: { marginTop: 8 },
+  consentCard: {
+    marginHorizontal: 16, backgroundColor: C.card, borderRadius: 16,
+    padding: 16, borderWidth: 1, borderColor: C.border,
+    flexDirection: "row", alignItems: "center",
+  },
+  consentTitle: { fontSize: 14, fontWeight: "700", color: C.brown, marginBottom: 4 },
+  consentDesc: { fontSize: 12, color: C.muted, lineHeight: 18 },
+  consentHint: {
+    fontSize: 12, color: C.muted, fontStyle: "italic",
+    marginHorizontal: 16, marginTop: 8, lineHeight: 18,
+  },
+  toggleTrack: {
+    width: 52, height: 30, borderRadius: 15,
+    backgroundColor: "#E0D6CE", justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  toggleTrackActive: { backgroundColor: C.rose },
+  toggleThumb: {
+    width: 24, height: 24, borderRadius: 12,
+    backgroundColor: "#FFF",
+    shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 }, elevation: 3,
+  },
+  toggleThumbActive: { alignSelf: "flex-end" as const },
 });

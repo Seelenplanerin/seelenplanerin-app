@@ -328,28 +328,28 @@ export default function MusikScreen() {
           <Text style={st.sectionTitle}>Überall hören</Text>
           <View style={st.platformsRow}>
             <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#191414" }]}
+              style={[st.platformCard, { backgroundColor: "#D4E8D0" }]}
               onPress={() => Linking.openURL(SPOTIFY_ARTIST)}
               activeOpacity={0.85}
             >
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>🟢</Text>
-              <Text style={st.platformName}>Spotify</Text>
+              <Text style={{ fontSize: 24, marginBottom: 6 }}>🎧</Text>
+              <Text style={[st.platformName, { color: "#5C7A56" }]}>Spotify</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#FC3C44" }]}
+              style={[st.platformCard, { backgroundColor: "#F2D4D7" }]}
               onPress={() => Linking.openURL("https://music.apple.com/")}
               activeOpacity={0.85}
             >
               <Text style={{ fontSize: 24, marginBottom: 6 }}>🎵</Text>
-              <Text style={st.platformName}>Apple Music</Text>
+              <Text style={[st.platformName, { color: "#9B5A60" }]}>Apple Music</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#FF0000" }]}
+              style={[st.platformCard, { backgroundColor: "#F5DDD0" }]}
               onPress={() => Linking.openURL("https://www.youtube.com/")}
               activeOpacity={0.85}
             >
               <Text style={{ fontSize: 24, marginBottom: 6 }}>▶️</Text>
-              <Text style={st.platformName}>YouTube</Text>
+              <Text style={[st.platformName, { color: "#A0674B" }]}>YouTube</Text>
             </TouchableOpacity>
           </View>
 
@@ -418,9 +418,9 @@ export default function MusikScreen() {
                     {song.beschreibung}
                   </Text>
                   <View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
-                    {song.spotifyUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#1DB954", fontWeight: "600" }}>● Spotify</Text>}
-                    {song.appleMusicUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#FC3C44", fontWeight: "600" }}>● Apple</Text>}
-                    {song.youtubeUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#FF0000", fontWeight: "600" }}>● YouTube</Text>}
+                    {song.spotifyUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#7BA876", fontWeight: "600" }}>● Spotify</Text>}
+                    {song.appleMusicUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#C4826A", fontWeight: "600" }}>● Apple</Text>}
+                    {song.youtubeUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#C4826A", fontWeight: "600" }}>● YouTube</Text>}
                   </View>
                 </View>
                 {song.verfuegbar ? (
@@ -513,17 +513,18 @@ const st = StyleSheet.create({
   // Spotify Banner
   spotifyBanner: {
     marginHorizontal: 16, marginTop: 8, marginBottom: 16,
-    backgroundColor: "#191414", borderRadius: 20, padding: 20,
+    backgroundColor: C.roseLight, borderRadius: 20, padding: 20,
     flexDirection: "row", alignItems: "center",
+    borderWidth: 1, borderColor: C.border,
   },
   spotifyIcon: {
-    width: 56, height: 56, borderRadius: 28, backgroundColor: "#1DB954",
+    width: 56, height: 56, borderRadius: 28, backgroundColor: "#D4E8D0",
     alignItems: "center", justifyContent: "center", marginRight: 14,
   },
-  spotifyTitle: { fontSize: 17, fontWeight: "700", color: "#FFF", marginBottom: 2 },
-  spotifySubtitle: { fontSize: 13, color: "#1DB954", fontWeight: "600", marginBottom: 2 },
-  spotifyDesc: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
-  spotifyBadge: { backgroundColor: "#1DB954", borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8 },
+  spotifyTitle: { fontSize: 17, fontWeight: "700", color: C.brown, marginBottom: 2 },
+  spotifySubtitle: { fontSize: 13, color: C.rose, fontWeight: "600", marginBottom: 2 },
+  spotifyDesc: { fontSize: 11, color: C.muted },
+  spotifyBadge: { backgroundColor: C.rose, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 8 },
   spotifyBadgeText: { color: "#FFF", fontSize: 13, fontWeight: "700" },
 
   // Plattformen

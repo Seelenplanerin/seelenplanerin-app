@@ -7,6 +7,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { getApiBaseUrl } from "@/constants/oauth";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -91,14 +92,40 @@ export default function MeditationScreen() {
 
   const loadMeditationen = useCallback(async () => {
     try {
+      // Zuerst aus der Datenbank laden (sichtbar auf ALLEN Geräten)
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/meditations.listAll`);
+      const data = await res.json();
+      const dbItems = data?.result?.data?.json;
+      if (Array.isArray(dbItems) && dbItems.length > 0) {
+        const mapped: Meditation[] = dbItems.map((m: any) => ({
+          id: String(m.id),
+          titel: m.title,
+          dauer: m.dauer || "",
+          beschreibung: m.description || "",
+          emoji: m.emoji || "🧘‍♀️",
+          kategorie: "geführt" as Meditation["kategorie"],
+          spotifyUrl: m.spotifyUrl,
+          appleMusicUrl: m.appleMusicUrl,
+          mp3Url: m.audioUrl,
+        }));
+        setMeditationen(mapped);
+        return;
+      }
+    } catch {}
+    // Fallback: AsyncStorage (für ältere Einträge)
+    try {
       const stored = await AsyncStorage.getItem("lara_meditationen");
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMeditationen(parsed);
+          return;
         }
       }
     } catch {}
+    // Letzer Fallback: Standard-Meditationen
+    setMeditationen(DEFAULT_MEDITATIONEN);
   }, []);
 
   useFocusEffect(
@@ -177,7 +204,7 @@ export default function MeditationScreen() {
                     <Text style={s.streamBadge}>🟢 Spotify</Text>
                   ) : null}
                   {m.appleMusicUrl ? (
-                    <Text style={[s.streamBadge, { backgroundColor: "#FC3C44" + "20", color: "#FC3C44" }]}>🔴 Apple</Text>
+                    <Text style={[s.streamBadge, { backgroundColor: "#C4826A" + "20", color: "#C4826A" }]}>🎵 Apple</Text>
                   ) : null}
                   {!m.spotifyUrl && !m.appleMusicUrl ? (
                     <Text style={[s.streamBadge, { backgroundColor: C.goldLight, color: C.gold }]}>Bald verfügbar</Text>
@@ -231,8 +258,8 @@ const s = StyleSheet.create({
   meditationDauer: { fontSize: 12, fontWeight: "600", color: C.rose, backgroundColor: C.roseLight, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: "hidden" },
   meditationBeschreibung: { fontSize: 12, color: C.muted, marginTop: 4, lineHeight: 18 },
   streamBadge: {
-    fontSize: 11, fontWeight: "600", color: "#1DB954",
-    backgroundColor: "#1DB954" + "20", paddingHorizontal: 8, paddingVertical: 3,
+    fontSize: 11, fontWeight: "600", color: "#7BA876",
+    backgroundColor: "#7BA876" + "20", paddingHorizontal: 8, paddingVertical: 3,
     borderRadius: 8, overflow: "hidden",
   },
   adminHint: {

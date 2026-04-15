@@ -1,8 +1,11 @@
 import React, { useMemo } from "react";
+import { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Image, Dimensions, Linking,
+  StyleSheet, Image, Dimensions, Linking, TextInput, Alert, Platform,
 } from "react-native";
+import { getApiBaseUrl } from "@/constants/oauth";
+import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 
@@ -96,6 +99,34 @@ export default function AktuellesScreen() {
     return IMPULSE[day % IMPULSE.length];
   }, []);
 
+  // Academy Warteliste
+  const [academyEmail, setAcademyEmail] = useState("");
+  const [academyDone, setAcademyDone] = useState(false);
+  const [academyLoading, setAcademyLoading] = useState(false);
+
+  const handleAcademySignup = async () => {
+    if (!academyEmail.trim() || !academyEmail.includes("@")) {
+      if (Platform.OS === "web") { window.alert("Bitte gib eine gültige E-Mail-Adresse ein."); }
+      else { Alert.alert("Fehler", "Bitte gib eine gültige E-Mail-Adresse ein."); }
+      return;
+    }
+    setAcademyLoading(true);
+    try {
+      const base = getApiBaseUrl();
+      await fetch(`${base}/api/trpc/academy.joinWaitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: academyEmail.trim().toLowerCase() } }),
+      });
+      setAcademyDone(true);
+      setAcademyEmail("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAcademyLoading(false);
+    }
+  };
+
   return (
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
       <ScrollView style={s.scroll} showsVerticalScrollIndicator={false}>
@@ -121,19 +152,29 @@ export default function AktuellesScreen() {
         </View>
 
         {/* ── BEGRÜSSUNG ── */}
-        <View style={s.greetingBox}>
+        <LinearGradient
+          colors={["#FDF0EA", "#F9E4D8", "#F5D9CC"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={s.greetingBox}
+        >
           <Text style={s.greetingTitle}>Schön, dass du da bist. 🌸</Text>
           <Text style={s.greetingText}>
             Ich bin die Seelenplanerin. Hier findest du Rituale, Mondenergie, Runen und Impulse für deine Seele. Dieser Raum gehört dir.
           </Text>
-        </View>
+        </LinearGradient>
 
         {/* ── TAGESIMPULS ── */}
-        <View style={s.impulsCard}>
+        <LinearGradient
+          colors={["#FAF3E7", "#F5E6D0", "#F0D9BC"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={s.impulsCard}
+        >
           <Text style={s.impulsLabel}>✨ Dein Tagesimpuls</Text>
           <Text style={s.impulsText}>"{impuls}"</Text>
           <Text style={s.impulsCredit}>— Die Seelenplanerin</Text>
-        </View>
+        </LinearGradient>
 
         {/* ── MONDPHASE (erweitert mit Tierkreiszeichen) ── */}
         <TouchableOpacity
@@ -208,23 +249,43 @@ export default function AktuellesScreen() {
         <TouchableOpacity
           style={{
             marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
-            backgroundColor: "#1A1F33", borderWidth: 1, borderColor: "rgba(212,168,83,0.4)",
+            backgroundColor: C.goldLight, borderWidth: 1, borderColor: "#E8D5B0",
             padding: 14, flexDirection: "row", alignItems: "center", gap: 12,
           }}
           onPress={() => router.push("/mondtyp-quiz" as any)}
           activeOpacity={0.85}
         >
-          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(212,168,83,0.2)", alignItems: "center", justifyContent: "center" }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(201,169,110,0.2)", alignItems: "center", justifyContent: "center" }}>
             <Text style={{ fontSize: 22 }}>🌙</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 15, fontWeight: "700", color: "#D4A853" }}>Dein Mondtyp-Quiz</Text>
-            <Text style={{ fontSize: 11, color: "#8892A8", marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown }}>Dein Mondtyp-Quiz</Text>
+            <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Finde heraus, welcher Mondtyp du bist</Text>
           </View>
-          <Text style={{ fontSize: 16, color: "#D4A853" }}>›</Text>
+          <Text style={{ fontSize: 16, color: C.gold }}>›</Text>
         </TouchableOpacity>
 
-        {/* ── KATEGORIEN ── */}
+        {/* ══ HEILSTEIN-QUIZ ══ */}
+        <TouchableOpacity
+          style={{
+            marginHorizontal: 16, marginBottom: 16, borderRadius: 16,
+            backgroundColor: "#F5EDE8", borderWidth: 1, borderColor: "#EDD9D0",
+            padding: 14, flexDirection: "row", alignItems: "center", gap: 12,
+          }}
+          onPress={() => router.push("/heilstein-quiz" as any)}
+          activeOpacity={0.85}
+        >
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(196,130,106,0.15)", alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontSize: 22 }}>🔮</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 15, fontWeight: "700", color: C.brown }}>Welcher Heilstein gehört zu dir?</Text>
+            <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>12 Fragen · dein persönliches Ergebnis</Text>
+          </View>
+          <Text style={{ fontSize: 16, color: C.rose }}>›</Text>
+        </TouchableOpacity>
+
+        {/* ══ KATEGORIEN ══ */}
         <Text style={s.sectionTitle}>Entdecke die Seelenplanerin</Text>
         <View style={s.kategorienGrid}>
           {KATEGORIEN.map(kat => (
@@ -243,19 +304,144 @@ export default function AktuellesScreen() {
 
         {/* ── SEELENIMPULS PREMIUM ── */}
         <TouchableOpacity
-          style={s.premiumCard}
           onPress={() => router.push("/seelenimpuls" as any)}
           activeOpacity={0.85}
         >
-          <Text style={s.premiumCrown}>👑</Text>
-          <Text style={s.premiumTitle}>Seelenimpuls</Text>
-          <Text style={s.premiumDesc}>
-            Exklusive Meditationen, tiefe Rituale, persönliche Impulse von der Seelenplanerin – nur für dich.
-          </Text>
-          <View style={s.premiumBadge}>
-            <Text style={s.premiumBadgeText}>17 € / Monat · Jetzt entdecken →</Text>
-          </View>
+          <LinearGradient
+            colors={["#F9EDE8", "#F5E0D6", "#F0D4C6"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.premiumCard}
+          >
+            <Text style={s.premiumCrown}>👑</Text>
+            <Text style={s.premiumTitle}>Seelenimpuls</Text>
+            <Text style={s.premiumDesc}>
+              Exklusive Meditationen, tiefe Rituale, persönliche Impulse von der Seelenplanerin – nur für dich.
+            </Text>
+            <View style={s.premiumBadge}>
+              <Text style={s.premiumBadgeText}>17 € / Monat · Jetzt entdecken →</Text>
+            </View>
+          </LinearGradient>
         </TouchableOpacity>
+
+        {/* ══════════════════════════════════════════════════════════
+            GEBEN & NEHMEN – AFFILIATE
+            ══════════════════════════════════════════════════════════ */}
+        <TouchableOpacity
+          onPress={() => router.push("/affiliate" as any)}
+          activeOpacity={0.85}
+        >
+          <LinearGradient
+            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              marginHorizontal: 16, marginTop: 16, borderRadius: 20,
+              padding: 20, borderWidth: 1, borderColor: "#E8D5B0",
+              overflow: "hidden" as const,
+            }}
+          >
+            <Text style={{ fontSize: 32, textAlign: "center", marginBottom: 8 }}>🤝</Text>
+            <Text style={{
+              fontSize: 20, fontWeight: "700", color: C.brown,
+              textAlign: "center", marginBottom: 8, fontFamily: "serif",
+            }}>Geben & Nehmen</Text>
+            <Text style={{
+              fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center", marginBottom: 12,
+            }}>
+              Empfiehl Die Seelenplanerin und verdiene <Text style={{ fontWeight: "700", color: C.gold }}>20% Provision</Text> auf jeden Verkauf – auf alles, was über deinen persönlichen Link gekauft wird.
+            </Text>
+            <Text style={{
+              fontSize: 13, color: C.brownMid, lineHeight: 20, textAlign: "center", marginBottom: 16,
+            }}>
+              Egal ob Armbänder, Kerzen, Aura Readings, Soul Talks oder der Seelenimpuls – du verdienst auf alles mit. Kein Mindestbetrag, keine versteckten Bedingungen. Einfach Name und E-Mail eingeben, sofort deinen Link bekommen und loslegen.
+            </Text>
+            <View style={{
+              backgroundColor: C.gold, borderRadius: 14, paddingVertical: 14,
+              alignItems: "center", marginTop: 4,
+            }}>
+              <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 15 }}>Jetzt anmelden & Link holen →</Text>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        {/* ══════════════════════════════════════════════════════════
+            SEELEN ACADEMY – COMING SOON
+            ══════════════════════════════════════════════════════════ */}
+        <View style={s.academyCard}>
+          <LinearGradient
+            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.academyGradient}
+          >
+            <Text style={s.academyEmoji}>🎓</Text>
+            <Text style={s.academyTitle}>Seelen Academy</Text>
+            <Text style={s.academySubtitle}>Ich möchte ausbilden</Text>
+            <Text style={s.academyDesc}>
+              Lerne von der Seelenplanerin und werde selbst zur spirituellen Begleiterin. Tiefes Wissen, das dein Leben und das anderer transformiert.
+            </Text>
+
+            {/* Ausbildungen */}
+            <View style={s.academyCourses}>
+              <View style={s.academyCourseRow}>
+                <Text style={s.academyCourseEmoji}>👁️</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.academyCourseName}>Aura Reading Ausbildung</Text>
+                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
+                </View>
+              </View>
+              <View style={s.academyCourseDivider} />
+              <View style={s.academyCourseRow}>
+                <Text style={s.academyCourseEmoji}>🌀</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.academyCourseName}>Theta Healing Ausbildung</Text>
+                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Warteliste */}
+            {academyDone ? (
+              <View style={s.academySuccessBox}>
+                <Text style={s.academySuccessEmoji}>💌</Text>
+                <Text style={s.academySuccessText}>
+                  Du bist auf der Warteliste! Ich melde mich bei dir, sobald es losgeht.
+                </Text>
+              </View>
+            ) : (
+              <View style={s.academyWaitlist}>
+                <Text style={s.academyWaitlistTitle}>
+                  Trag dich auf die Warteliste ein
+                </Text>
+                <Text style={s.academyWaitlistDesc}>
+                  Sei die Erste, die erfährt, wenn die Ausbildungen starten.
+                </Text>
+                <TextInput
+                  style={s.academyInput}
+                  placeholder="Deine E-Mail-Adresse"
+                  placeholderTextColor={C.muted}
+                  value={academyEmail}
+                  onChangeText={setAcademyEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="done"
+                  onSubmitEditing={handleAcademySignup}
+                />
+                <TouchableOpacity
+                  style={[s.academyBtn, academyLoading && { opacity: 0.6 }]}
+                  onPress={handleAcademySignup}
+                  disabled={academyLoading}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.academyBtnText}>
+                    {academyLoading ? "Wird eingetragen..." : "✨ Auf die Warteliste"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </LinearGradient>
+        </View>
 
         {/* ── INSTAGRAM ── */}
         <TouchableOpacity
@@ -295,15 +481,17 @@ const s = StyleSheet.create({
   },
   heroLogo: { width: 90, height: 110 },
   greetingBox: {
-    backgroundColor: C.roseLight, padding: 20, marginHorizontal: 16,
+    padding: 20, marginHorizontal: 16,
     marginTop: 16, borderRadius: 20, borderWidth: 1, borderColor: C.border,
+    overflow: "hidden" as const,
   },
-  greetingTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 8 },
+  greetingTitle: { fontSize: 24, fontWeight: "700", color: C.brown, marginBottom: 8, fontFamily: "DancingScript" },
   greetingText: { fontSize: 14, color: C.brownMid, lineHeight: 22 },
   impulsCard: {
-    margin: 16, backgroundColor: C.goldLight,
+    margin: 16,
     borderRadius: 20, padding: 20,
     borderWidth: 1, borderColor: "#E8D5B0",
+    overflow: "hidden" as const,
   },
   impulsLabel: {
     fontSize: 12, fontWeight: "700", color: C.gold,
@@ -315,22 +503,23 @@ const s = StyleSheet.create({
   // Mondphase (erweitert)
   mondCard: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: C.darkCard, borderRadius: 20, padding: 18,
+    backgroundColor: "#F5EDE6", borderRadius: 20, padding: 18,
     flexDirection: "row", alignItems: "center",
+    borderWidth: 1, borderColor: C.border,
   },
   mondLeft: { width: 70, alignItems: "center" },
   mondSymbol: { fontSize: 44 },
-  mondIllum: { fontSize: 11, color: C.gold, fontWeight: "700", marginTop: 4 },
+  mondIllum: { fontSize: 11, color: C.brownMid, fontWeight: "700", marginTop: 4 },
   mondRight: { flex: 1, marginLeft: 14 },
   mondLabel: {
-    fontSize: 11, color: "rgba(232,213,196,0.6)", fontWeight: "600",
+    fontSize: 11, color: C.muted, fontWeight: "600",
     textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 3,
   },
-  mondName: { fontSize: 18, fontWeight: "700", color: C.gold, marginBottom: 2 },
-  mondZodiac: { fontSize: 13, fontWeight: "600", color: "#E8D5C4", marginBottom: 2 },
-  mondEnergie: { fontSize: 12, color: "rgba(232,213,196,0.7)", lineHeight: 17 },
+  mondName: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 2 },
+  mondZodiac: { fontSize: 13, fontWeight: "600", color: C.brownMid, marginBottom: 2 },
+  mondEnergie: { fontSize: 12, color: C.muted, lineHeight: 17 },
   mondCountdown: {
-    fontSize: 11, color: "rgba(201,169,110,0.8)", fontWeight: "600", marginTop: 4,
+    fontSize: 11, color: C.gold, fontWeight: "600", marginTop: 4,
   },
 
   // Kerzen-Quiz (prominent)
@@ -353,7 +542,7 @@ const s = StyleSheet.create({
     fontSize: 12, fontWeight: "700" as any, color: C.goldLight,
     textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 4,
   },
-  kerzenTitle: { fontSize: 22, fontWeight: "800" as any, color: "#FFF", marginBottom: 6 },
+  kerzenTitle: { fontSize: 26, fontWeight: "800" as any, color: "#FFF", marginBottom: 6, fontFamily: "DancingScript" },
   kerzenDesc: { fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 18, marginBottom: 14 },
   kerzenBadge: {
     alignSelf: "flex-start" as const,
@@ -365,48 +554,127 @@ const s = StyleSheet.create({
   // Musik-Banner (prominent)
   musikBanner: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: "#191414", borderRadius: 20, padding: 18,
+    backgroundColor: "#C9A96E", borderRadius: 20, padding: 18,
     flexDirection: "row" as const, alignItems: "center" as const,
   },
   musikIconCircle: {
-    width: 52, height: 52, borderRadius: 26, backgroundColor: "#1DB954",
+    width: 52, height: 52, borderRadius: 26, backgroundColor: "rgba(255,255,255,0.25)",
     alignItems: "center" as const, justifyContent: "center" as const, marginRight: 14,
   },
   musikContent: { flex: 1 },
   musikTitle: { fontSize: 16, fontWeight: "700" as any, color: "#FFF", marginBottom: 2 },
-  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "#1DB954", marginBottom: 2 },
-  musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
+  musikSubtitle: { fontSize: 12, fontWeight: "600" as any, color: "rgba(255,255,255,0.9)", marginBottom: 2 },
+  musikDesc: { fontSize: 11, color: "rgba(255,255,255,0.7)" },
   musikPlayBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: "#1DB954",
+    width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.3)",
     alignItems: "center" as const, justifyContent: "center" as const,
   },
   musikPlayText: { color: "#FFF", fontSize: 18, fontWeight: "700" as any },
 
   // Kategorien
-  sectionTitle: { fontSize: 18, fontWeight: "700" as any, color: C.brown, marginHorizontal: 16, marginBottom: 12 },
-  kategorienGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, paddingHorizontal: 12, gap: 10, marginBottom: 16 },
+  sectionTitle: { fontSize: 22, fontWeight: "700" as any, color: C.brown, marginHorizontal: 16, marginBottom: 12, fontFamily: "DancingScript" },
+  kategorienGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, paddingHorizontal: 12, gap: 8, marginBottom: 16 },
   katCard: {
-    width: (width - 44) / 2,
-    backgroundColor: C.card, borderRadius: 18, padding: 16,
+    width: (width - 48) / 3,
+    backgroundColor: C.card, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 8,
     alignItems: "center" as const, borderWidth: 1, borderColor: C.border,
-    shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4,
+    shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 3,
     elevation: 1,
   },
-  katEmoji: { fontSize: 32, marginBottom: 8 },
-  katLabel: { fontSize: 14, fontWeight: "700" as any, color: C.brown, marginBottom: 4 },
-  katDesc: { fontSize: 11, color: C.muted, textAlign: "center" as const, lineHeight: 15 },
+  katEmoji: { fontSize: 26, marginBottom: 6 },
+  katLabel: { fontSize: 12, fontWeight: "700" as any, color: C.brown, marginBottom: 2 },
+  katDesc: { fontSize: 9, color: C.muted, textAlign: "center" as const, lineHeight: 13 },
 
   // Premium
   premiumCard: {
     marginHorizontal: 16, marginBottom: 16,
-    backgroundColor: C.brown, borderRadius: 20, padding: 20,
+    borderRadius: 20, padding: 20,
     alignItems: "center" as const,
+    overflow: "hidden" as const,
   },
   premiumCrown: { fontSize: 32, marginBottom: 8 },
-  premiumTitle: { fontSize: 22, fontWeight: "700" as any, color: C.goldLight, marginBottom: 8 },
-  premiumDesc: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
+  premiumTitle: { fontSize: 26, fontWeight: "700" as any, color: C.brown, marginBottom: 8, fontFamily: "DancingScript" },
+  premiumDesc: { fontSize: 14, color: C.brownMid, textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
   premiumBadge: { backgroundColor: C.gold, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
   premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
+
+  // Seelen Academy
+  academyCard: {
+    marginHorizontal: 16, marginTop: 16, marginBottom: 8,
+    borderRadius: 20, overflow: "hidden" as const,
+    borderWidth: 1, borderColor: "rgba(201,169,110,0.3)",
+  },
+  academyGradient: {
+    padding: 24, alignItems: "center" as const,
+  },
+  academyEmoji: { fontSize: 36, marginBottom: 10 },
+  academyTitle: {
+    fontSize: 26, fontWeight: "700" as any, color: C.brown,
+    marginBottom: 4, fontFamily: "DancingScript",
+  },
+  academySubtitle: {
+    fontSize: 15, fontWeight: "600" as any, color: C.brownMid,
+    marginBottom: 12, fontStyle: "italic" as const,
+  },
+  academyDesc: {
+    fontSize: 14, color: C.muted, textAlign: "center" as const,
+    lineHeight: 22, marginBottom: 16, paddingHorizontal: 8,
+  },
+  // Academy Kurse
+  academyCourses: {
+    width: "100%" as any, marginBottom: 20,
+    backgroundColor: "#FFFFFF", borderRadius: 16,
+    padding: 16, borderWidth: 1, borderColor: C.border,
+  },
+  academyCourseRow: {
+    flexDirection: "row" as const, alignItems: "center" as const, gap: 12,
+    paddingVertical: 8,
+  },
+  academyCourseEmoji: { fontSize: 28 },
+  academyCourseName: {
+    fontSize: 15, fontWeight: "700" as any, color: C.brown, marginBottom: 2,
+  },
+  academyCourseStatus: {
+    fontSize: 12, fontWeight: "600" as any, color: C.rose, fontStyle: "italic" as const,
+  },
+  academyCourseDivider: {
+    height: 1, backgroundColor: C.border, marginVertical: 4,
+  },
+  // Academy Warteliste
+  academyWaitlist: {
+    width: "100%" as any, alignItems: "center" as const,
+  },
+  academyWaitlistTitle: {
+    fontSize: 16, fontWeight: "700" as any, color: C.brown, marginBottom: 6,
+  },
+  academyWaitlistDesc: {
+    fontSize: 13, color: C.muted, textAlign: "center" as const,
+    lineHeight: 19, marginBottom: 14,
+  },
+  academyInput: {
+    width: "100%" as any, backgroundColor: "#FFFFFF",
+    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
+    fontSize: 15, color: C.brown, borderWidth: 1,
+    borderColor: C.border, marginBottom: 12,
+  },
+  academyBtn: {
+    backgroundColor: C.gold, borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 28, width: "100%" as any,
+    alignItems: "center" as const,
+  },
+  academyBtnText: {
+    color: "#FFF", fontSize: 15, fontWeight: "700" as any,
+  },
+  // Academy Erfolg
+  academySuccessBox: {
+    width: "100%" as any, alignItems: "center" as const,
+    backgroundColor: "#F0F7F0", borderRadius: 16,
+    padding: 20, borderWidth: 1, borderColor: "#C8E6C9",
+  },
+  academySuccessEmoji: { fontSize: 32, marginBottom: 8 },
+  academySuccessText: {
+    fontSize: 14, color: C.brown, textAlign: "center" as const, lineHeight: 22,
+  },
 
   // Instagram
   instaCard: {
