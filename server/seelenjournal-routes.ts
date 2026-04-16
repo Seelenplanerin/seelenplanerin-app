@@ -243,19 +243,29 @@ router.get("/admin/clients", authAdmin, async (_req: Request, res: Response) => 
 router.post("/admin/clients", authAdmin, async (req: Request, res: Response) => {
   try {
     const { email, password, name, readingDate, internalNote } = req.body;
+    console.log(`[Seelenjournal] POST /admin/clients - email: ${email}, name: ${name}`);
     if (!email || !password || !name) {
       res.status(400).json({ error: "E-Mail, Passwort und Name sind erforderlich" }); return;
     }
     const existing = await sjDb.getJournalClientByEmail(email);
     if (existing) { res.status(400).json({ error: "E-Mail bereits vorhanden" }); return; }
-    const id = await sjDb.createJournalClient({
-      email, password, name,
-      readingDate: readingDate ? new Date(readingDate) : null,
-      internalNote: internalNote || null,
-    });
+    // Timeout wrapper to prevent hanging DB operations
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error("Datenbank-Timeout: Operation dauerte zu lange (15s)")), 15000)
+    );
+    const id = await Promise.race([
+      sjDb.createJournalClient({
+        email, password, name,
+        readingDate: readingDate ? new Date(readingDate) : null,
+        internalNote: internalNote || null,
+      }),
+      timeoutPromise,
+    ]);
+    console.log(`[Seelenjournal] Klientin erstellt: id=${id}, email=${email}`);
     res.json({ success: true, id });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error(`[Seelenjournal] POST /admin/clients Fehler:`, err.message || err);
+    res.status(500).json({ error: err.message || "Unbekannter Fehler" });
   }
 });
 

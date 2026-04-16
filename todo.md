@@ -481,3 +481,13 @@
 - [x] Server-API fuer Klientinnen-CRUD und PDF-Upload
 - [x] Zugang zum Seelenjournal Admin im Admin-Bereich verlinkt
 - [x] Kundinnen-Ansicht: Mein Seelenjournal auf der Ich-Seite verlinkt
+## BUG: Seelenjournal Admin Klientin speichert nicht (16.04.2026)
+- [x] Seelenjournal Admin: Klientin anlegen speichert nicht – Bug fixen
+- [x] DB-Verbindung: statement_timeout (15s) und lock_timeout (10s) hinzugefügt
+- [x] DB-Verbindung: max connections auf 5 begrenzt (Render Free Tier)
+- [x] createJournalClient: Retry-Mechanismus mit DB-Reset bei Fehler
+- [x] Server-Route: Timeout-Wrapper (15s) für DB-Operationen
+- [x] Frontend: apiCall mit AbortController-Timeout (20s)
+- [x] Frontend: Ladeindikator beim Speichern + Erfolgs-/Fehlermeldungen
+- [x] DB-Reset-Endpunkt: /api/db-reset zum manuellen Zurücksetzen der Verbindung
+- [x] DB-Write-Test: /api/db-write-test zum Testen der Schreiboperationen

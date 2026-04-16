@@ -28,9 +28,14 @@ export async function getDb() {
       try {
         const client = postgres(process.env.DATABASE_URL, {
           ssl: sslConfig,
+          max: 5,
           connect_timeout: 30,
           idle_timeout: 20,
           max_lifetime: 60 * 5,
+          connection: {
+            statement_timeout: 15000,
+            lock_timeout: 10000,
+          },
         });
         _db = drizzle(client);
         _dbRetries = 0;

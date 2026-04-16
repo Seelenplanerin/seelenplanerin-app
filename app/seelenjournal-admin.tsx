@@ -75,18 +75,35 @@ export default function SeelenjournalAdminScreen() {
     return AsyncStorage.getItem("sj_admin_token");
   }
 
-  async function apiCall(path: string, options?: RequestInit) {
+  async function apiCall(path: string, options?: RequestInit & { timeoutMs?: number }) {
     const token = await getToken();
     const apiBase = getApiBaseUrl();
-    const res = await fetch(`${apiBase}/api/seelenjournal${path}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        ...(options?.headers || {}),
-      },
-    });
-    return res.json();
+    const controller = new AbortController();
+    const timeoutMs = options?.timeoutMs || 20000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(`${apiBase}/api/seelenjournal${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          ...(options?.headers || {}),
+        },
+      });
+      clearTimeout(timeoutId);
+      const data = await res.json();
+      if (!res.ok && data.error) {
+        throw new Error(data.error);
+      }
+      return data;
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      if (err.name === "AbortError") {
+        throw new Error("Zeitüberschreitung – bitte versuche es erneut.");
+      }
+      throw err;
+    }
   }
 
   // ── Login ──
@@ -149,29 +166,47 @@ export default function SeelenjournalAdminScreen() {
     setShowClientModal(true);
   }
 
+  const [saving, setSaving] = useState(false);
+
   async function saveClient() {
     if (!formName.trim() || !formEmail.trim()) {
       Alert.alert("Fehler", "Name und E-Mail sind erforderlich"); return;
     }
+    if (saving) return;
+    setSaving(true);
     try {
       if (editingClient) {
         const body: any = { name: formName.trim(), internalNote: formNote.trim() || null };
         if (formPassword.trim()) body.password = formPassword.trim();
         if (formReadingDate) body.readingDate = formReadingDate;
         await apiCall(`/admin/clients/${editingClient.id}`, { method: "PUT", body: JSON.stringify(body) });
+        Alert.alert("Erfolg", "Klientin aktualisiert");
       } else {
-        if (!formPassword.trim()) { Alert.alert("Fehler", "Passwort erforderlich"); return; }
-        await apiCall("/admin/clients", {
+        if (!formPassword.trim()) { setSaving(false); Alert.alert("Fehler", "Passwort erforderlich"); return; }
+        const result = await apiCall("/admin/clients", {
           method: "POST",
+          timeoutMs: 25000,
           body: JSON.stringify({
             email: formEmail.trim(), password: formPassword.trim(), name: formName.trim(),
             readingDate: formReadingDate || null, internalNote: formNote.trim() || null,
           }),
         });
+        if (result?.success) {
+          Alert.alert("Erfolg", `Klientin "${formName.trim()}" wurde angelegt`);
+        } else {
+          Alert.alert("Fehler", result?.error || "Klientin konnte nicht angelegt werden");
+          setSaving(false);
+          return;
+        }
       }
       setShowClientModal(false);
       loadClients();
-    } catch (err) { Alert.alert("Fehler", "Speichern fehlgeschlagen"); }
+    } catch (err: any) {
+      console.error("saveClient error:", err);
+      Alert.alert("Fehler", err.message || "Speichern fehlgeschlagen – bitte versuche es erneut.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function toggleClientActive(client: Client) {
@@ -838,8 +873,8 @@ export default function SeelenjournalAdminScreen() {
                   <TouchableOpacity style={s.cancelBtn} onPress={() => setShowClientModal(false)}>
                     <Text style={s.cancelBtnText}>Abbrechen</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={s.primaryBtn} onPress={saveClient}>
-                    <Text style={s.primaryBtnText}>Speichern</Text>
+                  <TouchableOpacity style={[s.primaryBtn, saving && { opacity: 0.6 }]} onPress={saveClient} disabled={saving}>
+                    {saving ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={s.primaryBtnText}>Speichern</Text>}
                   </TouchableOpacity>
                 </View>
               </ScrollView>

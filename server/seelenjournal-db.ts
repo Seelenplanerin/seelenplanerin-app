@@ -3,7 +3,7 @@
  * Separates Modul für das private Seelenjournal-Feature
  */
 import { eq, desc, and, sql } from "drizzle-orm";
-import { getDb } from "./db";
+import { getDb, resetDb } from "./db";
 import {
   seelenjournalClients,
   seelenjournalEntries,
@@ -43,16 +43,33 @@ export async function createJournalClient(data: {
   email: string; password: string; name: string;
   readingDate?: Date | null; internalNote?: string | null;
 }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(seelenjournalClients).values({
-    email: data.email.toLowerCase(),
-    password: data.password,
-    name: data.name,
-    readingDate: data.readingDate || null,
-    internalNote: data.internalNote || null,
-  }).returning({ id: seelenjournalClients.id });
-  return result[0].id;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    try {
+      console.log(`[SJ-DB] createJournalClient attempt ${attempt}: ${data.email}`);
+      const result = await db.insert(seelenjournalClients).values({
+        email: data.email.toLowerCase(),
+        password: data.password,
+        name: data.name,
+        readingDate: data.readingDate || null,
+        internalNote: data.internalNote || null,
+      }).returning({ id: seelenjournalClients.id });
+      console.log(`[SJ-DB] createJournalClient success: id=${result[0].id}`);
+      return result[0].id;
+    } catch (err: any) {
+      console.error(`[SJ-DB] createJournalClient attempt ${attempt} failed:`, err.message || err);
+      if (attempt === 1) {
+        // Reset connection and retry
+        console.log("[SJ-DB] Resetting DB connection for retry...");
+        resetDb();
+        await new Promise(r => setTimeout(r, 1000));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error("createJournalClient: Alle Versuche fehlgeschlagen");
 }
 
 export async function updateJournalClient(id: number, data: Partial<{

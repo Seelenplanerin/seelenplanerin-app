@@ -302,6 +302,48 @@ async function startServer() {
     }
   });
 
+  // DB-Reset-Endpunkt: Setzt die Datenbankverbindung zurück (bei hängenden Queries)
+  app.get("/api/db-reset", async (_req, res) => {
+    try {
+      console.log("[api] DB connection reset triggered");
+      const { resetDb } = await import("../db");
+      resetDb();
+      // Teste die neue Verbindung
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (db) {
+        res.json({ success: true, message: "DB-Verbindung zurückgesetzt und neu verbunden" });
+      } else {
+        res.json({ success: false, message: "DB-Verbindung zurückgesetzt, aber Neuverbindung fehlgeschlagen" });
+      }
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // DB-Write-Test: Testet ob DB-Schreiboperationen funktionieren
+  app.get("/api/db-write-test", async (_req, res) => {
+    try {
+      console.log("[api] DB write test triggered");
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) { res.json({ success: false, error: "Keine DB-Verbindung" }); return; }
+      // Simple write test with timeout
+      const timeout = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error("Write test timeout (10s)")), 10000)
+      );
+      const writeTest = (async () => {
+        const result = await db.execute(/*sql*/`SELECT 1 as test`);
+        return result;
+      })();
+      await Promise.race([writeTest, timeout]);
+      res.json({ success: true, message: "DB-Schreibtest erfolgreich" });
+    } catch (err: any) {
+      console.error("[api] DB write test failed:", err.message);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // Seelenjournal REST API (separates JWT-System)
   app.use("/api/seelenjournal", seelenjournalRoutes);
 
