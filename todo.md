@@ -515,6 +515,6 @@
 - [x] Server: API-Endpunkt zum Senden von Push-Nachrichten via Expo Push API (push.sendToAll war bereits vorhanden)
 - [x] Admin UI: Push-Tab im Admin-Bereich (war bereits vorhanden mit Vorlagen + Historie)
 - [x] Push an alle Nutzerinnen senden (über Admin Push-Tab)
-- [ ] Push auf GitHub pushen und auf Render deployen
+- [x] Push auf GitHub pushen und auf Render deployen
 - [x] Fehlende DancingScript-Fonts heruntergeladen
 - [x] expo-linear-gradient, postgres, cloudinary Pakete installiert
