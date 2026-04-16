@@ -5,48 +5,46 @@ import { InsertUser, users, meditations, InsertMeditation, communityUsers, Inser
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
-let _dbRetries = 0;
-const MAX_DB_RETRIES = 3;
+let _dbClient: ReturnType<typeof postgres> | null = null;
+let _workingSslMode: any = undefined;
 
-// Detect if the DATABASE_URL is a Render-internal URL (no SSL needed)
-function getSslConfig(dbUrl: string): any {
-  // Render internal DBs use hostnames like dpg-xxx-a (no SSL needed)
-  // External DBs (TiDB, Supabase, etc.) need SSL
-  if (dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/)) {
-    console.log('[Database] Render-internal DB detected, SSL disabled');
-    return false;
-  }
-  return 'require';
-}
+// SSL modes to try in order
+const SSL_MODES: any[] = [false, 'require', { rejectUnauthorized: false }];
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
-// Includes retry logic for connection issues.
+// Lazily create the drizzle instance, trying multiple SSL modes.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
-    const sslConfig = getSslConfig(process.env.DATABASE_URL);
-    for (let attempt = 1; attempt <= MAX_DB_RETRIES; attempt++) {
+    const dbUrl = process.env.DATABASE_URL;
+    const sslModes = _workingSslMode !== undefined ? [_workingSslMode] : SSL_MODES;
+    
+    for (const sslMode of sslModes) {
       try {
-        const client = postgres(process.env.DATABASE_URL, {
-          ssl: sslConfig,
-          max: 5,
-          connect_timeout: 30,
-          idle_timeout: 20,
-          max_lifetime: 60 * 5,
+        console.log(`[Database] Trying SSL mode: ${JSON.stringify(sslMode)}`);
+        const client = postgres(dbUrl, {
+          ssl: sslMode,
+          max: 3,
+          connect_timeout: 8,
+          idle_timeout: 10,
+          max_lifetime: 60 * 3,
           connection: {
-            statement_timeout: 15000,
-            lock_timeout: 10000,
+            statement_timeout: '15000',
+            lock_timeout: '10000',
           },
         });
+        // Test the connection with a timeout
+        const timeout = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Connection test timeout (10s)')), 10000)
+        );
+        await Promise.race([client`SELECT 1`, timeout]);
         _db = drizzle(client);
-        _dbRetries = 0;
-        console.log(`[Database] Connected successfully (attempt ${attempt})`);
+        _dbClient = client;
+        _workingSslMode = sslMode;
+        console.log(`[Database] Connected successfully with SSL mode: ${JSON.stringify(sslMode)}`);
         break;
       } catch (error: any) {
-        console.warn(`[Database] Connection attempt ${attempt}/${MAX_DB_RETRIES} failed:`, error.message || error);
+        console.warn(`[Database] SSL mode ${JSON.stringify(sslMode)} failed:`, error.message || error);
         _db = null;
-        if (attempt < MAX_DB_RETRIES) {
-          await new Promise(r => setTimeout(r, 2000));
-        }
+        _dbClient = null;
       }
     }
   }
@@ -55,7 +53,20 @@ export async function getDb() {
 
 // Reset DB connection (useful after connection errors)
 export function resetDb() {
+  if (_dbClient) {
+    try { _dbClient.end({ timeout: 3 }); } catch (e) { /* ignore */ }
+  }
   _db = null;
+  _dbClient = null;
+  _workingSslMode = undefined;
+  console.log('[Database] Connection reset, will re-detect SSL mode');
+}
+
+// Export getSslConfig for use in other modules
+export function getSslConfig(dbUrl: string): any {
+  if (_workingSslMode !== undefined) return _workingSslMode;
+  if (dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/)) return false;
+  return 'require';
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

@@ -17,40 +17,61 @@ import {
   InsertSeelenjournalMessage,
 } from "../drizzle/schema";
 
-// Detect SSL config
-function getSslConfig(dbUrl: string): any {
-  if (dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/)) return false;
-  return 'require';
-}
+// Cache the working SSL mode so we don't have to test every time
+let _workingSslMode: any = undefined;
 
 /**
  * Create a fresh, short-lived DB connection for each operation.
- * This avoids pool exhaustion and table locks on Render Free Tier.
+ * Tries multiple SSL modes (no-ssl, ssl-require, ssl-no-verify) to find one that works.
  * Each connection is closed after the operation completes.
  */
 async function withDb<T>(fn: (db: ReturnType<typeof drizzle>, rawSql: ReturnType<typeof postgres>) => Promise<T>): Promise<T> {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) throw new Error("DATABASE_URL nicht gesetzt");
   
-  const client = postgres(dbUrl, {
-    ssl: getSslConfig(dbUrl),
-    max: 1,
-    connect_timeout: 10,
-    idle_timeout: 5,
-    max_lifetime: 30,
-    connection: {
-      statement_timeout: '15000',
-      lock_timeout: '10000',
-    },
-  });
+  const sslModes = _workingSslMode !== undefined 
+    ? [_workingSslMode] 
+    : [false, 'require', { rejectUnauthorized: false }];
   
-  const db = drizzle(client);
-  try {
-    return await fn(db, client);
-  } finally {
-    // Always close the connection after use
-    try { await client.end({ timeout: 5 }); } catch (e) { /* ignore close errors */ }
+  let lastError: any = null;
+  for (const sslMode of sslModes) {
+    const client = postgres(dbUrl, {
+      ssl: sslMode,
+      max: 1,
+      connect_timeout: 8,
+      idle_timeout: 5,
+      max_lifetime: 30,
+      connection: {
+        statement_timeout: '15000',
+        lock_timeout: '10000',
+      },
+    });
+    
+    const db = drizzle(client);
+    try {
+      // Wrap the operation with a timeout
+      const timeout = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('DB operation timeout (20s)')), 20000)
+      );
+      const result = await Promise.race([fn(db, client), timeout]);
+      // Cache the working SSL mode
+      if (_workingSslMode === undefined) {
+        _workingSslMode = sslMode;
+        console.log(`[SJ-DB] Working SSL mode found: ${JSON.stringify(sslMode)}`);
+      }
+      return result;
+    } catch (e: any) {
+      lastError = e;
+      console.warn(`[SJ-DB] SSL mode ${JSON.stringify(sslMode)} failed: ${e.message}`);
+      // If cached mode fails, reset cache to try all modes next time
+      if (_workingSslMode !== undefined) {
+        _workingSslMode = undefined;
+      }
+    } finally {
+      try { await client.end({ timeout: 3 }); } catch (e) { /* ignore */ }
+    }
   }
+  throw lastError || new Error("Alle DB-Verbindungsversuche fehlgeschlagen");
 }
 
 // ── Klientinnen ──
