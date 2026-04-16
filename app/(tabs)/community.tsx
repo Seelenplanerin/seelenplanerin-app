@@ -125,7 +125,7 @@ const DEFAULT_POSTS: CommunityPost[] = [
 
 const ANGEBOTE = [
   { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
-  { emoji: "🔮", titel: "Aura Reading", preis: "77 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
+  { emoji: "🔮", titel: "Aura Reading", preis: "111 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
 
 ];
 
@@ -643,16 +643,41 @@ export default function CommunityScreen() {
     if (password.length < 4) { setFehler("Das Passwort muss mindestens 4 Zeichen haben."); return; }
     if (password !== passwordConfirm) { setFehler("Die Passwörter stimmen nicht überein."); return; }
 
-    const users = await getUsers();
-    const exists = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-    if (exists) {
-      setFehler("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
-      return;
+    const emailLower = email.trim().toLowerCase();
+    const newUser: CommunityUser = { email: emailLower, password, name: name.trim() };
+
+    try {
+      // Nutzer in der Datenbank anlegen
+      const API_URL = getApiBaseUrl();
+      const res = await fetch(`${API_URL}/api/trpc/communityUsers.create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { email: emailLower, password, name: name.trim(), mustChangePassword: 0 } }),
+      });
+      const data = await res.json();
+      const result = data?.result?.data?.json || data?.result?.data;
+
+      if (result?.error === "exists") {
+        setFehler("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
+        return;
+      }
+      if (!result?.success) {
+        setFehler("Fehler beim Erstellen des Kontos. Bitte versuche es erneut.");
+        return;
+      }
+    } catch (e: any) {
+      console.error('Register error:', e?.message || e);
+      // Fallback: lokal speichern
+      const users = await getUsers();
+      const exists = users.find(u => u.email.toLowerCase() === emailLower);
+      if (exists) {
+        setFehler("Diese E-Mail ist bereits registriert. Bitte logge dich ein.");
+        return;
+      }
+      users.push(newUser);
+      await saveUsers(users);
     }
 
-    const newUser: CommunityUser = { email: email.trim().toLowerCase(), password, name: name.trim() };
-    users.push(newUser);
-    await saveUsers(users);
     await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
     setIsLoggedIn(true);
     setUserName(newUser.name);

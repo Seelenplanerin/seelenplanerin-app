@@ -156,7 +156,7 @@ export default function AuraScreen() {
             Die Seelenplanerin liest deine Aura live und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Gaben.
           </Text>
           <View style={s.bookingPreisRow}>
-            <Text style={[s.bookingPreis, { color: C.brown }]}>77 €</Text>
+            <Text style={[s.bookingPreis, { color: C.brown }]}>111 €</Text>
             <Text style={s.bookingUnit}>· online</Text>
           </View>
           <TouchableOpacity

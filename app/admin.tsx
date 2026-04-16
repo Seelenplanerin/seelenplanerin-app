@@ -1723,7 +1723,7 @@ export default function AdminScreen() {
                         { name: "Schutzarmband", price: "24.00" },
                         { name: "Runen-Armband (Kette + 3 Charms)", price: "57.00" },
 
-                        { name: "Aura Reading", price: "77.00" },
+                        { name: "Aura Reading", price: "111.00" },
                         { name: "Meditationskerze", price: "17.00" },
                         { name: "Seelenimpuls", price: "17.00" },
 

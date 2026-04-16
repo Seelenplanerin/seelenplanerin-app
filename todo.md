@@ -518,3 +518,12 @@
 - [x] Push auf GitHub pushen und auf Render deployen
 - [x] Fehlende DancingScript-Fonts heruntergeladen
 - [x] expo-linear-gradient, postgres, cloudinary Pakete installiert
+
+## Bugfix Runde (16.04.2026)
+- [x] Set Aura Reading price to 111,00€ (in community.tsx, shop.tsx, shop/index.tsx, buchen/index.tsx, aura.tsx, admin.tsx)
+- [x] Musik: Nur Spotify-Link behalten, Seelenklang/Ritualmusik/Runen Mantra/Apple Music/YouTube entfernt
+- [x] Community: Registrierung speichert jetzt in DB statt nur lokal (mit Fallback)
+- [x] Community: Login gegen DB prüfen – funktioniert!
+- [x] Admin: Neuen Nutzer anlegen – funktioniert!
+- [x] Datenbank auf MySQL (TiDB) umgestellt (db.ts, seelenjournal-db.ts, db-migrate.ts, schema.ts)
+- [x] TypeScript-Fehler in community-premium.tsx, seelenjournal-routes.ts, routers.ts behoben

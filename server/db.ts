@@ -1,72 +1,50 @@
 import { eq, desc, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
-let _db: ReturnType<typeof drizzle> | null = null;
-let _dbClient: ReturnType<typeof postgres> | null = null;
-let _workingSslMode: any = undefined;
+let _db: any = null;
+let _pool: mysql.Pool | null = null;
 
-// SSL modes to try in order
-const SSL_MODES: any[] = [false, 'require', { rejectUnauthorized: false }];
-
-// Lazily create the drizzle instance, trying multiple SSL modes.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
-    const dbUrl = process.env.DATABASE_URL;
-    const sslModes = _workingSslMode !== undefined ? [_workingSslMode] : SSL_MODES;
-    
-    for (const sslMode of sslModes) {
-      try {
-        console.log(`[Database] Trying SSL mode: ${JSON.stringify(sslMode)}`);
-        const client = postgres(dbUrl, {
-          ssl: sslMode,
-          max: 3,
-          connect_timeout: 8,
-          idle_timeout: 10,
-          max_lifetime: 60 * 3,
-          connection: {
-            statement_timeout: 15000 as any,
-            lock_timeout: 10000 as any,
-          },
-        });
-        // Test the connection with a timeout
-        const timeout = new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Connection test timeout (10s)')), 10000)
-        );
-        await Promise.race([client`SELECT 1`, timeout]);
-        _db = drizzle(client);
-        _dbClient = client;
-        _workingSslMode = sslMode;
-        console.log(`[Database] Connected successfully with SSL mode: ${JSON.stringify(sslMode)}`);
-        break;
-      } catch (error: any) {
-        console.warn(`[Database] SSL mode ${JSON.stringify(sslMode)} failed:`, error.message || error);
-        _db = null;
-        _dbClient = null;
-      }
+    try {
+      const dbUrl = process.env.DATABASE_URL;
+      _pool = mysql.createPool({
+        uri: dbUrl,
+        waitForConnections: true,
+        connectionLimit: 5,
+        queueLimit: 0,
+        connectTimeout: 10000,
+        ssl: { rejectUnauthorized: true },
+      });
+      // Test the connection
+      const conn = await _pool.getConnection();
+      await conn.query("SELECT 1");
+      conn.release();
+      _db = drizzle(_pool);
+      console.log("[Database] Connected successfully via MySQL");
+    } catch (error: any) {
+      console.error("[Database] Connection failed:", error.message || error);
+      _db = null;
+      _pool = null;
     }
   }
   return _db;
 }
 
-// Reset DB connection (useful after connection errors)
 export function resetDb() {
-  if (_dbClient) {
-    try { _dbClient.end({ timeout: 3 }); } catch (e) { /* ignore */ }
+  if (_pool) {
+    try { _pool.end(); } catch (e) { /* ignore */ }
   }
   _db = null;
-  _dbClient = null;
-  _workingSslMode = undefined;
-  console.log('[Database] Connection reset, will re-detect SSL mode');
+  _pool = null;
+  console.log("[Database] Connection reset");
 }
 
-// Export getSslConfig for use in other modules
 export function getSslConfig(dbUrl: string): any {
-  if (_workingSslMode !== undefined) return _workingSslMode;
-  if (dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/)) return false;
-  return 'require';
+  return { rejectUnauthorized: true };
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -119,9 +97,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    // PostgreSQL upsert using onConflictDoUpdate
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
+    // MySQL upsert using onDuplicateKeyUpdate
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
       set: updateSet,
     });
   } catch (error) {
@@ -159,8 +136,8 @@ export async function getActiveMeditations() {
 export async function createMeditation(data: InsertMeditation) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(meditations).values(data).returning({ id: meditations.id });
-  return result[0].id;
+  const result = await db.insert(meditations).values(data);
+  return Number(result[0].insertId);
 }
 
 export async function deleteMeditation(id: number) {
@@ -198,8 +175,8 @@ export async function createCommunityUser(data: { email: string; password: strin
     password: data.password,
     name: data.name,
     mustChangePassword: data.mustChangePassword || 0,
-  }).returning({ id: communityUsers.id });
-  return result[0].id;
+  });
+  return Number(result[0].insertId);
 }
 
 export async function updateCommunityUser(email: string, data: Partial<{ password: string; name: string; mustChangePassword: number; isActive: number }>) {
@@ -265,8 +242,8 @@ export async function createAffiliate(data: { email: string; name: string; code:
     email: data.email.toLowerCase(),
     name: data.name,
     code: data.code.toUpperCase(),
-  }).returning({ id: affiliateCodes.id });
-  return result[0].id;
+  });
+  return Number(result[0].insertId);
 }
 
 export async function updateAffiliate(code: string, data: Partial<{ isActive: number; paypalEmail: string; iban: string; totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number; password: string }>) {
@@ -285,7 +262,7 @@ export async function recordAffiliateClick(code: string, ipHash?: string, userAg
   });
   // Update total clicks
   await db.update(affiliateCodes)
-    .set({ totalClicks: sql`"totalClicks" + 1` })
+    .set({ totalClicks: sql`totalClicks + 1` })
     .where(eq(affiliateCodes.code, code.toUpperCase()));
 }
 
@@ -307,15 +284,15 @@ export async function createAffiliateSale(data: { affiliateCode: string; product
     customerEmail: data.customerEmail || null,
     customerName: data.customerName || null,
     notes: data.notes || null,
-  }).returning({ id: affiliateSales.id });
+  });
   // Update affiliate totals
   await db.update(affiliateCodes)
     .set({
-      totalSales: sql`"totalSales" + 1`,
-      totalEarnings: sql`"totalEarnings" + ${data.commissionAmount}`,
+      totalSales: sql`totalSales + 1`,
+      totalEarnings: sql`totalEarnings + ${data.commissionAmount}`,
     })
     .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-  return result[0].id;
+  return Number(result[0].insertId);
 }
 
 export async function getAffiliateSales(code: string) {
@@ -345,12 +322,12 @@ export async function createAffiliatePayout(data: { affiliateCode: string; amoun
     method: data.method,
     reference: data.reference || null,
     notes: data.notes || null,
-  }).returning({ id: affiliatePayouts.id });
+  });
   // Update totalPaid
   await db.update(affiliateCodes)
-    .set({ totalPaid: sql`"totalPaid" + ${data.amount}` })
+    .set({ totalPaid: sql`totalPaid + ${data.amount}` })
     .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-  return result[0].id;
+  return Number(result[0].insertId);
 }
 
 export async function getAffiliatePayouts(code: string) {
@@ -365,21 +342,19 @@ export async function getAllAffiliatePayouts() {
   return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
 }
 
-
 // ── Push-Benachrichtigungen ──
 
 export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  // Upsert: Token anlegen oder aktualisieren
+  // MySQL upsert
   await db.insert(pushTokens).values({
     token: data.token,
     platform: data.platform || null,
     communityEmail: data.communityEmail || null,
     isActive: 1,
     updatedAt: new Date(),
-  }).onConflictDoUpdate({
-    target: pushTokens.token,
+  }).onDuplicateKeyUpdate({
     set: {
       platform: data.platform || null,
       communityEmail: data.communityEmail || null,
@@ -404,8 +379,8 @@ export async function deactivatePushToken(token: string) {
 export async function createPushMessage(data: InsertPushMessage) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(pushMessages).values(data).returning({ id: pushMessages.id });
-  return result[0].id;
+  const result = await db.insert(pushMessages).values(data);
+  return Number(result[0].insertId);
 }
 
 export async function updatePushMessage(id: number, data: Partial<InsertPushMessage>) {
@@ -431,22 +406,22 @@ export async function getPushTokenCount() {
 export async function addAcademyWaitlist(email: string) {
   const db = await getDb();
   if (!db) throw new Error("No database connection");
-  const client = postgres(process.env.DATABASE_URL!, { ssl: getSslConfig(process.env.DATABASE_URL!) });
-  try {
-    await client`INSERT INTO academy_waitlist (email) VALUES (${email.toLowerCase()}) ON CONFLICT (email) DO NOTHING`;
-  } finally {
-    await client.end();
+  // Use raw pool for this simple query
+  if (_pool) {
+    await _pool.execute(
+      "INSERT IGNORE INTO academy_waitlist (email) VALUES (?)",
+      [email.toLowerCase()]
+    );
   }
   return { success: true };
 }
+
 export async function getAcademyWaitlist() {
   const db = await getDb();
   if (!db) return [];
-  const client = postgres(process.env.DATABASE_URL!, { ssl: getSslConfig(process.env.DATABASE_URL!) });
-  try {
-    const rows = await client`SELECT id, email, "createdAt" FROM academy_waitlist ORDER BY "createdAt" DESC`;
-    return rows;
-  } finally {
-    await client.end();
+  if (_pool) {
+    const [rows] = await _pool.execute("SELECT id, email, createdAt FROM academy_waitlist ORDER BY createdAt DESC");
+    return rows as any[];
   }
+  return [];
 }

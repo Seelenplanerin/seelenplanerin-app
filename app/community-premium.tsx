@@ -230,7 +230,7 @@ function SymptomLogger({
   onSave: () => void;
 }) {
   const [stimmungen, setStimmungen] = useState<StimmungTyp[]>([]);
-  const [energie, setEnergie] = useState<EnergieLevel>(3);
+  const [energie, setEnergie] = useState<EnergieLevel>("mittel");
   const [koerperlich, setKoerperlich] = useState<string[]>([]);
   const [blutung, setBlutung] = useState<BlutungsStaerke | undefined>(undefined);
   const [notiz, setNotiz] = useState("");
@@ -242,14 +242,14 @@ function SymptomLogger({
     setSaved(false);
     ladeSymptomFuerDatum(datum).then((eintrag) => {
       if (eintrag) {
-        setStimmungen(eintrag.stimmungen || []);
-        setEnergie(eintrag.energie || 3);
-        setKoerperlich(eintrag.koerperlich || []);
+        setStimmungen(eintrag.stimmung ? [eintrag.stimmung] : []);
+        setEnergie(eintrag.energie || "mittel");
+        setKoerperlich(eintrag.symptome || []);
         setBlutung(eintrag.blutung);
         setNotiz(eintrag.notiz || "");
       } else {
         setStimmungen([]);
-        setEnergie(3);
+        setEnergie("mittel");
         setKoerperlich([]);
         setBlutung(undefined);
         setNotiz("");
@@ -275,9 +275,9 @@ function SymptomLogger({
   const handleSave = async () => {
     const eintrag: SymptomEintrag = {
       datum,
-      stimmungen,
+      stimmung: stimmungen[0],
       energie,
-      koerperlich,
+      symptome: koerperlich,
       blutung,
       notiz: notiz.trim() || undefined,
     };
@@ -318,7 +318,7 @@ function SymptomLogger({
       {/* Energie */}
       <Text style={s.symptomSectionTitle}>Dein Energielevel</Text>
       <View style={s.energieRow}>
-        {([1, 2, 3, 4, 5] as EnergieLevel[]).map((level) => (
+        {(["niedrig", "mittel", "hoch"] as EnergieLevel[]).map((level) => (
           <TouchableOpacity
             key={level}
             style={[
@@ -332,7 +332,7 @@ function SymptomLogger({
               s.energieBtnText,
               energie === level && { color: "#FFF" },
             ]}>
-              {level === 1 ? "😴" : level === 2 ? "😐" : level === 3 ? "🙂" : level === 4 ? "😊" : "⚡"}
+              {level === "niedrig" ? "😴" : level === "mittel" ? "🙂" : "⚡"}
             </Text>
             <Text style={[
               { fontSize: 10, color: C.muted, marginTop: 2 },
@@ -356,12 +356,12 @@ function SymptomLogger({
           <Text style={[s.blutungChipText, !blutung && { fontWeight: "700" }]}>Keine</Text>
         </TouchableOpacity>
         {BLUTUNGS_OPTIONEN.map((opt) => {
-          const isActive = blutung === opt.typ;
+          const isActive = blutung === opt.staerke;
           return (
             <TouchableOpacity
-              key={opt.typ}
+              key={opt.staerke}
               style={[s.blutungChip, isActive && { backgroundColor: C.pinkLight, borderColor: C.pink }]}
-              onPress={() => { setBlutung(opt.typ); setSaved(false); }}
+              onPress={() => { setBlutung(opt.staerke); setSaved(false); }}
               activeOpacity={0.7}
             >
               <Text style={{ fontSize: 14 }}>{opt.emoji}</Text>
@@ -757,7 +757,7 @@ export default function CommunityPremiumScreen() {
                       {/* Spiritueller Tipp */}
                       <View style={[s.tippCard, { borderLeftColor: heuteTag.phase.farbe }]}>
                         <Text style={s.tippTitle}>Dein Seelentipp für heute</Text>
-                        <Text style={s.tippText}>{heuteTag.phase.spirituellerTipp}</Text>
+                        <Text style={s.tippText}>{heuteTag.synchronisationTipp || heuteTag.phase.beschreibung}</Text>
                       </View>
 
                       {/* Schnellinfo-Karten */}
@@ -895,13 +895,11 @@ export default function CommunityPremiumScreen() {
                       {/* Symptome des Tages */}
                       {selectedSymptom ? (
                         <View style={s.daySymptomSummary}>
-                          {selectedSymptom.stimmungen.length > 0 && (
+                          {selectedSymptom.stimmung && (
                             <View style={s.daySymptomRow}>
                               <Text style={s.daySymptomLabel}>Stimmung:</Text>
                               <Text style={s.daySymptomValue}>
-                                {selectedSymptom.stimmungen.map(st =>
-                                  STIMMUNGEN.find(s => s.typ === st)?.emoji || ""
-                                ).join(" ")}
+                                {selectedSymptom.stimmung ? (STIMMUNGEN.find((s: any) => s.typ === selectedSymptom.stimmung)?.emoji || "") : ""}
                               </Text>
                             </View>
                           )}
@@ -909,7 +907,7 @@ export default function CommunityPremiumScreen() {
                             <View style={s.daySymptomRow}>
                               <Text style={s.daySymptomLabel}>Energie:</Text>
                               <Text style={s.daySymptomValue}>
-                                {"●".repeat(selectedSymptom.energie)}{"○".repeat(5 - selectedSymptom.energie)}
+                                {selectedSymptom.energie === "hoch" ? "●●●●●" : selectedSymptom.energie === "mittel" ? "●●●○○" : "●○○○○"}
                               </Text>
                             </View>
                           )}
@@ -917,14 +915,14 @@ export default function CommunityPremiumScreen() {
                             <View style={s.daySymptomRow}>
                               <Text style={s.daySymptomLabel}>Blutung:</Text>
                               <Text style={s.daySymptomValue}>
-                                {BLUTUNGS_OPTIONEN.find(b => b.typ === selectedSymptom.blutung)?.label || ""}
+                                {BLUTUNGS_OPTIONEN.find((b: any) => b.staerke === selectedSymptom.blutung)?.label || ""}
                               </Text>
                             </View>
                           )}
-                          {selectedSymptom.koerperlich.length > 0 && (
+                          {selectedSymptom.symptome && selectedSymptom.symptome.length > 0 && (
                             <View style={s.daySymptomRow}>
                               <Text style={s.daySymptomLabel}>Symptome:</Text>
-                              <Text style={s.daySymptomValue}>{selectedSymptom.koerperlich.join(", ")}</Text>
+                              <Text style={s.daySymptomValue}>{selectedSymptom.symptome.join(", ")}</Text>
                             </View>
                           )}
                           {selectedSymptom.notiz && (

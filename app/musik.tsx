@@ -30,20 +30,7 @@ interface Song {
   verfuegbar: boolean;
 }
 
-const DEFAULT_SONGS: Song[] = [
-  {
-    id: "s1", titel: "Seelenklänge", beschreibung: "Musik von der Seelenplanerin",
-    spotifyUrl: SPOTIFY_ARTIST, emoji: "🎶", kategorie: "musik", verfuegbar: true,
-  },
-  {
-    id: "s2", titel: "Ritual-Musik", beschreibung: "Atmosphärische Klänge für deine Rituale",
-    spotifyUrl: SPOTIFY_ARTIST, emoji: "🔥", kategorie: "ritual", verfuegbar: true,
-  },
-  {
-    id: "s3", titel: "Runen-Mantra", beschreibung: "Kraftvolle Mantras für die Runenarbeit",
-    spotifyUrl: SPOTIFY_ARTIST, emoji: "ᛋ", kategorie: "mantra", verfuegbar: true,
-  },
-];
+const DEFAULT_SONGS: Song[] = [];
 
 const KAT_LABELS: Record<string, string> = {
   alle: "Alle", musik: "Musik", ritual: "Ritual", mantra: "Mantra",
@@ -324,34 +311,7 @@ export default function MusikScreen() {
             </View>
           </View>
 
-          {/* ── Streaming-Plattformen ── */}
-          <Text style={st.sectionTitle}>Überall hören</Text>
-          <View style={st.platformsRow}>
-            <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#D4E8D0" }]}
-              onPress={() => Linking.openURL(SPOTIFY_ARTIST)}
-              activeOpacity={0.85}
-            >
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>🎧</Text>
-              <Text style={[st.platformName, { color: "#5C7A56" }]}>Spotify</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#F2D4D7" }]}
-              onPress={() => Linking.openURL("https://music.apple.com/")}
-              activeOpacity={0.85}
-            >
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>🎵</Text>
-              <Text style={[st.platformName, { color: "#9B5A60" }]}>Apple Music</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[st.platformCard, { backgroundColor: "#F5DDD0" }]}
-              onPress={() => Linking.openURL("https://www.youtube.com/")}
-              activeOpacity={0.85}
-            >
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>▶️</Text>
-              <Text style={[st.platformName, { color: "#A0674B" }]}>YouTube</Text>
-            </TouchableOpacity>
-          </View>
+
 
           {/* ── Kategorie-Filter ── */}
           <ScrollView
@@ -419,8 +379,6 @@ export default function MusikScreen() {
                   </Text>
                   <View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
                     {song.spotifyUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#7BA876", fontWeight: "600" }}>● Spotify</Text>}
-                    {song.appleMusicUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#C4826A", fontWeight: "600" }}>● Apple</Text>}
-                    {song.youtubeUrl && <Text style={{ fontSize: 10, color: isCurrentlyPlaying ? "rgba(255,255,255,0.7)" : "#C4826A", fontWeight: "600" }}>● YouTube</Text>}
                   </View>
                 </View>
                 {song.verfuegbar ? (

@@ -275,3 +275,70 @@ export function getDefaultEinstellungen(): ZyklusEinstellungen {
     periodenDauer: 5,
   };
 }
+
+// ── Symptom-Tracking ──
+
+export type StimmungTyp = "sehr_gut" | "gut" | "neutral" | "schlecht" | "sehr_schlecht";
+export type EnergieLevel = "hoch" | "mittel" | "niedrig";
+export type BlutungsStaerke = "keine" | "leicht" | "mittel" | "stark" | "sehr_stark";
+
+export interface SymptomEintrag {
+  datum: string; // ISO date string (YYYY-MM-DD)
+  stimmung?: StimmungTyp;
+  energie?: EnergieLevel;
+  blutung?: BlutungsStaerke;
+  symptome?: string[];
+  notiz?: string;
+}
+
+export const STIMMUNGEN: { typ: StimmungTyp; label: string; emoji: string }[] = [
+  { typ: "sehr_gut", label: "Sehr gut", emoji: "😊" },
+  { typ: "gut", label: "Gut", emoji: "🙂" },
+  { typ: "neutral", label: "Neutral", emoji: "😐" },
+  { typ: "schlecht", label: "Schlecht", emoji: "😔" },
+  { typ: "sehr_schlecht", label: "Sehr schlecht", emoji: "😢" },
+];
+
+export const KOERPER_SYMPTOME: string[] = [
+  "Kopfschmerzen", "Unterleibsschmerzen", "Rückenschmerzen", "Brustspannen",
+  "Blähungen", "Übelkeit", "Müdigkeit", "Schlafprobleme",
+  "Heißhunger", "Hautunreinheiten", "Stimmungsschwankungen", "Wassereinlagerungen",
+];
+
+export const BLUTUNGS_OPTIONEN: { staerke: BlutungsStaerke; label: string; emoji: string }[] = [
+  { staerke: "keine", label: "Keine", emoji: "⚪" },
+  { staerke: "leicht", label: "Leicht", emoji: "🩸" },
+  { staerke: "mittel", label: "Mittel", emoji: "🩸🩸" },
+  { staerke: "stark", label: "Stark", emoji: "🩸🩸🩸" },
+  { staerke: "sehr_stark", label: "Sehr stark", emoji: "🩸🩸🩸🩸" },
+];
+
+const SYMPTOM_STORAGE_KEY = "seelenplanerin_symptome";
+
+export function datumZuString(datum: Date): string {
+  return datum.toISOString().split("T")[0];
+}
+
+export async function speichereSymptomEintrag(eintrag: SymptomEintrag): Promise<void> {
+  const alle = await ladeAlleSymptome();
+  const index = alle.findIndex(e => e.datum === eintrag.datum);
+  if (index >= 0) {
+    alle[index] = eintrag;
+  } else {
+    alle.push(eintrag);
+  }
+  await AsyncStorage.setItem(SYMPTOM_STORAGE_KEY, JSON.stringify(alle));
+}
+
+export async function ladeAlleSymptome(): Promise<SymptomEintrag[]> {
+  try {
+    const stored = await AsyncStorage.getItem(SYMPTOM_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return [];
+}
+
+export async function ladeSymptomFuerDatum(datum: string): Promise<SymptomEintrag | null> {
+  const alle = await ladeAlleSymptome();
+  return alle.find(e => e.datum === datum) || null;
+}

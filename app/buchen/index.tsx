@@ -40,7 +40,7 @@ const SESSIONS: Session[] = [
     id: "aura-reading",
     name: "Aura Reading",
     dauer: "Online",
-    preis: "77,00 €",
+    preis: "111,00 €",
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     details: [
       "Persönliches Aura-Reading",

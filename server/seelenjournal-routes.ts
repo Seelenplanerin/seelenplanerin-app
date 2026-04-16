@@ -142,7 +142,7 @@ router.get("/entries", authClient, async (req: Request, res: Response) => {
   try {
     const entries = await sjDb.getClientEntries((req as any).sjClientId, true);
     // Für jeden Eintrag die Anhänge laden
-    const entriesWithAttachments = await Promise.all(entries.map(async (entry) => {
+    const entriesWithAttachments = await Promise.all(entries.map(async (entry: any) => {
       const attachments = await sjDb.getEntryAttachments(entry.id);
       return { ...entry, attachments };
     }));
@@ -229,7 +229,7 @@ router.get("/admin/clients", authAdmin, async (_req: Request, res: Response) => 
   try {
     const clients = await sjDb.getAllJournalClients();
     const unreadMap = await sjDb.getClientsWithUnreadMessages();
-    const clientsWithUnread = clients.map(c => ({
+    const clientsWithUnread = clients.map((c: any) => ({
       ...c,
       unreadMessages: Number(unreadMap.find((u: any) => u.clientId === c.id)?.count || 0),
     }));
@@ -301,7 +301,7 @@ router.delete("/admin/clients/:id", authAdmin, async (req: Request, res: Respons
 router.get("/admin/clients/:id/entries", authAdmin, async (req: Request, res: Response) => {
   try {
     const entries = await sjDb.getClientEntries(parseInt(req.params.id), false);
-    const entriesWithAttachments = await Promise.all(entries.map(async (entry) => {
+    const entriesWithAttachments = await Promise.all(entries.map(async (entry: any) => {
       const attachments = await sjDb.getEntryAttachments(entry.id);
       return { ...entry, attachments };
     }));
@@ -311,12 +311,12 @@ router.get("/admin/clients/:id/entries", authAdmin, async (req: Request, res: Re
   }
 });
 
-// Eintrag erstellen
+// Neuen Eintrag erstellen (Admin)
 router.post("/admin/clients/:id/entries", authAdmin, async (req: Request, res: Response) => {
   try {
     const clientId = parseInt(req.params.id);
     const { title, content, category, date, isPublished } = req.body;
-    if (!title) { res.status(400).json({ error: "Titel ist erforderlich" }); return; }
+    if (!title?.trim()) { res.status(400).json({ error: "Titel erforderlich" }); return; }
     const id = await sjDb.createEntry({
       clientId, title, content: content || null,
       category: category || null,

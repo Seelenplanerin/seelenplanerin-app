@@ -252,7 +252,7 @@ export const appRouter = router({
           try {
             const tokens = await db.getAllActivePushTokens();
             if (tokens.length > 0) {
-              const pushMessages = tokens.map(t => ({
+              const pushMessages = tokens.map((t: any) => ({
                 to: t.token,
                 sound: "default" as const,
                 title: "Neue Affiliate-Anmeldung!",
@@ -516,7 +516,7 @@ export const appRouter = router({
         });
 
         // Expo Push API aufrufen
-        const messages = tokens.map(t => ({
+        const messages = tokens.map((t: any) => ({
           to: t.token,
           sound: "default" as const,
           title: input.title,
