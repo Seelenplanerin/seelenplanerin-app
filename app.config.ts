@@ -69,6 +69,11 @@ const config: ExpoConfig = {
     ],
     ["expo-build-properties", { android: { buildArchs: ["armeabi-v7a", "arm64-v8a"] } }],
   ],
+  extra: {
+    eas: {
+      projectId: "58884191-4c4b-493b-94c4-7d0c6514db64",
+    },
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
