@@ -491,3 +491,7 @@
 - [x] Frontend: Ladeindikator beim Speichern + Erfolgs-/Fehlermeldungen
 - [x] DB-Reset-Endpunkt: /api/db-reset zum manuellen Zurücksetzen der Verbindung
 - [x] DB-Write-Test: /api/db-write-test zum Testen der Schreiboperationen
+
+## BUG: Seelenjournal Admin Klientin speichert IMMER NOCH NICHT (16.04.2026)
+- [ ] Root Cause auf Render identifizieren (DB-Schreibtest, Logs prüfen)
+- [ ] Definitiven Fix implementieren und auf Render verifizieren

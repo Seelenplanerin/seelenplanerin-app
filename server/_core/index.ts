@@ -321,25 +321,145 @@ async function startServer() {
     }
   });
 
-  // DB-Write-Test: Testet ob DB-Schreiboperationen funktionieren
-  app.get("/api/db-write-test", async (_req, res) => {
+  // DB-Diagnose: Prüft Tabellen, blockierte Queries, und killt stuck transactions
+  app.get("/api/db-diagnose", async (_req, res) => {
     try {
-      console.log("[api] DB write test triggered");
-      const { getDb } = await import("../db");
-      const db = await getDb();
-      if (!db) { res.json({ success: false, error: "Keine DB-Verbindung" }); return; }
-      // Simple write test with timeout
-      const timeout = new Promise<never>((_, reject) => 
-        setTimeout(() => reject(new Error("Write test timeout (10s)")), 10000)
-      );
-      const writeTest = (async () => {
-        const result = await db.execute(/*sql*/`SELECT 1 as test`);
-        return result;
-      })();
-      await Promise.race([writeTest, timeout]);
-      res.json({ success: true, message: "DB-Schreibtest erfolgreich" });
+      console.log("[api] DB diagnose triggered");
+      const pgModule = await import("postgres");
+      const postgres = pgModule.default;
+      const dbUrl = process.env.DATABASE_URL;
+      if (!dbUrl) { res.json({ success: false, error: "DATABASE_URL nicht gesetzt" }); return; }
+      
+      // Detect SSL config
+      const needsSsl = !(dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/));
+      const sql = postgres(dbUrl, { ssl: needsSsl ? 'require' : false, max: 1, connect_timeout: 10 });
+      
+      const results: any = {};
+      try {
+        // 1. Test basic connectivity
+        const ping = await sql`SELECT 1 as test, now() as server_time`;
+        results.ping = { ok: true, time: ping[0]?.server_time };
+        
+        // 2. Check if seelenjournal_clients table exists
+        const tables = await sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'seelenjournal%'`;
+        results.tables = tables.map((t: any) => t.table_name);
+        
+        // 3. Check for stuck/blocked queries
+        const blockedQueries = await sql`
+          SELECT pid, state, query, wait_event_type, wait_event, 
+                 now() - query_start as duration,
+                 now() - state_change as since_state_change
+          FROM pg_stat_activity 
+          WHERE state != 'idle' AND pid != pg_backend_pid()
+          ORDER BY query_start ASC
+        `;
+        results.active_queries = blockedQueries.map((q: any) => ({
+          pid: q.pid, state: q.state, query: q.query?.substring(0, 200),
+          wait_event: q.wait_event_type ? `${q.wait_event_type}:${q.wait_event}` : null,
+          duration: String(q.duration),
+        }));
+        
+        // 4. Check for locks
+        const locks = await sql`
+          SELECT l.pid, l.locktype, l.mode, l.granted, a.state, a.query
+          FROM pg_locks l
+          JOIN pg_stat_activity a ON l.pid = a.pid
+          WHERE NOT l.granted OR l.locktype = 'relation'
+          LIMIT 20
+        `;
+        results.locks = locks.map((l: any) => ({
+          pid: l.pid, type: l.locktype, mode: l.mode, granted: l.granted,
+          state: l.state, query: l.query?.substring(0, 100),
+        }));
+        
+        // 5. Try a simple SELECT on seelenjournal_clients with timeout
+        if (results.tables.includes('seelenjournal_clients')) {
+          try {
+            const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Query timeout 5s')), 5000));
+            const testQuery = sql`SELECT count(*) as cnt FROM seelenjournal_clients`;
+            const countResult = await Promise.race([testQuery, timeout]);
+            results.seelenjournal_clients_count = Number(countResult[0]?.cnt || 0);
+          } catch (e: any) {
+            results.seelenjournal_clients_error = e.message;
+          }
+        } else {
+          results.seelenjournal_clients_error = 'Table does not exist!';
+        }
+        
+        results.success = true;
+      } finally {
+        await sql.end();
+      }
+      res.json(results);
     } catch (err: any) {
-      console.error("[api] DB write test failed:", err.message);
+      console.error("[api] DB diagnose failed:", err.message);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Kill stuck DB transactions
+  app.get("/api/db-kill-stuck", async (_req, res) => {
+    try {
+      console.log("[api] Kill stuck DB transactions triggered");
+      const pgModule = await import("postgres");
+      const postgres = pgModule.default;
+      const dbUrl = process.env.DATABASE_URL;
+      if (!dbUrl) { res.json({ success: false, error: "DATABASE_URL nicht gesetzt" }); return; }
+      
+      const needsSsl = !(dbUrl.includes('.render.com') || dbUrl.match(/dpg-[a-z0-9]+-a/));
+      const sql = postgres(dbUrl, { ssl: needsSsl ? 'require' : false, max: 1, connect_timeout: 10 });
+      
+      try {
+        // Find and kill all non-idle connections (except our own)
+        const stuck = await sql`
+          SELECT pid, state, query, now() - query_start as duration
+          FROM pg_stat_activity 
+          WHERE pid != pg_backend_pid()
+          AND state != 'idle'
+        `;
+        
+        const killed: number[] = [];
+        for (const q of stuck) {
+          try {
+            await sql`SELECT pg_terminate_backend(${q.pid})`;
+            killed.push(q.pid);
+            console.log(`[api] Killed stuck PID ${q.pid}: ${q.query?.substring(0, 100)}`);
+          } catch (e) {
+            console.error(`[api] Failed to kill PID ${q.pid}`);
+          }
+        }
+        
+        // Also kill idle-in-transaction connections (these hold locks!)
+        const idleInTx = await sql`
+          SELECT pid, state, query
+          FROM pg_stat_activity 
+          WHERE pid != pg_backend_pid()
+          AND state = 'idle in transaction'
+        `;
+        for (const q of idleInTx) {
+          try {
+            await sql`SELECT pg_terminate_backend(${q.pid})`;
+            killed.push(q.pid);
+            console.log(`[api] Killed idle-in-transaction PID ${q.pid}`);
+          } catch (e) {}
+        }
+        
+        // Reset the main DB connection
+        const { resetDb } = await import("../db");
+        resetDb();
+        
+        res.json({ 
+          success: true, 
+          killed_pids: killed, 
+          stuck_found: stuck.length,
+          idle_in_tx_found: idleInTx.length,
+          message: `${killed.length} Verbindungen beendet, DB-Pool zurückgesetzt` 
+        });
+      } finally {
+        await sql.end();
+      }
+    } catch (err: any) {
+      console.error("[api] Kill stuck failed:", err.message);
       res.status(500).json({ success: false, error: err.message });
     }
   });
