@@ -358,6 +358,68 @@ async function startServer() {
         } catch (e: any) {
           results.sj_tables_error = e.message;
         }
+        // Test raw SELECT on seelenjournal_clients
+        try {
+          const testSql3 = postgres(dbUrl, { ssl: sslMode, max: 1, connect_timeout: 5 });
+          const timeout3 = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('SELECT TIMEOUT 8s')), 8000));
+          const rows = await Promise.race([
+            testSql3`SELECT id, email, name FROM seelenjournal_clients LIMIT 5`.then(async (r: any) => { await testSql3.end({ timeout: 3 }); return r; }),
+            timeout3
+          ]) as any;
+          results.sj_clients_select = { ok: true, count: rows.length, rows: rows.map((r: any) => ({ id: r.id, email: r.email, name: r.name })) };
+        } catch (e: any) {
+          results.sj_clients_select = { ok: false, error: e.message };
+        }
+        // Test raw INSERT on seelenjournal_clients (then rollback)
+        try {
+          const testSql4 = postgres(dbUrl, { ssl: sslMode, max: 1, connect_timeout: 5 });
+          const timeout4 = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('INSERT TIMEOUT 8s')), 8000));
+          const insertResult = await Promise.race([
+            testSql4.begin(async (tx: any) => {
+              const r = await tx`INSERT INTO seelenjournal_clients (email, password, name, "isActive", "createdAt") VALUES ('__test__@test.com', 'test', 'Test', 1, now()) RETURNING id`;
+              // Rollback by throwing
+              throw { __rollback: true, id: r[0]?.id };
+            }).catch((e: any) => {
+              if (e.__rollback) return { rolled_back: true, would_have_id: e.id };
+              throw e;
+            }).then(async (r: any) => { await testSql4.end({ timeout: 3 }); return r; }),
+            timeout4
+          ]) as any;
+          results.sj_clients_insert = { ok: true, ...insertResult };
+        } catch (e: any) {
+          results.sj_clients_insert = { ok: false, error: e.message };
+        }
+        // Check for locks on seelenjournal tables
+        try {
+          const testSql5 = postgres(dbUrl, { ssl: sslMode, max: 1, connect_timeout: 5 });
+          const timeout5 = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('LOCKS TIMEOUT 5s')), 5000));
+          const locks = await Promise.race([
+            testSql5`
+              SELECT l.pid, l.locktype, l.mode, l.granted, a.state, a.query, c.relname
+              FROM pg_locks l
+              JOIN pg_stat_activity a ON l.pid = a.pid
+              LEFT JOIN pg_class c ON l.relation = c.oid
+              WHERE c.relname LIKE 'seelenjournal%'
+              LIMIT 20
+            `.then(async (r: any) => { await testSql5.end({ timeout: 3 }); return r; }),
+            timeout5
+          ]) as any;
+          results.sj_locks = locks.map((l: any) => ({ pid: l.pid, type: l.locktype, mode: l.mode, granted: l.granted, state: l.state, table: l.relname, query: l.query?.substring(0, 100) }));
+        } catch (e: any) {
+          results.sj_locks_error = e.message;
+        }
+        // Check all active connections
+        try {
+          const testSql6 = postgres(dbUrl, { ssl: sslMode, max: 1, connect_timeout: 5 });
+          const timeout6 = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 5000));
+          const conns = await Promise.race([
+            testSql6`SELECT pid, state, query, wait_event_type, wait_event, now() - query_start as duration FROM pg_stat_activity WHERE datname = current_database() ORDER BY query_start`.then(async (r: any) => { await testSql6.end({ timeout: 3 }); return r; }),
+            timeout6
+          ]) as any;
+          results.all_connections = conns.map((c: any) => ({ pid: c.pid, state: c.state, query: c.query?.substring(0, 100), wait: c.wait_event_type ? `${c.wait_event_type}:${c.wait_event}` : null, duration: String(c.duration) }));
+        } catch (e: any) {
+          results.all_connections_error = e.message;
+        }
         break; // Found working mode
       } catch (e: any) {
         results[label] = { ok: false, error: e.message };
