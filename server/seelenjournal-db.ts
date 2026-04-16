@@ -42,8 +42,8 @@ async function withDb<T>(fn: (db: ReturnType<typeof drizzle>, rawSql: ReturnType
       idle_timeout: 5,
       max_lifetime: 30,
       connection: {
-        statement_timeout: '15000',
-        lock_timeout: '10000',
+        statement_timeout: 15000 as any,
+        lock_timeout: 10000 as any,
       },
     });
     

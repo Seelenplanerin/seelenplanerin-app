@@ -27,8 +27,8 @@ export async function getDb() {
           idle_timeout: 10,
           max_lifetime: 60 * 3,
           connection: {
-            statement_timeout: '15000',
-            lock_timeout: '10000',
+            statement_timeout: 15000 as any,
+            lock_timeout: 10000 as any,
           },
         });
         // Test the connection with a timeout
