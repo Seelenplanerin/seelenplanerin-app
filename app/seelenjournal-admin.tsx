@@ -217,13 +217,28 @@ export default function SeelenjournalAdminScreen() {
   }
 
   async function deleteClient(client: Client) {
-    Alert.alert("Klientin löschen?", `${client.name} und alle zugehörigen Daten werden unwiderruflich gelöscht.`, [
-      { text: "Abbrechen" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(`${client.name} und alle zugehörigen Daten werden unwiderruflich gelöscht. Wirklich löschen?`);
+      if (!confirmed) return;
+      try {
         await apiCall(`/admin/clients/${client.id}`, { method: "DELETE" });
         loadClients();
-      }},
-    ]);
+      } catch (err: any) {
+        alert("Fehler beim Löschen: " + (err.message || "Unbekannter Fehler"));
+      }
+    } else {
+      Alert.alert("Klientin löschen?", `${client.name} und alle zugehörigen Daten werden unwiderruflich gelöscht.`, [
+        { text: "Abbrechen" },
+        { text: "Löschen", style: "destructive", onPress: async () => {
+          try {
+            await apiCall(`/admin/clients/${client.id}`, { method: "DELETE" });
+            loadClients();
+          } catch (err: any) {
+            Alert.alert("Fehler", err.message || "Löschen fehlgeschlagen");
+          }
+        }},
+      ]);
+    }
   }
 
   // ── Einträge ──
@@ -337,13 +352,28 @@ export default function SeelenjournalAdminScreen() {
   }
 
   async function deleteEntry(entry: Entry) {
-    Alert.alert("Eintrag löschen?", "Dieser Eintrag wird unwiderruflich gelöscht.", [
-      { text: "Abbrechen" },
-      { text: "Löschen", style: "destructive", onPress: async () => {
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Dieser Eintrag wird unwiderruflich gelöscht. Wirklich löschen?");
+      if (!confirmed) return;
+      try {
         await apiCall(`/admin/entries/${entry.id}`, { method: "DELETE" });
         if (selectedClient) loadEntries(selectedClient.id);
-      }},
-    ]);
+      } catch (err: any) {
+        alert("Fehler beim Löschen: " + (err.message || "Unbekannter Fehler"));
+      }
+    } else {
+      Alert.alert("Eintrag löschen?", "Dieser Eintrag wird unwiderruflich gelöscht.", [
+        { text: "Abbrechen" },
+        { text: "Löschen", style: "destructive", onPress: async () => {
+          try {
+            await apiCall(`/admin/entries/${entry.id}`, { method: "DELETE" });
+            if (selectedClient) loadEntries(selectedClient.id);
+          } catch (err: any) {
+            Alert.alert("Fehler", err.message || "Löschen fehlgeschlagen");
+          }
+        }},
+      ]);
+    }
   }
 
   // ── PDF/Bild Upload (Multi-Upload) ──
@@ -843,8 +873,13 @@ export default function SeelenjournalAdminScreen() {
                   <TouchableOpacity style={s.actionBtn} onPress={() => toggleClientActive(item)}>
                     <Text style={s.actionBtnText}>{item.isActive === 1 ? "⏸" : "▶️"}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[s.actionBtn, { borderColor: "#EF4444" }]} onPress={() => deleteClient(item)}>
-                    <Text style={[s.actionBtnText, { color: "#EF4444" }]}>🗑</Text>
+                  <TouchableOpacity
+                    style={[s.actionBtn, { borderColor: "#EF4444", minWidth: 44, minHeight: 44, justifyContent: "center", alignItems: "center" }]}
+                    onPress={() => deleteClient(item)}
+                    activeOpacity={0.6}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={[s.actionBtnText, { color: "#EF4444", fontSize: 18 }]}>🗑</Text>
                   </TouchableOpacity>
                 </View>
               </View>

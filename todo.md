@@ -499,3 +499,12 @@
 - [x] Fix: Jede DB-Operation mit 20s-Timeout geschützt
 - [x] Diagnose-Endpunkte: /api/db-diagnose (raw SELECT+INSERT Tests) und /api/db-kill-stuck
 - [x] Verifiziert auf Render: GET /admin/clients liefert 10 Klientinnen, POST erstellt neue Klientin (id=12)
+
+## BUG: Admin Mülleimer-Button funktioniert nicht (16.04.2026)
+- [x] Seelenjournal Admin: Löschen-Button (Mülleimer) reagiert nicht – gefixt (Web: window.confirm statt Alert.alert, größere Touch-Area)
+
+## INFO: Push-Nachrichten Anleitung (16.04.2026)
+- [x] Push-Nachrichten: Erklärung wie man sie verschickt (ANLEITUNG_PUSH_UND_APPSTORE.md)
+
+## INFO: App Store Veröffentlichung Anleitung (16.04.2026)
+- [x] App Store: Schritt-für-Schritt Anleitung erstellen (ANLEITUNG_PUSH_UND_APPSTORE.md)
