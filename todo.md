@@ -493,5 +493,9 @@
 - [x] DB-Write-Test: /api/db-write-test zum Testen der Schreiboperationen
 
 ## BUG: Seelenjournal Admin Klientin speichert IMMER NOCH NICHT (16.04.2026)
-- [ ] Root Cause auf Render identifizieren (DB-Schreibtest, Logs prüfen)
-- [ ] Definitiven Fix implementieren und auf Render verifizieren
+- [x] Root Cause auf Render identifiziert: SSL-Modus-Erkennung war falsch (Render-interne DB brauchte no-ssl, aber drizzle/withDb verwendete falschen Modus)
+- [x] Fix: Multi-SSL-Modus-Erkennung in withDb (seelenjournal-db.ts) und getDb (db.ts)
+- [x] Fix: Automatisches Testen von 3 SSL-Modi (no-ssl, ssl-require, ssl-no-verify) mit Caching
+- [x] Fix: Jede DB-Operation mit 20s-Timeout geschützt
+- [x] Diagnose-Endpunkte: /api/db-diagnose (raw SELECT+INSERT Tests) und /api/db-kill-stuck
+- [x] Verifiziert auf Render: GET /admin/clients liefert 10 Klientinnen, POST erstellt neue Klientin (id=12)
