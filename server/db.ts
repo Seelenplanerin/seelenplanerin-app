@@ -8,16 +8,34 @@ let _db: any = null;
 let _pool: mysql.Pool | null = null;
 
 export async function getDb() {
+  // Always try to reconnect if _db is null
   if (!_db && process.env.DATABASE_URL) {
+    // Clean up stale pool first
+    if (_pool) {
+      try { _pool.end(); } catch (e) { /* ignore */ }
+      _pool = null;
+    }
     try {
       const dbUrl = process.env.DATABASE_URL;
       _pool = mysql.createPool({
         uri: dbUrl,
         waitForConnections: true,
-        connectionLimit: 5,
-        queueLimit: 0,
-        connectTimeout: 10000,
+        connectionLimit: 3,
+        queueLimit: 10,
+        connectTimeout: 15000,
         ssl: { rejectUnauthorized: true },
+        enableKeepAlive: true,
+        keepAliveInitialDelay: 10000,
+      });
+      // Handle pool errors to prevent crashes
+      (_pool as any).on("error", (err: any) => {
+        const errMsg = String(err?.message || err);
+        console.error("[Database] Pool error:", errMsg);
+        if (errMsg.includes("ECONNRESET") || errMsg.includes("PROTOCOL_CONNECTION_LOST") || errMsg.includes("ETIMEDOUT")) {
+          console.log("[Database] Resetting pool due to connection error...");
+          _db = null;
+          _pool = null;
+        }
       });
       // Test the connection
       const conn = await _pool.getConnection();

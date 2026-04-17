@@ -527,3 +527,19 @@
 - [x] Admin: Neuen Nutzer anlegen – funktioniert!
 - [x] Datenbank auf MySQL (TiDB) umgestellt (db.ts, seelenjournal-db.ts, db-migrate.ts, schema.ts)
 - [x] TypeScript-Fehler in community-premium.tsx, seelenjournal-routes.ts, routers.ts behoben
+
+## Kompletter App-Check (17.04.2026)
+- [x] Alle Tabs prüfen: Aktuelles, Mond, Rituale, Community, Shop, Ich
+- [x] Community: Registrierung als Nutzer testen
+- [x] Community: Anmeldung als Nutzer testen
+- [x] Seelenjournal: Admin-Zugangsdaten klären
+- [x] Musik: Nur Seelenplanerin-Musik, nichts anderes
+- [x] Community Premium: Meditationen prüfen ob sie laufen
+- [x] Community Premium: Mantra prüfen ob es läuft
+- [x] Anleitung: Wie neue Inhalte hochladen
+
+## Bugfix Runde 2 (17.04.2026) – von Lara gemeldet
+- [x] Musik-Screen: Seelenklänge, Ritual-Musik, Runen-Mantra IMMER NOCH sichtbar auf Render → komplett entfernen
+- [x] Musik-Screen: Apple Music und YouTube Buttons IMMER NOCH sichtbar → nur Spotify behalten
+- [x] Seelenjournal Admin: Klientin anlegen speichert NICHT auf Render (MySQL-Problem) → DB-Retry-Logik + Pool-Reset
+- [x] Geben & Nehmen (Affiliate): Registrierung zeigt "Fehler beim Erstellen" → DB-Reconnect-Logik gefixt
