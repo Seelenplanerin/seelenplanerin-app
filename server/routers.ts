@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAffiliateWelcomeEmail, sendAffiliateSaleNotification, sendAffiliateAdminNotification, sendAffiliatePayoutEmail, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -145,6 +145,16 @@ export const appRouter = router({
         const existing = await db.getCommunityUserByEmail(input.email);
         if (existing) return { success: false as const, error: "exists" };
         const id = await db.createCommunityUser(input);
+        // Willkommens-E-Mail senden
+        try {
+          await sendWelcomeEmail({
+            toEmail: input.email,
+            toName: input.name,
+            tempPassword: input.password,
+          });
+        } catch (emailErr) {
+          console.error("[Community] Willkommens-E-Mail konnte nicht gesendet werden:", emailErr);
+        }
         return { success: true as const, id };
       }),
 
@@ -194,280 +204,6 @@ export const appRouter = router({
           consent: (user as any).emailConsent === 1,
           consentDate: (user as any).emailConsentDate || null,
         };
-      }),
-  }),
-
-  // ── Affiliate-System ──
-  affiliate: router({
-    // Affiliate-Code für einen Nutzer erstellen oder abrufen
-    // Login mit E-Mail + Passwort
-    login: publicProcedure
-      .input(z.object({ email: z.string().email(), password: z.string().min(1) }))
-      .mutation(async ({ input }) => {
-        const affiliate = await db.getAffiliateByEmail(input.email);
-        if (!affiliate) return { success: false as const, error: "not_found" };
-        if (!affiliate.password || affiliate.password !== input.password) {
-          return { success: false as const, error: "wrong_password" };
-        }
-        return { success: true as const, affiliate };
-      }),
-
-    getOrCreate: publicProcedure
-      .input(z.object({ email: z.string().email(), name: z.string().min(1), password: z.string().min(4).optional() }))
-      .mutation(async ({ input }) => {
-        let affiliate = await db.getAffiliateByEmail(input.email);
-        if (affiliate) {
-          // E-Mail existiert bereits - Nutzer soll sich einloggen
-          return { success: false as const, error: "already_registered" };
-        }
-        // Code wird automatisch generiert (Admin vergibt den Code)
-        let code = await db.generateAffiliateCode();
-        let attempts = 0;
-        while (await db.getAffiliateByCode(code) && attempts < 10) {
-          code = await db.generateAffiliateCode();
-          attempts++;
-        }
-        const id = await db.createAffiliate({ email: input.email, name: input.name, code });
-        // Passwort speichern
-        if (input.password) {
-          await db.updateAffiliate(code, { password: input.password });
-        }
-        affiliate = await db.getAffiliateByEmail(input.email);
-        // Willkommens-E-Mail an Affiliate senden
-        const affiliateLink = `https://seelenplanerin-app.onrender.com/ref/${code}`;
-        sendAffiliateWelcomeEmail({
-          toEmail: input.email,
-          toName: input.name,
-          affiliateCode: code,
-          affiliateLink,
-        }).catch(err => console.error("[Affiliate] Willkommens-E-Mail Fehler:", err));
-        // Admin-Benachrichtigung: Neuer Affiliate angemeldet
-        sendAffiliateAdminNotification({
-          affiliateName: input.name,
-          affiliateEmail: input.email,
-          affiliateCode: code,
-        }).catch(err => console.error("[Affiliate] Admin-Benachrichtigung Fehler:", err));
-        // Push-Nachricht an alle registrierten Geräte (Admin bekommt Push)
-        (async () => {
-          try {
-            const tokens = await db.getAllActivePushTokens();
-            if (tokens.length > 0) {
-              const pushMessages = tokens.map((t: any) => ({
-                to: t.token,
-                sound: "default" as const,
-                title: "Neue Affiliate-Anmeldung!",
-                body: `${input.name} hat sich als Affiliate registriert. Code: ${code} – Bitte bei Tentary anlegen!`,
-                data: { type: "affiliate_new", code, name: input.name, email: input.email },
-              }));
-              for (let i = 0; i < pushMessages.length; i += 100) {
-                const chunk = pushMessages.slice(i, i + 100);
-                await fetch("https://exp.host/--/api/v2/push/send", {
-                  method: "POST",
-                  headers: { "Accept": "application/json", "Content-Type": "application/json" },
-                  body: JSON.stringify(chunk),
-                });
-              }
-              console.log(`[Affiliate] Push-Nachricht an ${tokens.length} Geräte gesendet für neuen Affiliate: ${code}`);
-            }
-          } catch (pushErr) {
-            console.error("[Affiliate] Push-Benachrichtigung Fehler:", pushErr);
-          }
-        })();
-        return { success: true as const, affiliate };
-      }),
-
-    // Affiliate-Daten per Code abrufen
-    getByCode: publicProcedure
-      .input(z.object({ code: z.string().min(1) }))
-      .query(async ({ input }) => {
-        const affiliate = await db.getAffiliateByCode(input.code);
-        return affiliate || null;
-      }),
-
-    // Affiliate-Daten per E-Mail abrufen
-    getByEmail: publicProcedure
-      .input(z.object({ email: z.string().email() }))
-      .query(async ({ input }) => {
-        const affiliate = await db.getAffiliateByEmail(input.email);
-        return affiliate || null;
-      }),
-
-    // Alle Affiliates laden (Admin)
-    list: publicProcedure.query(async () => {
-      return db.getAllAffiliates();
-    }),
-
-    // Klick tracken
-    trackClick: publicProcedure
-      .input(z.object({ code: z.string().min(1), ipHash: z.string().optional(), userAgent: z.string().optional() }))
-      .mutation(async ({ input }) => {
-        const affiliate = await db.getAffiliateByCode(input.code);
-        if (!affiliate) return { success: false as const, error: "code_not_found" };
-        await db.recordAffiliateClick(input.code, input.ipHash, input.userAgent);
-        return { success: true as const };
-      }),
-
-    // Verkäufe eines Affiliates abrufen
-    getSales: publicProcedure
-      .input(z.object({ code: z.string().min(1) }))
-      .query(async ({ input }) => {
-        return db.getAffiliateSales(input.code);
-      }),
-
-    // Alle Verkäufe (Admin)
-    listAllSales: publicProcedure.query(async () => {
-      return db.getAllAffiliateSales();
-    }),
-
-    // Verkauf eintragen (Admin)
-    createSale: publicProcedure
-      .input(z.object({
-        affiliateCode: z.string().min(1),
-        productName: z.string().min(1),
-        saleAmount: z.number().min(1), // in Cent
-        customerEmail: z.string().optional(),
-        customerName: z.string().optional(),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const affiliate = await db.getAffiliateByCode(input.affiliateCode);
-        if (!affiliate) return { success: false as const, error: "code_not_found" };
-        const commissionAmount = Math.round(input.saleAmount * 0.20);
-        const id = await db.createAffiliateSale({
-          affiliateCode: input.affiliateCode,
-          productName: input.productName,
-          saleAmount: input.saleAmount,
-          commissionAmount,
-          customerEmail: input.customerEmail,
-          customerName: input.customerName,
-          notes: input.notes,
-        });
-        // E-Mail-Benachrichtigung an Affiliate senden (async, nicht blockierend)
-        sendAffiliateSaleNotification({
-          toEmail: affiliate.email,
-          toName: affiliate.name,
-          product: input.productName,
-          amount: (input.saleAmount / 100).toFixed(2).replace(".", ","),
-          commission: (commissionAmount / 100).toFixed(2).replace(".", ","),
-          affiliateCode: input.affiliateCode,
-          customerName: input.customerName || "Unbekannt",
-        }).catch(err => console.error("[Affiliate] Verkaufs-E-Mail Fehler:", err));
-        return { success: true as const, id, commissionAmount };
-      }),
-
-    // Verkaufsstatus ändern (Admin)
-    updateSaleStatus: publicProcedure
-      .input(z.object({ id: z.number(), status: z.string().min(1) }))
-      .mutation(async ({ input }) => {
-        await db.updateAffiliateSaleStatus(input.id, input.status);
-        return { success: true };
-      }),
-
-    // Auszahlung erstellen (Admin)
-    createPayout: publicProcedure
-      .input(z.object({
-        affiliateCode: z.string().min(1),
-        amount: z.number().min(1), // in Cent
-        method: z.string().default("paypal"),
-        reference: z.string().optional(),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const id = await db.createAffiliatePayout(input);
-        // Auszahlungs-E-Mail an Affiliate senden
-        const affiliate = await db.getAffiliateByCode(input.affiliateCode);
-        if (affiliate) {
-          sendAffiliatePayoutEmail({
-            toEmail: affiliate.email,
-            toName: affiliate.name,
-            amount: (input.amount / 100).toFixed(2).replace(".", ","),
-            method: input.method,
-            reference: input.reference,
-          }).catch(err => console.error("[Affiliate] Auszahlungs-E-Mail Fehler:", err));
-        }
-        return { success: true as const, id };
-      }),
-
-    // Auszahlungen eines Affiliates
-    getPayouts: publicProcedure
-      .input(z.object({ code: z.string().min(1) }))
-      .query(async ({ input }) => {
-        return db.getAffiliatePayouts(input.code);
-      }),
-
-    // Alle Auszahlungen (Admin)
-    listAllPayouts: publicProcedure.query(async () => {
-      return db.getAllAffiliatePayouts();
-    }),
-
-    // Affiliate aktivieren/deaktivieren (Admin)
-    toggleActive: publicProcedure
-      .input(z.object({ code: z.string().min(1), isActive: z.number() }))
-      .mutation(async ({ input }) => {
-        await db.updateAffiliate(input.code, { isActive: input.isActive });
-        return { success: true };
-      }),
-
-    // Passwort vergessen: neues temporäres Passwort per E-Mail senden
-    resetPassword: publicProcedure
-      .input(z.object({ email: z.string().email() }))
-      .mutation(async ({ input }) => {
-        const affiliate = await db.getAffiliateByEmail(input.email);
-        if (!affiliate) return { success: false as const, error: "not_found" };
-        // Generiere ein neues temporäres Passwort (6 Zeichen)
-        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        let tempPw = "";
-        for (let i = 0; i < 6; i++) tempPw += chars[Math.floor(Math.random() * chars.length)];
-        // Passwort in DB speichern
-        await db.updateAffiliate(affiliate.code, { password: tempPw });
-        // E-Mail mit neuem Passwort senden
-        try {
-          const { sendPasswordResetEmail: sendReset } = await import("./email");
-          await sendReset({
-            toEmail: affiliate.email,
-            toName: affiliate.name,
-            tempPassword: tempPw,
-          });
-        } catch (emailErr) {
-          console.error("[Affiliate] Reset-E-Mail Fehler:", emailErr);
-          return { success: false as const, error: "email_failed" };
-        }
-        return { success: true as const };
-      }),
-
-    // Passwort ändern (eingeloggt, mit altem Passwort bestätigen)
-    changePassword: publicProcedure
-      .input(z.object({
-        code: z.string().min(1),
-        oldPassword: z.string().min(1),
-        newPassword: z.string().min(4),
-      }))
-      .mutation(async ({ input }) => {
-        const affiliate = await db.getAffiliateByCode(input.code);
-        if (!affiliate) return { success: false as const, error: "not_found" };
-        if (!affiliate.password || affiliate.password !== input.oldPassword) {
-          return { success: false as const, error: "wrong_password" };
-        }
-        if (input.newPassword.length < 4) {
-          return { success: false as const, error: "too_short" };
-        }
-        await db.updateAffiliate(input.code, { password: input.newPassword });
-        return { success: true as const };
-      }),
-
-    // Affiliate-Zahlungsdaten aktualisieren
-    updatePaymentInfo: publicProcedure
-      .input(z.object({
-        code: z.string().min(1),
-        paypalEmail: z.string().optional(),
-        iban: z.string().optional(),
-      }))
-      .mutation(async ({ input }) => {
-        const updateData: Record<string, any> = {};
-        if (input.paypalEmail !== undefined) updateData.paypalEmail = input.paypalEmail;
-        if (input.iban !== undefined) updateData.iban = input.iban;
-        await db.updateAffiliate(input.code, updateData);
-        return { success: true };
       }),
   }),
 
@@ -587,7 +323,7 @@ export const appRouter = router({
           await db.addAcademyWaitlist(email);
           // Send confirmation email
           try {
-            await sendAcademyWaitlistEmail(email);
+            await sendAcademyWaitlistEmail({ toEmail: email });
           } catch (e) { console.error("Academy email failed:", e); }
           return { success: true };
         } catch (e: any) {

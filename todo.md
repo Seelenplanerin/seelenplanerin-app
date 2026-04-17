@@ -552,3 +552,7 @@
 ## Bugfix Runde 3 (17.04.2026)
 - [x] Geben & Nehmen (Affiliate) komplett aus der App entfernen
 - [x] Community-Registrierung funktioniert nicht auf Render → DB-Reconnect komplett überarbeitet mit withRetry Pattern
+
+## Bugfix Runde 4 (17.04.2026)
+- [x] Geben & Nehmen: ALLE verbleibenden Referenzen im gesamten Projekt finden und entfernen (admin.tsx, routers.ts, db.ts, email.ts, index.ts)
+- [x] E-Mail-Versand bei Community-Registrierung sicherstellen (automatische Willkommens-E-Mail)

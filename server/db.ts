@@ -1,7 +1,7 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: any = null;
@@ -120,6 +120,20 @@ export async function getUserByOpenId(openId: string) {
 
 // ── Meditations ──
 
+export async function getActiveMeditations() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(meditations).where(eq(meditations.isActive, 1)).orderBy(desc(meditations.createdAt));
+  });
+}
+
+export async function updateMeditation(id: number, data: Partial<{ title: string; description: string; emoji: string; isPremium: number; isActive: number }>) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(meditations).set(data).where(eq(meditations.id, id));
+  });
+}
+
 export async function getAllMeditations() {
   return withRetry(async () => {
     const db = getDbSync();
@@ -186,6 +200,10 @@ export async function deleteCommunityUser(email: string) {
   });
 }
 
+export async function updateCommunityUserEmailConsent(email: string, consent: boolean) {
+  return setCommunityEmailConsent(email, consent ? 1 : 0);
+}
+
 export async function setCommunityEmailConsent(email: string, consent: number) {
   return withRetry(async () => {
     const db = getDbSync();
@@ -203,200 +221,18 @@ export async function getCommunityUsersWithEmailConsent() {
   });
 }
 
-// ── Affiliate ──
-
-export async function getAffiliateByEmail(email: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.email, email.toLowerCase())).limit(1);
-    return result.length > 0 ? result[0] : undefined;
-  });
-}
-
-export async function getAffiliateByCode(code: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.code, code.toUpperCase())).limit(1);
-    return result.length > 0 ? result[0] : undefined;
-  });
-}
-
-export async function createAffiliate(data: InsertAffiliateCode) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.insert(affiliateCodes).values({
-      ...data,
-      email: data.email.toLowerCase(),
-      code: data.code.toUpperCase(),
-    });
-    return Number(result[0].insertId);
-  });
-}
-
-export async function updateAffiliate(email: string, data: Partial<{ password: string; paypalEmail: string; isActive: number }>) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.email, email.toLowerCase()));
-  });
-}
-
-export async function getAllAffiliates() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(affiliateCodes).orderBy(desc(affiliateCodes.createdAt));
-  });
-}
-
-export async function recordAffiliateClick(code: string, ipHash?: string, userAgent?: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    await db.insert(affiliateClicks).values({ affiliateCode: code.toUpperCase(), ipHash: ipHash || null, userAgent: userAgent || null });
-    await db.update(affiliateCodes).set({
-      totalClicks: sql`total_clicks + 1`,
-    }).where(eq(affiliateCodes.code, code.toUpperCase()));
-  });
-}
-
-export async function createAffiliateSale(data: InsertAffiliateSale) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.insert(affiliateSales).values(data);
-    await db.update(affiliateCodes).set({
-      totalSales: sql`total_sales + 1`,
-      totalEarnings: sql`total_earnings + ${data.commissionAmount}`,
-    }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-    return Number(result[0].insertId);
-  });
-}
-
-export async function getAffiliateSales(code: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(affiliateSales).where(eq(affiliateSales.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateSales.createdAt));
-  });
-}
-
-export async function getAllAffiliateSales() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(affiliateSales).orderBy(desc(affiliateSales.createdAt));
-  });
-}
-
-export async function updateAffiliateSaleStatus(saleId: number, status: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    await db.update(affiliateSales).set({ status }).where(eq(affiliateSales.id, saleId));
-  });
-}
-
-export async function createAffiliatePayout(data: InsertAffiliatePayout) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.insert(affiliatePayouts).values(data);
-    await db.update(affiliateCodes).set({
-      totalPaid: sql`total_paid + ${data.amount}`,
-    }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-    return Number(result[0].insertId);
-  });
-}
-
-// ── Push Notifications ──
+// ── Push Token Registration ──
 
 export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
   return withRetry(async () => {
     const db = getDbSync();
     const existing = await db.select().from(pushTokens).where(eq(pushTokens.token, data.token)).limit(1);
     if (existing.length > 0) {
-      await db.update(pushTokens).set({
-        platform: data.platform || "unknown",
-        communityEmail: data.communityEmail || null,
-        isActive: 1,
-      }).where(eq(pushTokens.token, data.token));
-      return existing[0].id;
+      await db.update(pushTokens).set({ isActive: 1, platform: data.platform || null }).where(eq(pushTokens.token, data.token));
+    } else {
+      await db.insert(pushTokens).values({ token: data.token, platform: data.platform || null, isActive: 1 });
     }
-    const result = await db.insert(pushTokens).values({
-      token: data.token,
-      platform: data.platform || "unknown",
-      communityEmail: data.communityEmail || null,
-      isActive: 1,
-    });
-    return Number(result[0].insertId);
   });
-}
-
-export async function getAllPushTokens() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
-  });
-}
-
-export async function savePushMessage(data: InsertPushMessage) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    const result = await db.insert(pushMessages).values(data);
-    return Number(result[0].insertId);
-  });
-}
-
-export async function getPushMessages() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt));
-  });
-}
-
-
-// ── Meditations (additional) ──
-
-export async function getActiveMeditations() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(meditations).where(eq(meditations.isActive, 1)).orderBy(desc(meditations.createdAt));
-  });
-}
-
-export async function updateMeditation(id: number, data: Partial<{ title: string; description: string | null; emoji: string; isPremium: number; isActive: number }>) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    await db.update(meditations).set(data).where(eq(meditations.id, id));
-  });
-}
-
-// ── Community Users (additional) ──
-
-export async function updateCommunityUserEmailConsent(email: string, consent: boolean) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    await db.update(communityUsers).set({
-      emailConsent: consent ? 1 : 0,
-      emailConsentDate: consent ? new Date().toISOString() : null,
-    }).where(eq(communityUsers.email, email.toLowerCase()));
-  });
-}
-
-// ── Affiliate (additional) ──
-
-export async function getAffiliatePayouts(code: string) {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(affiliatePayouts).where(eq(affiliatePayouts.affiliateCode, code.toUpperCase())).orderBy(desc(affiliatePayouts.createdAt));
-  });
-}
-
-export async function getAllAffiliatePayouts() {
-  return withRetry(async () => {
-    const db = getDbSync();
-    return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
-  });
-}
-
-export async function generateAffiliateCode(): Promise<string> {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "SP";
-  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
 }
 
 // ── Push Notifications (additional) ──
