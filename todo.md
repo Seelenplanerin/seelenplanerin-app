@@ -561,5 +561,5 @@
 - [x] Seelenjournal: Klienten anlegen funktioniert jetzt auf Render (web-dist neu gebaut war der Fix)
 
 ## Bugfix Runde 6 (17.04.2026)
-- [ ] Rituale: Alle Detail-Seiten zeigen 404 "Page not found" auf Render
+- [x] Rituale: Alle Detail-Seiten zeigen 404 "Page not found" auf Render
 - [ ] Rituale: Tentary-Links passend zu jedem Ritual korrekt verlinken
