@@ -548,3 +548,7 @@
 - [x] Shop-Seite: Physische Produkte (Armbänder, Kerzen) auf www.dieseelenplanerin.de verlinken
 - [x] Shop-Seite: Aura Reading, Ritual-Sets, Seelenimpuls bleiben auf Tentary
 - [x] Shop-Seite: Hauptshop-Banner auf www.dieseelenplanerin.de setzen
+
+## Bugfix Runde 3 (17.04.2026)
+- [x] Geben & Nehmen (Affiliate) komplett aus der App entfernen
+- [x] Community-Registrierung funktioniert nicht auf Render → DB-Reconnect komplett überarbeitet mit withRetry Pattern

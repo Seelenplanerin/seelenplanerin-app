@@ -180,3 +180,13 @@ export const seelenjournalMessages = mysqlTable("seelenjournal_messages", {
 });
 export type SeelenjournalMessage = typeof seelenjournalMessages.$inferSelect;
 export type InsertSeelenjournalMessage = typeof seelenjournalMessages.$inferInsert;
+
+// ── Academy Waitlist ──
+
+export const academyWaitlist = mysqlTable("academy_waitlist", {
+  id: int("id").autoincrement().primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type AcademyWaitlist = typeof academyWaitlist.$inferSelect;
+export type InsertAcademyWaitlist = typeof academyWaitlist.$inferInsert;

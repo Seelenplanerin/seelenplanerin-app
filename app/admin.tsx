@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "affiliate" | "academy" | "qa" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "academy" | "qa" | "einstellungen";
 
 interface QAFrage {
   id: string;
@@ -683,7 +683,6 @@ export default function AdminScreen() {
     { key: "impulse", label: "Impulse", emoji: "✨" },
     { key: "nachrichten", label: "Nachrichten", emoji: "📬" },
     { key: "push", label: "Push", emoji: "📲" },
-    { key: "affiliate", label: "Affiliate", emoji: "🤝" },
     { key: "academy", label: "Academy", emoji: "🎓" },
     { key: "qa", label: "Q&A", emoji: "🌙" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
@@ -1563,8 +1562,8 @@ export default function AdminScreen() {
             </View>
           )}
 
-          {/* ═══════ AFFILIATE TAB ═══════ */}
-          {activeTab === "affiliate" && (
+          {/* AFFILIATE TAB REMOVED */}
+          {false && (
             <>
               {/* Affiliates Übersicht */}
               <View style={s.section}>

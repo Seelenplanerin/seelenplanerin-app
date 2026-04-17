@@ -1,4 +1,4 @@
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, affiliateCodes, affiliateClicks, affiliateSales, affiliatePayouts, InsertAffiliateCode, InsertAffiliateSale, InsertAffiliatePayout, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
@@ -7,49 +7,46 @@ import { ENV } from "./_core/env";
 let _db: any = null;
 let _pool: mysql.Pool | null = null;
 
-export async function getDb() {
-  // Always try to reconnect if _db is null
-  if (!_db && process.env.DATABASE_URL) {
-    // Clean up stale pool first
-    if (_pool) {
-      try { _pool.end(); } catch (e) { /* ignore */ }
+function getPool(): mysql.Pool {
+  if (_pool) return _pool;
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) throw new Error("DATABASE_URL nicht gesetzt");
+  _pool = mysql.createPool({
+    uri: dbUrl,
+    waitForConnections: true,
+    connectionLimit: 3,
+    queueLimit: 10,
+    connectTimeout: 15000,
+    ssl: { rejectUnauthorized: true },
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 10000,
+  });
+  (_pool as any).on("error", (err: any) => {
+    const errMsg = String(err?.message || err);
+    console.error("[Database] Pool error:", errMsg);
+    if (errMsg.includes("ECONNRESET") || errMsg.includes("PROTOCOL_CONNECTION_LOST") || errMsg.includes("ETIMEDOUT")) {
+      console.log("[Database] Resetting pool due to connection error...");
       _pool = null;
-    }
-    try {
-      const dbUrl = process.env.DATABASE_URL;
-      _pool = mysql.createPool({
-        uri: dbUrl,
-        waitForConnections: true,
-        connectionLimit: 3,
-        queueLimit: 10,
-        connectTimeout: 15000,
-        ssl: { rejectUnauthorized: true },
-        enableKeepAlive: true,
-        keepAliveInitialDelay: 10000,
-      });
-      // Handle pool errors to prevent crashes
-      (_pool as any).on("error", (err: any) => {
-        const errMsg = String(err?.message || err);
-        console.error("[Database] Pool error:", errMsg);
-        if (errMsg.includes("ECONNRESET") || errMsg.includes("PROTOCOL_CONNECTION_LOST") || errMsg.includes("ETIMEDOUT")) {
-          console.log("[Database] Resetting pool due to connection error...");
-          _db = null;
-          _pool = null;
-        }
-      });
-      // Test the connection
-      const conn = await _pool.getConnection();
-      await conn.query("SELECT 1");
-      conn.release();
-      _db = drizzle(_pool);
-      console.log("[Database] Connected successfully via MySQL");
-    } catch (error: any) {
-      console.error("[Database] Connection failed:", error.message || error);
       _db = null;
-      _pool = null;
     }
+  });
+  return _pool;
+}
+
+function getDbSync() {
+  if (!_db) {
+    _db = drizzle(getPool());
   }
-  return _db;
+  return _db!;
+}
+
+// Keep the async version for backward compatibility but use the sync pattern
+export async function getDb() {
+  try {
+    return getDbSync();
+  } catch (e) {
+    return null;
+  }
 }
 
 export function resetDb() {
@@ -61,6 +58,28 @@ export function resetDb() {
   console.log("[Database] Connection reset");
 }
 
+// Wrapper to retry DB operations on connection failure
+async function withRetry<T>(fn: () => Promise<T>, retries = 2): Promise<T> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      const msg = err.message || "";
+      const isConnectionError = msg.includes("ECONNRESET") || msg.includes("PROTOCOL_CONNECTION_LOST") ||
+        msg.includes("ETIMEDOUT") || msg.includes("Connection lost") || msg.includes("ECONNREFUSED") ||
+        msg.includes("Failed query") || msg.includes("Can't add new command") || msg.includes("DATABASE_URL");
+      if (isConnectionError && attempt < retries) {
+        console.log(`[Database] Connection error on attempt ${attempt}, resetting and retrying...`);
+        resetDb();
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("withRetry: should not reach here");
+}
+
 export function getSslConfig(dbUrl: string): any {
   return { rejectUnauthorized: true };
 }
@@ -70,376 +89,378 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     throw new Error("User openId is required for upsert");
   }
 
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
-
-  try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
+  return withRetry(async () => {
+    const db = getDbSync();
+    try {
+      const values: InsertUser = {
+        openId: user.openId,
+        email: user.email ?? null,
+        name: user.name ?? null,
+  
+      };
+      await db.insert(users).values(values).onDuplicateKeyUpdate({
+        set: {
+          email: sql`VALUES(email)`,
+          name: sql`VALUES(name)`,
+        },
+      });
+    } catch (error) {
+      console.error("[Database] Failed to upsert user:", error);
     }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = "admin";
-      updateSet.role = "admin";
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    // MySQL upsert using onDuplicateKeyUpdate
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
-  }
+  });
 }
 
 export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  });
 }
 
-// ── Meditationen ──
+// ── Meditations ──
 
 export async function getAllMeditations() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(meditations).orderBy(desc(meditations.createdAt));
-}
-
-export async function getActiveMeditations() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(meditations).where(eq(meditations.isActive, 1)).orderBy(desc(meditations.createdAt));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(meditations).orderBy(desc(meditations.createdAt));
+  });
 }
 
 export async function createMeditation(data: InsertMeditation) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(meditations).values(data);
-  return Number(result[0].insertId);
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(meditations).values(data);
+    return Number(result[0].insertId);
+  });
 }
 
 export async function deleteMeditation(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.delete(meditations).where(eq(meditations.id, id));
-}
-
-export async function updateMeditation(id: number, data: Partial<InsertMeditation>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(meditations).set(data).where(eq(meditations.id, id));
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.delete(meditations).where(eq(meditations.id, id));
+  });
 }
 
 // ── Community Users ──
 
 export async function getAllCommunityUsers() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(communityUsers).orderBy(desc(communityUsers.createdAt));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(communityUsers).orderBy(desc(communityUsers.createdAt));
+  });
 }
 
 export async function getCommunityUserByEmail(email: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(communityUsers).where(eq(communityUsers.email, email.toLowerCase())).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.select().from(communityUsers).where(eq(communityUsers.email, email.toLowerCase())).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  });
 }
 
 export async function createCommunityUser(data: { email: string; password: string; name: string; mustChangePassword?: number }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(communityUsers).values({
-    email: data.email.toLowerCase(),
-    password: data.password,
-    name: data.name,
-    mustChangePassword: data.mustChangePassword || 0,
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(communityUsers).values({
+      email: data.email.toLowerCase(),
+      password: data.password,
+      name: data.name,
+      mustChangePassword: data.mustChangePassword || 0,
+    });
+    return Number(result[0].insertId);
   });
-  return Number(result[0].insertId);
 }
 
 export async function updateCommunityUser(email: string, data: Partial<{ password: string; name: string; mustChangePassword: number; isActive: number }>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(communityUsers).set(data).where(eq(communityUsers.email, email.toLowerCase()));
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(communityUsers).set(data).where(eq(communityUsers.email, email.toLowerCase()));
+  });
 }
 
 export async function deleteCommunityUser(email: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.delete(communityUsers).where(eq(communityUsers.email, email.toLowerCase()));
+  });
 }
 
-export async function updateCommunityUserEmailConsent(email: string, consent: boolean) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(communityUsers).set({
-    emailConsent: consent ? 1 : 0,
-    emailConsentDate: consent ? new Date() : null,
-  }).where(eq(communityUsers.email, email.toLowerCase()));
+export async function setCommunityEmailConsent(email: string, consent: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(communityUsers).set({
+      emailConsent: consent,
+      emailConsentDate: consent === 1 ? new Date().toISOString() : null,
+    }).where(eq(communityUsers.email, email.toLowerCase()));
+  });
 }
 
 export async function getCommunityUsersWithEmailConsent() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(communityUsers).where(eq(communityUsers.emailConsent, 1));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(communityUsers).where(eq(communityUsers.emailConsent, 1));
+  });
 }
 
-// ── Affiliate-System ──
-
-export async function generateAffiliateCode(): Promise<string> {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "SP-";
-  for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
+// ── Affiliate ──
 
 export async function getAffiliateByEmail(email: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.email, email.toLowerCase())).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.email, email.toLowerCase())).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  });
 }
 
 export async function getAffiliateByCode(code: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.code, code.toUpperCase())).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.select().from(affiliateCodes).where(eq(affiliateCodes.code, code.toUpperCase())).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  });
+}
+
+export async function createAffiliate(data: InsertAffiliateCode) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(affiliateCodes).values({
+      ...data,
+      email: data.email.toLowerCase(),
+      code: data.code.toUpperCase(),
+    });
+    return Number(result[0].insertId);
+  });
+}
+
+export async function updateAffiliate(email: string, data: Partial<{ password: string; paypalEmail: string; isActive: number }>) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.email, email.toLowerCase()));
+  });
 }
 
 export async function getAllAffiliates() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliateCodes).orderBy(desc(affiliateCodes.createdAt));
-}
-
-export async function createAffiliate(data: { email: string; name: string; code: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(affiliateCodes).values({
-    email: data.email.toLowerCase(),
-    name: data.name,
-    code: data.code.toUpperCase(),
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(affiliateCodes).orderBy(desc(affiliateCodes.createdAt));
   });
-  return Number(result[0].insertId);
-}
-
-export async function updateAffiliate(code: string, data: Partial<{ isActive: number; paypalEmail: string; iban: string; totalClicks: number; totalSales: number; totalEarnings: number; totalPaid: number; password: string }>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(affiliateCodes).set(data).where(eq(affiliateCodes.code, code.toUpperCase()));
 }
 
 export async function recordAffiliateClick(code: string, ipHash?: string, userAgent?: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.insert(affiliateClicks).values({
-    affiliateCode: code.toUpperCase(),
-    ipHash: ipHash || null,
-    userAgent: userAgent || null,
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.insert(affiliateClicks).values({ affiliateCode: code.toUpperCase(), ipHash: ipHash || null, userAgent: userAgent || null });
+    await db.update(affiliateCodes).set({
+      totalClicks: sql`total_clicks + 1`,
+    }).where(eq(affiliateCodes.code, code.toUpperCase()));
   });
-  // Update total clicks
-  await db.update(affiliateCodes)
-    .set({ totalClicks: sql`totalClicks + 1` })
-    .where(eq(affiliateCodes.code, code.toUpperCase()));
 }
 
-export async function getAffiliateClicks(code: string) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliateClicks).where(eq(affiliateClicks.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateClicks.createdAt));
-}
-
-export async function createAffiliateSale(data: { affiliateCode: string; productName: string; saleAmount: number; commissionAmount: number; customerEmail?: string; customerName?: string; notes?: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(affiliateSales).values({
-    affiliateCode: data.affiliateCode.toUpperCase(),
-    productName: data.productName,
-    saleAmount: data.saleAmount,
-    commissionRate: 20,
-    commissionAmount: data.commissionAmount,
-    customerEmail: data.customerEmail || null,
-    customerName: data.customerName || null,
-    notes: data.notes || null,
+export async function createAffiliateSale(data: InsertAffiliateSale) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(affiliateSales).values(data);
+    await db.update(affiliateCodes).set({
+      totalSales: sql`total_sales + 1`,
+      totalEarnings: sql`total_earnings + ${data.commissionAmount}`,
+    }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+    return Number(result[0].insertId);
   });
-  // Update affiliate totals
-  await db.update(affiliateCodes)
-    .set({
-      totalSales: sql`totalSales + 1`,
-      totalEarnings: sql`totalEarnings + ${data.commissionAmount}`,
-    })
-    .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-  return Number(result[0].insertId);
 }
 
 export async function getAffiliateSales(code: string) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliateSales).where(eq(affiliateSales.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateSales.createdAt));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(affiliateSales).where(eq(affiliateSales.affiliateCode, code.toUpperCase())).orderBy(desc(affiliateSales.createdAt));
+  });
 }
 
 export async function getAllAffiliateSales() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliateSales).orderBy(desc(affiliateSales.createdAt));
-}
-
-export async function updateAffiliateSaleStatus(id: number, status: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.update(affiliateSales).set({ status }).where(eq(affiliateSales.id, id));
-}
-
-export async function createAffiliatePayout(data: { affiliateCode: string; amount: number; method: string; reference?: string; notes?: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(affiliatePayouts).values({
-    affiliateCode: data.affiliateCode.toUpperCase(),
-    amount: data.amount,
-    method: data.method,
-    reference: data.reference || null,
-    notes: data.notes || null,
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(affiliateSales).orderBy(desc(affiliateSales.createdAt));
   });
-  // Update totalPaid
-  await db.update(affiliateCodes)
-    .set({ totalPaid: sql`totalPaid + ${data.amount}` })
-    .where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
-  return Number(result[0].insertId);
 }
+
+export async function updateAffiliateSaleStatus(saleId: number, status: string) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(affiliateSales).set({ status }).where(eq(affiliateSales.id, saleId));
+  });
+}
+
+export async function createAffiliatePayout(data: InsertAffiliatePayout) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(affiliatePayouts).values(data);
+    await db.update(affiliateCodes).set({
+      totalPaid: sql`total_paid + ${data.amount}`,
+    }).where(eq(affiliateCodes.code, data.affiliateCode.toUpperCase()));
+    return Number(result[0].insertId);
+  });
+}
+
+// ── Push Notifications ──
+
+export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const existing = await db.select().from(pushTokens).where(eq(pushTokens.token, data.token)).limit(1);
+    if (existing.length > 0) {
+      await db.update(pushTokens).set({
+        platform: data.platform || "unknown",
+        communityEmail: data.communityEmail || null,
+        isActive: 1,
+      }).where(eq(pushTokens.token, data.token));
+      return existing[0].id;
+    }
+    const result = await db.insert(pushTokens).values({
+      token: data.token,
+      platform: data.platform || "unknown",
+      communityEmail: data.communityEmail || null,
+      isActive: 1,
+    });
+    return Number(result[0].insertId);
+  });
+}
+
+export async function getAllPushTokens() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
+  });
+}
+
+export async function savePushMessage(data: InsertPushMessage) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(pushMessages).values(data);
+    return Number(result[0].insertId);
+  });
+}
+
+export async function getPushMessages() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt));
+  });
+}
+
+
+// ── Meditations (additional) ──
+
+export async function getActiveMeditations() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(meditations).where(eq(meditations.isActive, 1)).orderBy(desc(meditations.createdAt));
+  });
+}
+
+export async function updateMeditation(id: number, data: Partial<{ title: string; description: string | null; emoji: string; isPremium: number; isActive: number }>) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(meditations).set(data).where(eq(meditations.id, id));
+  });
+}
+
+// ── Community Users (additional) ──
+
+export async function updateCommunityUserEmailConsent(email: string, consent: boolean) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(communityUsers).set({
+      emailConsent: consent ? 1 : 0,
+      emailConsentDate: consent ? new Date().toISOString() : null,
+    }).where(eq(communityUsers.email, email.toLowerCase()));
+  });
+}
+
+// ── Affiliate (additional) ──
 
 export async function getAffiliatePayouts(code: string) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliatePayouts).where(eq(affiliatePayouts.affiliateCode, code.toUpperCase())).orderBy(desc(affiliatePayouts.createdAt));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(affiliatePayouts).where(eq(affiliatePayouts.affiliateCode, code.toUpperCase())).orderBy(desc(affiliatePayouts.createdAt));
+  });
 }
 
 export async function getAllAffiliatePayouts() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(affiliatePayouts).orderBy(desc(affiliatePayouts.createdAt));
+  });
 }
 
-// ── Push-Benachrichtigungen ──
+export async function generateAffiliateCode(): Promise<string> {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "SP";
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
 
-export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  // MySQL upsert
-  await db.insert(pushTokens).values({
-    token: data.token,
-    platform: data.platform || null,
-    communityEmail: data.communityEmail || null,
-    isActive: 1,
-    updatedAt: new Date(),
-  }).onDuplicateKeyUpdate({
-    set: {
-      platform: data.platform || null,
-      communityEmail: data.communityEmail || null,
-      isActive: 1,
-      updatedAt: new Date(),
-    },
+// ── Push Notifications (additional) ──
+
+export async function getPushTokenCount() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.select({ count: sql<number>`COUNT(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
+    return result[0]?.count || 0;
   });
 }
 
 export async function getAllActivePushTokens() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
-}
-
-export async function deactivatePushToken(token: string) {
-  const db = await getDb();
-  if (!db) return;
-  await db.update(pushTokens).set({ isActive: 0 }).where(eq(pushTokens.token, token));
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(pushTokens).where(eq(pushTokens.isActive, 1));
+  });
 }
 
 export async function createPushMessage(data: InsertPushMessage) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  const result = await db.insert(pushMessages).values(data);
-  return Number(result[0].insertId);
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(pushMessages).values(data);
+    return Number(result[0].insertId);
+  });
 }
 
-export async function updatePushMessage(id: number, data: Partial<InsertPushMessage>) {
-  const db = await getDb();
-  if (!db) return;
-  await db.update(pushMessages).set(data).where(eq(pushMessages.id, id));
+// ── Push Token Management ──
+
+export async function deactivatePushToken(token: string) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(pushTokens).set({ isActive: 0 }).where(eq(pushTokens.token, token));
+  });
+}
+
+export async function updatePushMessage(id: number, data: { sentSuccess?: number; sentFailed?: number }) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(pushMessages).set(data).where(eq(pushMessages.id, id));
+  });
 }
 
 export async function getPushMessageHistory() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt)).limit(50);
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt));
+  });
 }
 
-export async function getPushTokenCount() {
-  const db = await getDb();
-  if (!db) return 0;
-  const result = await db.select({ count: sql<number>`count(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
-  return Number(result[0]?.count || 0);
-}
+// ── Academy Waitlist ──
 
-// ─── Academy Waitlist ─────────────────────────────────────────────────────────
+import { academyWaitlist, InsertAcademyWaitlist } from "../drizzle/schema";
+
 export async function addAcademyWaitlist(email: string) {
-  const db = await getDb();
-  if (!db) throw new Error("No database connection");
-  // Use raw pool for this simple query
-  if (_pool) {
-    await _pool.execute(
-      "INSERT IGNORE INTO academy_waitlist (email) VALUES (?)",
-      [email.toLowerCase()]
-    );
-  }
-  return { success: true };
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.insert(academyWaitlist).values({ email: email.toLowerCase() });
+  });
 }
 
 export async function getAcademyWaitlist() {
-  const db = await getDb();
-  if (!db) return [];
-  if (_pool) {
-    const [rows] = await _pool.execute("SELECT id, email, createdAt FROM academy_waitlist ORDER BY createdAt DESC");
-    return rows as any[];
-  }
-  return [];
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(academyWaitlist).orderBy(desc(academyWaitlist.createdAt));
+  });
 }
