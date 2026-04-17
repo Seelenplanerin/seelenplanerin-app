@@ -133,6 +133,7 @@ export default function RootLayout() {
             <Stack.Screen name="kerzen-quiz" options={{ presentation: "card" }} />
             <Stack.Screen name="musik" options={{ presentation: "card" }} />
             <Stack.Screen name="benachrichtigungen" options={{ presentation: "card" }} />
+            <Stack.Screen name="rituale/[slug]" options={{ presentation: "card" }} />
           </Stack>
           <StatusBar style="auto" />
           </FavoritesProvider>

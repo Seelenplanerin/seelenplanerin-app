@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  TextInput, Modal, Linking, FlatList,
+  TextInput, Modal, Linking, FlatList, Platform,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import {
   RITUALE_2026, RITUAL_KATEGORIEN, MONATSNAMEN,
@@ -20,10 +21,29 @@ const KAT_EMOJI: Record<string, string> = {
   Morgen: "☀️", Abend: "🕯️", Schutz: "🛡️", Meditation: "💎", Reinigung: "🌿",
 };
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\u00e4/g, "ae").replace(/\u00f6/g, "oe").replace(/\u00fc/g, "ue").replace(/\u00df/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default function RitualeScreen() {
+  const router = useRouter();
   const [suchtext, setSuchtext] = useState("");
   const [aktiveKat, setAktiveKat] = useState("Alle");
   const [selectedRitual, setSelectedRitual] = useState<Ritual | null>(null);
+
+  const openRitual = useCallback((ritual: Ritual) => {
+    if (Platform.OS === "web") {
+      // On web, navigate to the slug route for proper URL support
+      router.push(`/rituale/${slugify(ritual.titel)}` as any);
+    } else {
+      // On native, use the modal for a better UX
+      setSelectedRitual(ritual);
+    }
+  }, [router]);
 
   // Filtern + Suchen
   const gefiltert = useMemo(() => {
@@ -133,7 +153,7 @@ export default function RitualeScreen() {
                 <TouchableOpacity
                   key={ritual.id}
                   style={s.ritualRow}
-                  onPress={() => setSelectedRitual(ritual)}
+                  onPress={() => openRitual(ritual)}
                   activeOpacity={0.7}
                 >
                   <View style={[s.ritualIcon, { backgroundColor: getKatColor(ritual.kategorie) }]}>

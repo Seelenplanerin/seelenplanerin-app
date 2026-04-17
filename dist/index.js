@@ -2989,12 +2989,28 @@ async function startServer() {
     app.use(express.static(webDistPath));
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
-      const htmlFile = path.join(webDistPath, req.path.endsWith(".html") ? req.path : req.path.replace(/\/$/, "") + ".html");
+      const reqPath = req.path.replace(/\/$/, "");
+      const htmlFile = path.join(webDistPath, reqPath.endsWith(".html") ? reqPath : reqPath + ".html");
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);
-      } else {
-        res.sendFile(path.join(webDistPath, "index.html"));
+        return;
       }
+      const segments = reqPath.split("/").filter(Boolean);
+      if (segments.length >= 2) {
+        const parentDir = path.join(webDistPath, ...segments.slice(0, -1));
+        if (fs.existsSync(parentDir)) {
+          try {
+            const files = fs.readdirSync(parentDir);
+            const dynamicFile = files.find((f) => f.startsWith("[") && f.endsWith("].html"));
+            if (dynamicFile) {
+              res.sendFile(path.join(parentDir, dynamicFile));
+              return;
+            }
+          } catch (e) {
+          }
+        }
+      }
+      res.sendFile(path.join(webDistPath, "index.html"));
     });
   }
   const preferredPort = parseInt(process.env.PORT || "3000");

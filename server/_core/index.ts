@@ -454,12 +454,37 @@ async function startServer() {
     app.use(express.static(webDistPath));
     app.get("*", (req, res, next) => {
       if (req.path.startsWith("/api")) return next();
-      const htmlFile = path.join(webDistPath, req.path.endsWith(".html") ? req.path : req.path.replace(/\/$/, "") + ".html");
+      const reqPath = req.path.replace(/\/$/, "");
+      const htmlFile = path.join(webDistPath, reqPath.endsWith(".html") ? reqPath : reqPath + ".html");
+      
+      // 1. Try exact match (e.g., /rituale -> /rituale.html)
       if (fs.existsSync(htmlFile)) {
         res.sendFile(htmlFile);
-      } else {
-        res.sendFile(path.join(webDistPath, "index.html"));
+        return;
       }
+      
+      // 2. Try dynamic route match (e.g., /rituale/some-slug -> /rituale/[slug].html)
+      //    Expo Router generates [param].html files for dynamic routes
+      const segments = reqPath.split("/").filter(Boolean);
+      if (segments.length >= 2) {
+        const parentDir = path.join(webDistPath, ...segments.slice(0, -1));
+        if (fs.existsSync(parentDir)) {
+          // Look for [slug].html, [id].html, or any [param].html in the parent directory
+          try {
+            const files = fs.readdirSync(parentDir);
+            const dynamicFile = files.find(f => f.startsWith("[") && f.endsWith("].html"));
+            if (dynamicFile) {
+              res.sendFile(path.join(parentDir, dynamicFile));
+              return;
+            }
+          } catch (e) {
+            // ignore read errors
+          }
+        }
+      }
+      
+      // 3. Fallback to index.html for SPA routing
+      res.sendFile(path.join(webDistPath, "index.html"));
     });
   }
 

@@ -556,3 +556,10 @@
 ## Bugfix Runde 4 (17.04.2026)
 - [x] Geben & Nehmen: ALLE verbleibenden Referenzen im gesamten Projekt finden und entfernen (admin.tsx, routers.ts, db.ts, email.ts, index.ts)
 - [x] E-Mail-Versand bei Community-Registrierung sicherstellen (automatische Willkommens-E-Mail)
+
+## Bugfix Runde 5 (17.04.2026)
+- [x] Seelenjournal: Klienten anlegen funktioniert jetzt auf Render (web-dist neu gebaut war der Fix)
+
+## Bugfix Runde 6 (17.04.2026)
+- [ ] Rituale: Alle Detail-Seiten zeigen 404 "Page not found" auf Render
+- [ ] Rituale: Tentary-Links passend zu jedem Ritual korrekt verlinken
