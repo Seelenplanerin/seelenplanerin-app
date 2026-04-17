@@ -562,4 +562,7 @@
 
 ## Bugfix Runde 6 (17.04.2026)
 - [x] Rituale: Alle Detail-Seiten zeigen 404 "Page not found" auf Render
-- [ ] Rituale: Tentary-Links passend zu jedem Ritual korrekt verlinken
+- [x] Rituale: Tentary-Links passend zu jedem Ritual korrekt verlinken
+
+## Bugfix Runde 7 (17.04.2026)
+- [x] Rituale: Alle Tentary-Links korrekt pro Ritual einpflegen (aus bereits gesendeten Links)

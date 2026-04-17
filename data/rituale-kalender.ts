@@ -53,7 +53,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Das Licht kehrt zurück. In mir und um mich herum beginnt Neues zu wachsen.\"" },
     ],
     materialien: ["Weiße Kerzen", "Bergkristall", "Salbei", "Milch & Honig"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Das Licht kehrt zurück. In mir und um mich herum beginnt Neues zu wachsen.",
   },
   {
@@ -82,7 +82,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich transformiere Schmerz in Kraft. Aus der Dunkelheit wächst mein Licht.\"" },
     ],
     materialien: ["Schwarze Kerze", "Mondstein", "Weihrauch", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich transformiere Schmerz in Kraft. Aus der Dunkelheit wächst mein Licht.",
   },
   {
@@ -108,7 +108,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin Liebe. Ich verdiene Liebe. Ich gebe mir selbst die Liebe, die ich brauche.\"" },
     ],
     materialien: ["Rosenquarz", "Rosenblüten", "Rosa Kerze", "Rosenöl"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
     affirmation: "Ich bin Liebe. Ich verdiene Liebe. Ich gebe mir selbst die Liebe, die ich brauche.",
   },
 
@@ -139,7 +139,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich lasse los was mich klein hält. Ich wachse in meine volle Kraft und Größe.\"" },
     ],
     materialien: ["Bergkristall", "Amethyst", "Weißer Salbei", "Rotes Papier", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich lasse los was mich klein hält. Ich wachse in meine volle Kraft und Größe.",
   },
   {
@@ -164,7 +164,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin bereit für Neues. Mein Leben erblüht wie der Frühling.\"" },
     ],
     materialien: ["Grüne Kerze", "Aventurin", "Pflanzensamen"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich bin bereit für Neues. Mein Leben erblüht wie der Frühling.",
   },
   {
@@ -190,7 +190,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin in Balance. Licht und Dunkelheit tanzen in mir in Harmonie.\"" },
     ],
     materialien: ["Bunte Eier", "Frühlingsblumen", "Citrin", "Honig"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich bin in Balance. Licht und Dunkelheit tanzen in mir in Harmonie.",
   },
   {
@@ -214,7 +214,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich beginne diesen Tag mit Klarheit, Freude und Intention.\"" },
     ],
     materialien: ["Citrin", "Kerze", "Zitrone"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich beginne diesen Tag mit Klarheit, Freude und Intention.",
   },
 
@@ -243,7 +243,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Mein Herz ist offen. Ich empfange Liebe in Fülle und gebe sie großzügig weiter.\"" },
     ],
     materialien: ["Rosenquarz", "Rosa Kerze", "Rosenblüten"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
     affirmation: "Mein Herz ist offen. Ich empfange Liebe in Fülle.",
   },
   {
@@ -268,7 +268,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin offen für neue Anfänge. Meine Wünsche wachsen mit dem Mond.\"" },
     ],
     materialien: ["Mondstein", "Schwarze Kerze", "Weihrauch"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
     affirmation: "Ich bin offen für neue Anfänge. Meine Wünsche wachsen mit dem Mond.",
   },
   {
@@ -293,7 +293,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin die Hüterin meiner eigenen Magie. Mein inneres Feuer brennt hell und stark.\"" },
     ],
     materialien: ["Rote Kerzen", "Beifuß", "Karneol", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
     affirmation: "Ich bin die Hüterin meiner eigenen Magie.",
   },
 
@@ -322,7 +322,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich feiere das Leben. Mein Herz ist voller Freude und Dankbarkeit.\"" },
     ],
     materialien: ["Bunte Bänder", "Frische Blumen", "Karneol", "Honig"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
     affirmation: "Ich feiere das Leben. Mein Herz ist voller Freude und Dankbarkeit.",
   },
   {
@@ -349,7 +349,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich lasse los was mich nicht mehr dient. Ich bin rein, ich bin frei, ich bin ganz.\"" },
     ],
     materialien: ["Bergkristall", "Weißer Salbei", "Weiße Kerze", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich lasse los was mich nicht mehr dient. Ich bin rein, ich bin frei.",
   },
   {
@@ -373,7 +373,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin in meiner Mitte. Aus der Stille kommt meine größte Kraft.\"" },
     ],
     materialien: ["Lapislazuli", "Blaue Kerze", "Meditationskissen"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
     affirmation: "Ich bin in meiner Mitte. Aus der Stille kommt meine größte Kraft.",
   },
 
@@ -401,7 +401,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich höre meine innere Stimme. Ich spreche meine Wahrheit mit Liebe und Klarheit.\"" },
     ],
     materialien: ["Sodalith", "Gelbe Kerze", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich höre meine innere Stimme. Ich spreche meine Wahrheit.",
   },
   {
@@ -428,7 +428,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich strahle wie die Sonne. Mein Licht ist kraftvoll und warm.\"" },
     ],
     materialien: ["Sonnenblumen", "Citrin", "Goldene Kerzen", "Johanniskraut"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
     affirmation: "Ich strahle wie die Sonne. Mein Licht ist kraftvoll und warm.",
   },
   {
@@ -452,7 +452,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Dieser Raum ist gereinigt und geschützt. Nur Liebe und Licht dürfen eintreten.\"" },
     ],
     materialien: ["Palo Santo", "Schwarzer Turmalin", "Meersalz"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Dieser Raum ist gereinigt und geschützt.",
   },
   {
@@ -476,7 +476,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin von Liebe umgeben. Liebe fließt zu mir und durch mich.\"" },
     ],
     materialien: ["Rosenquarz", "Rosa Kerzen", "Rosenblüten"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
     affirmation: "Ich bin von Liebe umgeben. Liebe fließt zu mir und durch mich.",
   },
 
@@ -504,7 +504,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Alle meine Energiezentren sind in Harmonie. Ich bin ganz und vollständig.\"" },
     ],
     materialien: ["Roter Jaspis", "Karneol", "Citrin", "Rosenquarz", "Sodalith", "Amethyst", "Bergkristall"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Alle meine Energiezentren sind in Harmonie.",
   },
   {
@@ -529,7 +529,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin dankbar für die Fülle in meinem Leben. Dankbarkeit öffnet die Tür zu noch mehr Segen.\"" },
     ],
     materialien: ["Bernstein", "Goldene Kerze", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
     affirmation: "Ich bin dankbar für die Fülle in meinem Leben.",
   },
   {
@@ -553,7 +553,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Die zweite Hälfte meines Jahres ist voller Möglichkeiten. Ich bin bereit.\"" },
     ],
     materialien: ["Mondstein", "Violette Kerze"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
     affirmation: "Die zweite Hälfte meines Jahres ist voller Möglichkeiten.",
   },
 
@@ -583,7 +583,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich ernte die Früchte meiner Arbeit. Ich bin dankbar für die Fülle der Erde.\"" },
     ],
     materialien: ["Frisches Brot", "Bernstein", "Goldene Kerzen", "Sommerfrüchte"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
     affirmation: "Ich ernte die Früchte meiner Arbeit.",
   },
   {
@@ -607,7 +607,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Meine Vision ist klar. Ich manifestiere meine Träume mit Leichtigkeit und Vertrauen.\"" },
     ],
     materialien: ["Labradorit", "Blaue Kerze", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
     affirmation: "Meine Vision ist klar. Ich manifestiere meine Träume.",
   },
   {
@@ -631,7 +631,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Die Heilkraft der Natur fließt durch mich. Ich bin verbunden mit der Erde.\"" },
     ],
     materialien: ["Heilkräuter", "Grüne Kerze", "Band"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
     affirmation: "Die Heilkraft der Natur fließt durch mich.",
   },
   {
@@ -656,7 +656,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich löse altes Karma auf. Ich bin frei, neu zu beginnen.\"" },
     ],
     materialien: ["Obsidian", "Schwarze Kerze", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich löse altes Karma auf. Ich bin frei, neu zu beginnen.",
   },
 
@@ -685,7 +685,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin in Balance. Ich danke für die Ernte und bereite mich auf die Ruhe vor.\"" },
     ],
     materialien: ["Herbstfrüchte", "Tigerauge", "Orange Kerzen", "Herbstlaub"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
     affirmation: "Ich bin in Balance. Ich danke für die Ernte.",
   },
   {
@@ -709,7 +709,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich erneuere mich. Der Herbst bringt Tiefe und Weisheit in mein Leben.\"" },
     ],
     materialien: ["Mondstein", "Dunkelrote Kerze"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich erneuere mich. Der Herbst bringt Tiefe und Weisheit.",
   },
   {
@@ -733,7 +733,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Meine Aura ist rein und geschützt. Nur Liebe und Licht dürfen eintreten.\"" },
     ],
     materialien: ["Palo Santo", "Schwarzer Turmalin"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Meine Aura ist rein und geschützt.",
   },
 
@@ -762,7 +762,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Wie die Bäume ihre Blätter loslassen, lasse ich los was mich beschwert.\"" },
     ],
     materialien: ["Herbstblätter", "Amethyst", "Weiße Kerze"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Wie die Bäume ihre Blätter loslassen, lasse ich los.",
   },
   {
@@ -789,7 +789,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich ehre meine Ahnen. Ihre Weisheit fließt durch mich. Ich bin Teil einer langen Linie des Lichts.\"" },
     ],
     materialien: ["Schwarze Kerzen", "Obsidian", "Beifuß", "Äpfel"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich ehre meine Ahnen. Ihre Weisheit fließt durch mich.",
   },
   {
@@ -814,7 +814,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin geschützt. Mein Licht ist stärker als jede Dunkelheit.\"" },
     ],
     materialien: ["Schwarzer Turmalin", "Schwarze Kerze", "Meersalz", "Salbei"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich bin geschützt. Mein Licht ist stärker als jede Dunkelheit.",
   },
 
@@ -843,7 +843,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich transformiere mich. Aus der Dunkelheit wächst mein hellstes Licht.\"" },
     ],
     materialien: ["Amethyst", "Violette Kerze", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich transformiere mich. Aus der Dunkelheit wächst mein hellstes Licht.",
   },
   {
@@ -867,7 +867,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin zutiefst dankbar für mein Leben und alle Erfahrungen darin.\"" },
     ],
     materialien: ["Bernstein", "Goldene Kerze", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
     affirmation: "Ich bin zutiefst dankbar für mein Leben.",
   },
   {
@@ -891,7 +891,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich ruhe in Frieden. Mein Schlaf ist tief und heilsam.\"" },
     ],
     materialien: ["Amethyst", "Lavendelöl", "Kerze"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/f9A55Q",
     affirmation: "Ich ruhe in Frieden. Mein Schlaf ist tief und heilsam.",
   },
 
@@ -922,7 +922,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Aus der Dunkelheit wird Licht geboren. Ich trage dieses Licht in mir und teile es mit der Welt.\"" },
     ],
     materialien: ["Yule-Log", "Immergrüne Zweige", "Granat", "Rote Kerzen"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
     affirmation: "Aus der Dunkelheit wird Licht geboren. Ich trage dieses Licht in mir.",
   },
   {
@@ -947,7 +947,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich schließe dieses Jahr mit Dankbarkeit und Liebe ab. Ich bin bereit für ein neues Kapitel.\"" },
     ],
     materialien: ["Bergkristall", "Amethyst", "Goldene Kerzen", "Feuerfeste Schale"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich schließe dieses Jahr mit Dankbarkeit und Liebe ab.",
   },
   {
@@ -971,7 +971,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin bereit für ein neues Jahr voller Wunder, Wachstum und Liebe.\"" },
     ],
     materialien: ["Mondstein", "Silberne Kerze", "Neues Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich bin bereit für ein neues Jahr voller Wunder.",
   },
   {
@@ -997,7 +997,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "\"Ich bin gereinigt und erneuert. Das neue Jahr empfängt mich mit offenen Armen.\"" },
     ],
     materialien: ["Meersalz", "Lavendelöl", "Rosenblüten", "Rosenquarz"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich bin gereinigt und erneuert.",
   },
 
@@ -1030,7 +1030,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich strahle. Ich bin mutig. Mein Licht verdient es, gesehen zu werden.'" },
     ],
     materialien: ["Goldene Kerze", "Citrin", "Weihrauch", "Spiegel"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich strahle. Ich bin mutig. Mein Licht verdient es, gesehen zu werden.",
   },
   {
@@ -1055,7 +1055,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin sicher. Ich bin geschützt. Nur Liebe und Licht erreichen mich.'" },
     ],
     materialien: ["Schwarzer Turmalin", "Schwarze Kerze", "Salbei", "Meersalz"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich bin sicher. Ich bin geschützt. Nur Liebe und Licht erreichen mich.",
   },
 
@@ -1082,7 +1082,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin frei. Ich wähle Beziehungen, die mich nähren und stärken.'" },
     ],
     materialien: ["Rosa Kerze", "Rosenquarz", "Schnur", "Schere"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
     affirmation: "Ich bin frei. Ich wähle Beziehungen, die mich nähren und stärken.",
   },
   {
@@ -1106,7 +1106,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich erblühe. Wie die Natur um mich herum erwache ich zu meiner vollen Schönheit.'" },
     ],
     materialien: ["Grüner Aventurin", "Bequeme Kleidung"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QFEH0i",
     affirmation: "Ich erblühe. Wie die Natur um mich herum erwache ich zu meiner vollen Schönheit.",
   },
 
@@ -1133,7 +1133,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Fülle fließt zu mir. Ich bin es wert, in Wohlstand und Freude zu leben.'" },
     ],
     materialien: ["Grüne Kerze", "Pyrit", "Zimtöl", "Grünes Papier"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
     affirmation: "Fülle fließt zu mir. Ich bin es wert, in Wohlstand und Freude zu leben.",
   },
   {
@@ -1157,7 +1157,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin verwurzelt. Ich bin verbunden. Die Erde trägt mich.'" },
     ],
     materialien: ["Moosachat", "Nüsse/Samen als Opfergabe"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
     affirmation: "Ich bin verwurzelt. Ich bin verbunden. Die Erde trägt mich.",
   },
 
@@ -1184,7 +1184,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Die Sonne scheint in mir. Ich bin Kraft, Mut und Licht.'" },
     ],
     materialien: ["Sonnenstein", "Gelbe Kerze", "Sonnenblume"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/BQ7sqg",
     affirmation: "Die Sonne scheint in mir. Ich bin Kraft, Mut und Licht.",
   },
   {
@@ -1208,7 +1208,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich fließe. Wie das Wasser lasse ich los und finde meinen Weg.'" },
     ],
     materialien: ["Aquamarin", "Blütenblätter"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich fließe. Wie das Wasser lasse ich los und finde meinen Weg.",
   },
 
@@ -1235,7 +1235,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich feiere meine Ernte. Ich habe so viel geschaffen und ich bin stolz auf mich.'" },
     ],
     materialien: ["Orange Kerze", "Carneol", "Herbstfrüchte", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/VN9WOT",
     affirmation: "Ich feiere meine Ernte. Ich habe so viel geschaffen und ich bin stolz auf mich.",
   },
   {
@@ -1259,7 +1259,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin in Balance. Licht und Schatten tanzen in Harmonie in mir.'" },
     ],
     materialien: ["Weiße Kerze", "Schwarze Kerze", "Labradorit"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich bin in Balance. Licht und Schatten tanzen in Harmonie in mir.",
   },
 
@@ -1286,7 +1286,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin getragen von der Weisheit meiner Ahnen. Ihr Segen fließt durch mich.'" },
     ],
     materialien: ["Fotos der Ahnen", "Weiße Kerzen", "Rauchquarz"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "Ich bin getragen von der Weisheit meiner Ahnen. Ihr Segen fließt durch mich.",
   },
   {
@@ -1311,7 +1311,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich bin geschützt in der Dunkelheit. Mein Licht brennt stark und sicher.'" },
     ],
     materialien: ["Schwarzer Turmalin", "Obsidian", "Schutzkräuter", "Stoffbeutel"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
     affirmation: "Ich bin geschützt in der Dunkelheit. Mein Licht brennt stark und sicher.",
   },
 
@@ -1338,7 +1338,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'In der Stille finde ich meine Wahrheit. Meine Seele spricht und ich höre zu.'" },
     ],
     materialien: ["Dunkelblaue Kerze", "Amethyst", "Journal"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/tfehqK",
     affirmation: "In der Stille finde ich meine Wahrheit. Meine Seele spricht und ich höre zu.",
   },
   {
@@ -1364,7 +1364,7 @@ export const RITUALE_2026: Ritual[] = [
       { typ: "affirmation", text: "'Ich schaffe mir Wärme und Geborgenheit. Mein inneres Feuer brennt hell.'" },
     ],
     materialien: ["Kerzen", "Kakao", "Rosenquarz", "Warme Decke"],
-    shopUrl: "https://dieseelenplanerin.de/collections/energiearmbander",
+    shopUrl: "https://dieseelenplanerin.tentary.com/p/gFloc9",
     affirmation: "Ich schaffe mir Wärme und Geborgenheit. Mein inneres Feuer brennt hell.",
   },
 ];
