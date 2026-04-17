@@ -543,3 +543,8 @@
 - [x] Musik-Screen: Apple Music und YouTube Buttons IMMER NOCH sichtbar → nur Spotify behalten
 - [x] Seelenjournal Admin: Klientin anlegen speichert NICHT auf Render (MySQL-Problem) → DB-Retry-Logik + Pool-Reset
 - [x] Geben & Nehmen (Affiliate): Registrierung zeigt "Fehler beim Erstellen" → DB-Reconnect-Logik gefixt
+
+## Shop-Seite Überarbeitung (17.04.2026)
+- [x] Shop-Seite: Physische Produkte (Armbänder, Kerzen) auf www.dieseelenplanerin.de verlinken
+- [x] Shop-Seite: Aura Reading, Ritual-Sets, Seelenimpuls bleiben auf Tentary
+- [x] Shop-Seite: Hauptshop-Banner auf www.dieseelenplanerin.de setzen

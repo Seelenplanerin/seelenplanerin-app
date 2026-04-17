@@ -460,7 +460,7 @@ export default function KerzenQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.tentary.com/p/YQLsh3");
+                Linking.openURL("https://dieseelenplanerin.de/collections/meditationskerzen");
               }}
               activeOpacity={0.85}
             >

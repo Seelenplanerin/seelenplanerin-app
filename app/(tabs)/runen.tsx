@@ -119,7 +119,7 @@ export default function RunenScreen() {
   }
 
   function handleShopOeffnen() {
-    const url = selectedSet?.tentaryUrl || "https://dieseelenplanerin.tentary.com/p/qnl3vN";
+    const url = "https://dieseelenplanerin.de/collections/energiearmbander";
     Linking.openURL(url);
   }
 
