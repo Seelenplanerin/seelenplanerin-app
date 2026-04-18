@@ -30,19 +30,30 @@ export const API_BASE_URL = env.apiBaseUrl;
  * URL pattern: https://PORT-sandboxid.region.domain
  */
 export function getApiBaseUrl(): string {
-  // If API_BASE_URL is set, use it
-  if (API_BASE_URL) {
-    return API_BASE_URL.replace(/\/$/, "");
-  }
-
-  // On web, derive from current hostname by replacing port 8081 with 3000
+  // On web, check if we're running on a deployed host (e.g. Render)
+  // In that case, the API is served from the same origin, so use relative URLs
   if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     const { protocol, hostname } = window.location;
-    // Pattern: 8081-sandboxid.region.domain -> 3000-sandboxid.region.domain
+
+    // If hostname does NOT contain 'manus.computer', we're on a deployed host
+    // (e.g. onrender.com) where API is on the same origin
+    if (!hostname.includes("manus.computer")) {
+      return "";
+    }
+
+    // On Manus sandbox: derive API URL by replacing port 8081 with 3000
+    if (API_BASE_URL) {
+      return API_BASE_URL.replace(/\/$/, "");
+    }
     const apiHostname = hostname.replace(/^8081-/, "3000-");
     if (apiHostname !== hostname) {
       return `${protocol}//${apiHostname}`;
     }
+  }
+
+  // Native: use API_BASE_URL if set
+  if (API_BASE_URL) {
+    return API_BASE_URL.replace(/\/$/, "");
   }
 
   // Fallback to empty (will use relative URL)

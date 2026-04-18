@@ -593,3 +593,4 @@
 ## Feedback Runde (18.04.2026)
 - [x] Tab-Icons auf kleine Herzen ändern (alle Tabs)
 - [x] Ausbildungs-Benachrichtigung: E-Mail an hallo@seelenplanerin.de wenn jemand sich für Ausbildung einträgt
+- [ ] BUG FIX: Seelenjournal Admin - Klientin anlegen funktioniert nicht auf Render (DB-Verbindung/API Problem)
