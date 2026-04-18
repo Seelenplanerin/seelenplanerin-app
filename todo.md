@@ -605,5 +605,14 @@
 - [ ] Neuen iOS Build über Manus UI starten → TestFlight Upload
 
 ## Bugfix: Seelenjournal Admin Datei-Upload (18.04.2026)
-- [ ] BUG: Datei-Upload im Seelenjournal Admin funktioniert nicht auf Render
-- [ ] BUG: Shop-Seite leitet auch zu die-seelenplanerin.de statt nur zu Tentary
+- [x] BUG: Datei-Upload im Seelenjournal Admin funktioniert nicht auf Render
+- [x] KEIN BUG: Shop-Seite leitet korrekt zu die-seelenplanerin.de (automatisch aktuell)
+
+## Quiz-Ergebnis Armbänder Update (18.04.2026)
+- [ ] Alle Quizze: Passende Armbänder mit echten Bildern von dieseelenplanerin.de anzeigen
+- [ ] Alle Quizze: "Zum Shop" Link auf www.dieseelenplanerin.de statt Tentary
+- [ ] Heilstein-Quiz: Passende Armbänder zuordnen
+- [ ] Mondtyp-Quiz: Passende Armbänder zuordnen
+- [ ] Runen-Quiz: Passende Armbänder zuordnen
+- [ ] Kerzen-Quiz: Passende Armbänder zuordnen
+- [ ] Kerzen-Quiz: Link nach Ergebnis auf www.dieseelenplanerin.de Meditationskerze ändern
