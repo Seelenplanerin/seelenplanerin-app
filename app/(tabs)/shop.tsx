@@ -132,11 +132,11 @@ const OTHER_PRODUCTS: Product[] = [
     imageUrl: "https://img.tentary.com/seelenimpuls-2_1152465159638903276-1771450850.png?aspect_ratio=1:1&width=640",
   },
   {
-    id: "soul-talk", name: "Soul Talk", kategorie: "digital",
+    id: "soul-talk", name: "Soul Talk – Klarheitsgespräch", kategorie: "digital",
     preis: 0, preisDisplay: "Kostenlos",
-    beschreibung: "Kostenloser Einstieg in die Welt der Seelenplanerin. Erste Impulse und Einblicke.",
-    emoji: "🎁", badge: "Gratis",
-    url: "https://www.instagram.com/die.seelenplanerin/",
+    beschreibung: "30 Min. kostenloses Kennenlerngespräch mit Lara. Dein erster Schritt in die Welt der Seelenplanerin.",
+    emoji: "☕", badge: "Gratis",
+    url: "https://calendly.com/hallo-seelenplanerin/30min",
   },
   // === PHYSISCHE PRODUKTE (verlinken auf www.dieseelenplanerin.de) ===
   {
