@@ -598,3 +598,8 @@
 - [x] Shop-Seite neu gestalten: Einzelne Produkte entfernen, nur schöne Weiterleitung zum externen Shop mit Sneak-Peek
 - [x] Shop-Links mit In-App-Browser (expo-web-browser) öffnen statt externer Safari, damit Zurück-Button vorhanden
 - [x] Checkpoint für TestFlight & Google Play Publish erstellen
+
+## iOS TestFlight Build Fix (18.04.2026)
+- [x] iOS buildNumber auf "2" erhöht (Build 1 war schon in App Store Connect)
+- [ ] Neuen Checkpoint speichern damit Publish-Button wieder aktiv wird
+- [ ] Neuen iOS Build über Manus UI starten → TestFlight Upload
