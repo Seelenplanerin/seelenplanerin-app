@@ -343,7 +343,7 @@ export default function HeilsteinQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.tentary.com/");
+                Linking.openURL("https://dieseelenplanerin.de/collections/energiearmbander");
               }}
               activeOpacity={0.85}
             >

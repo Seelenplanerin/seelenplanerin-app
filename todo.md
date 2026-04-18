@@ -616,3 +616,9 @@
 - [ ] Runen-Quiz: Passende Armbänder zuordnen
 - [ ] Kerzen-Quiz: Passende Armbänder zuordnen
 - [ ] Kerzen-Quiz: Link nach Ergebnis auf www.dieseelenplanerin.de Meditationskerze ändern
+
+## Shop Ritual-Sets einzeln verlinken (18.04.2026)
+- [ ] Ritual-Sets im Shop: Jedes Set einzeln auf seinen Tentary-Link verlinken (nicht pauschal)
+- [ ] "Alle 10 Ritual-Sets ansehen" Button: Link anpassen
+- [x] Heilstein-Quiz: Link auf dieseelenplanerin.de/collections/energiearmbander geändert
+- [x] Shop: Aura Reading Link auf dieseelenplanerin.de geändert

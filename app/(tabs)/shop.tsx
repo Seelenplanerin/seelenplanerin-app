@@ -18,21 +18,25 @@ const SNEAK_PEEK = [
     id: "1", name: "Schutz & Reinigung",
     image: "https://img.tentary.com/01-schutz-reinigung_7032068891806368942-1772437515.png?aspect_ratio=1:1&width=640",
     emoji: "🛡️",
+    url: "https://dieseelenplanerin.tentary.com/p/OX0aPw",
   },
   {
     id: "2", name: "Selbstliebe",
     image: "https://img.tentary.com/02-selbstliebe-herzoeffnung_380106635895589047-1772437957.png?aspect_ratio=1:1&width=640",
     emoji: "💗",
+    url: "https://dieseelenplanerin.tentary.com/p/QtLnrA",
   },
   {
     id: "3", name: "Fülle & Manifestation",
     image: "https://img.tentary.com/03-fuelle-manifestation_77358612426124021-1772438229.png?aspect_ratio=1:1&width=640",
     emoji: "✨",
+    url: "https://dieseelenplanerin.tentary.com/p/QjvV1I",
   },
   {
     id: "4", name: "Transformation",
     image: "https://img.tentary.com/04-transformation-loslassen_165599632870260090-1772440133.png?aspect_ratio=1:1&width=640",
     emoji: "🦋",
+    url: "https://dieseelenplanerin.tentary.com/p/sGn2aD",
   },
 ];
 
@@ -108,7 +112,7 @@ export default function ShopScreen() {
           <Text style={s.sectionSub}>10 handgefertigte Sets für dein persönliches Ritual</Text>
           <View style={s.sneakGrid}>
             {SNEAK_PEEK.map((item) => (
-              <TouchableOpacity key={item.id} style={s.sneakCard} onPress={openTentary} activeOpacity={0.8}>
+              <TouchableOpacity key={item.id} style={s.sneakCard} onPress={() => openInAppBrowser(item.url)} activeOpacity={0.8}>
                 <Image source={{ uri: item.image }} style={s.sneakImage} resizeMode="cover" />
                 <View style={s.sneakOverlay}>
                   <Text style={s.sneakName}>{item.name}</Text>
@@ -116,7 +120,7 @@ export default function ShopScreen() {
               </TouchableOpacity>
             ))}
           </View>
-          <TouchableOpacity style={s.sneakBtn} onPress={openTentary} activeOpacity={0.8}>
+          <TouchableOpacity style={s.sneakBtn} onPress={() => openInAppBrowser("https://dieseelenplanerin.de")} activeOpacity={0.8}>
             <Text style={s.sneakBtnText}>Alle 10 Ritual-Sets ansehen  →</Text>
           </TouchableOpacity>
         </View>
@@ -140,7 +144,7 @@ export default function ShopScreen() {
           <Text style={s.sectionTitle}>Persönliche Sessions</Text>
           <TouchableOpacity
             style={s.serviceCard}
-            onPress={() => openInAppBrowser("https://dieseelenplanerin.tentary.com/p/TuOzYS")}
+            onPress={() => openInAppBrowser("https://dieseelenplanerin.de/products/aura-reading")}
             activeOpacity={0.8}
           >
             <View style={s.serviceLeft}>
