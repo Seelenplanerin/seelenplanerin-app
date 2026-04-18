@@ -585,7 +585,7 @@
 - [x] Auf GitHub gepusht (Commit 94ef163)
 
 ## Bugfix Runde 8 (18.04.2026)
-- [ ] Meditationen: Hochgeladene Meditationen finden und sicherstellen, dass sie angezeigt werden
-- [ ] Soul Talk: Link auf Klarheitsgespräch (Tentary/Calendly) ändern
-- [ ] Meditation "Mut" hochladen (MOV → MP3 → S3 → DB)
-- [ ] Soul Talk Link auf Calendly Klarheit Call ändern: https://calendly.com/hallo-seelenplanerin/30min
+- [x] Meditationen: Hochgeladene Meditationen finden und sicherstellen, dass sie angezeigt werden
+- [x] Soul Talk: Link auf Klarheitsgespräch (Calendly) ändern
+- [x] Meditation "Mut" hochladen (MOV → MP3 → S3 → DB)
+- [x] Soul Talk Link auf Calendly Klarheit Call ändern: https://calendly.com/hallo-seelenplanerin/30min
