@@ -42,7 +42,8 @@ export default function SeelenjournalKundinScreen() {
       // Lade den aktuellen Community-User aus AsyncStorage
       const userData = await AsyncStorage.getItem("community_current_user");
       if (!userData) {
-        Alert.alert("Nicht angemeldet", "Bitte melde dich zuerst in der Community an.");
+        if (Platform.OS === "web") { window.alert("Nicht angemeldet\n\nBitte melde dich zuerst in der Community an."); }
+        else { Alert.alert("Nicht angemeldet", "Bitte melde dich zuerst in der Community an."); }
         router.back();
         return;
       }
@@ -89,7 +90,8 @@ export default function SeelenjournalKundinScreen() {
         });
       }
     } catch {
-      Alert.alert("Fehler", "PDF konnte nicht ge\u00f6ffnet werden.");
+      if (Platform.OS === "web") { window.alert("Fehler\n\nPDF konnte nicht geöffnet werden."); }
+      else { Alert.alert("Fehler", "PDF konnte nicht geöffnet werden."); }
     }
   };
 

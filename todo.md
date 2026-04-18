@@ -594,3 +594,4 @@
 - [x] Tab-Icons auf kleine Herzen ändern (alle Tabs)
 - [x] Ausbildungs-Benachrichtigung: E-Mail an hallo@seelenplanerin.de wenn jemand sich für Ausbildung einträgt
 - [x] BUG FIX: Seelenjournal Admin - Klientin anlegen funktioniert nicht auf Render (API-URL zeigte auf Sandbox statt relative URL)
+- [ ] BUG FIX: Seelenjournal Admin - Eintrag mit PDF-Anhang speichern funktioniert nicht auf iOS Safari

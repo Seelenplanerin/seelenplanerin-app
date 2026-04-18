@@ -10,6 +10,28 @@ import { ScreenContainer } from "@/components/screen-container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiBaseUrl } from "@/constants/oauth";
 
+/** Cross-platform alert that works on iOS Safari (where RN Alert.alert is invisible) */
+function showAlert(title: string, message?: string, buttons?: Array<{text: string; style?: string; onPress?: () => void}>) {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    if (buttons && buttons.length > 1) {
+      // Confirmation dialog
+      const destructiveBtn = buttons.find(b => b.style === "destructive");
+      const cancelBtn = buttons.find(b => !b.style || b.style === "cancel");
+      const confirmed = window.confirm(`${title}${message ? "\n\n" + message : ""}`);
+      if (confirmed && destructiveBtn?.onPress) {
+        destructiveBtn.onPress();
+      } else if (!confirmed && cancelBtn?.onPress) {
+        cancelBtn.onPress();
+      }
+    } else {
+      window.alert(`${title}${message ? "\n\n" + message : ""}`);
+      if (buttons?.[0]?.onPress) buttons[0].onPress();
+    }
+  } else {
+    Alert.alert(title, message, buttons as any);
+  }
+}
+
 const C = {
   bg: "#FAF6F0", card: "#FFFFFF", rose: "#C4897B", roseLight: "#F9EDE8",
   sage: "#8FAF8E", sageLight: "#E8F0E8", brown: "#5C3317", brownMid: "#8B5E3C",
@@ -123,10 +145,10 @@ export default function SeelenjournalAdminScreen() {
         setIsLoggedIn(true);
         loadClients();
       } else {
-        Alert.alert("Fehler", data.error || "Login fehlgeschlagen");
+        showAlert("Fehler", data.error || "Login fehlgeschlagen");
       }
     } catch (err) {
-      Alert.alert("Fehler", "Verbindung fehlgeschlagen");
+      showAlert("Fehler", "Verbindung fehlgeschlagen");
     } finally {
       setLoginLoading(false);
     }
@@ -170,7 +192,7 @@ export default function SeelenjournalAdminScreen() {
 
   async function saveClient() {
     if (!formName.trim() || !formEmail.trim()) {
-      Alert.alert("Fehler", "Name und E-Mail sind erforderlich"); return;
+      showAlert("Fehler", "Name und E-Mail sind erforderlich"); return;
     }
     if (saving) return;
     setSaving(true);
@@ -180,9 +202,9 @@ export default function SeelenjournalAdminScreen() {
         if (formPassword.trim()) body.password = formPassword.trim();
         if (formReadingDate) body.readingDate = formReadingDate;
         await apiCall(`/admin/clients/${editingClient.id}`, { method: "PUT", body: JSON.stringify(body) });
-        Alert.alert("Erfolg", "Klientin aktualisiert");
+        showAlert("Erfolg", "Klientin aktualisiert");
       } else {
-        if (!formPassword.trim()) { setSaving(false); Alert.alert("Fehler", "Passwort erforderlich"); return; }
+        if (!formPassword.trim()) { setSaving(false); showAlert("Fehler", "Passwort erforderlich"); return; }
         const result = await apiCall("/admin/clients", {
           method: "POST",
           timeoutMs: 25000,
@@ -192,9 +214,9 @@ export default function SeelenjournalAdminScreen() {
           }),
         });
         if (result?.success) {
-          Alert.alert("Erfolg", `Klientin "${formName.trim()}" wurde angelegt`);
+          showAlert("Erfolg", `Klientin "${formName.trim()}" wurde angelegt`);
         } else {
-          Alert.alert("Fehler", result?.error || "Klientin konnte nicht angelegt werden");
+          showAlert("Fehler", result?.error || "Klientin konnte nicht angelegt werden");
           setSaving(false);
           return;
         }
@@ -203,7 +225,7 @@ export default function SeelenjournalAdminScreen() {
       loadClients();
     } catch (err: any) {
       console.error("saveClient error:", err);
-      Alert.alert("Fehler", err.message || "Speichern fehlgeschlagen – bitte versuche es erneut.");
+      showAlert("Fehler", err.message || "Speichern fehlgeschlagen – bitte versuche es erneut.");
     } finally {
       setSaving(false);
     }
@@ -227,14 +249,14 @@ export default function SeelenjournalAdminScreen() {
         alert("Fehler beim Löschen: " + (err.message || "Unbekannter Fehler"));
       }
     } else {
-      Alert.alert("Klientin löschen?", `${client.name} und alle zugehörigen Daten werden unwiderruflich gelöscht.`, [
+      showAlert("Klientin löschen?", `${client.name} und alle zugehörigen Daten werden unwiderruflich gelöscht.`, [
         { text: "Abbrechen" },
         { text: "Löschen", style: "destructive", onPress: async () => {
           try {
             await apiCall(`/admin/clients/${client.id}`, { method: "DELETE" });
             loadClients();
           } catch (err: any) {
-            Alert.alert("Fehler", err.message || "Löschen fehlgeschlagen");
+            showAlert("Fehler", err.message || "Löschen fehlgeschlagen");
           }
         }},
       ]);
@@ -268,7 +290,7 @@ export default function SeelenjournalAdminScreen() {
 
   async function saveEntry() {
     if (!formTitle.trim() || !selectedClient) {
-      Alert.alert("Fehler", "Titel ist erforderlich"); return;
+      showAlert("Fehler", "Titel ist erforderlich"); return;
     }
     try {
       let entryId: number;
@@ -319,7 +341,7 @@ export default function SeelenjournalAdminScreen() {
       setPendingFiles([]);
       setShowEntryModal(false);
       loadEntries(selectedClient.id);
-    } catch (err) { Alert.alert("Fehler", "Speichern fehlgeschlagen"); }
+    } catch (err) { showAlert("Fehler", "Speichern fehlgeschlagen"); }
   }
 
   // Dateien im Modal auswählen (noch nicht hochladen)
@@ -362,14 +384,14 @@ export default function SeelenjournalAdminScreen() {
         alert("Fehler beim Löschen: " + (err.message || "Unbekannter Fehler"));
       }
     } else {
-      Alert.alert("Eintrag löschen?", "Dieser Eintrag wird unwiderruflich gelöscht.", [
+      showAlert("Eintrag löschen?", "Dieser Eintrag wird unwiderruflich gelöscht.", [
         { text: "Abbrechen" },
         { text: "Löschen", style: "destructive", onPress: async () => {
           try {
             await apiCall(`/admin/entries/${entry.id}`, { method: "DELETE" });
             if (selectedClient) loadEntries(selectedClient.id);
           } catch (err: any) {
-            Alert.alert("Fehler", err.message || "Löschen fehlgeschlagen");
+            showAlert("Fehler", err.message || "Löschen fehlgeschlagen");
           }
         }},
       ]);
@@ -428,11 +450,11 @@ export default function SeelenjournalAdminScreen() {
 
       setUploadProgress("");
       const msg = `${successCount} von ${assets.length} Dateien hochgeladen.` + (failCount > 0 ? ` ${failCount} fehlgeschlagen.` : "");
-      Alert.alert("Upload abgeschlossen", msg);
+      showAlert("Upload abgeschlossen", msg);
       if (selectedClient) loadEntries(selectedClient.id);
     } catch (err) {
       console.error("Upload error:", err);
-      Alert.alert("Fehler", "Dateien konnten nicht hochgeladen werden.");
+      showAlert("Fehler", "Dateien konnten nicht hochgeladen werden.");
     } finally {
       setUploading(false);
       setUploadProgress("");
@@ -513,14 +535,14 @@ export default function SeelenjournalAdminScreen() {
       });
       const result = await res.json();
       if (!res.ok || result.error) {
-        Alert.alert("Fehler", result.error || `Server-Fehler: ${res.status}`);
+        showAlert("Fehler", result.error || `Server-Fehler: ${res.status}`);
       } else {
-        Alert.alert("Erfolg", newStatus === 1 ? "Eintrag veröffentlicht! E-Mail wird gesendet." : "Eintrag zurückgezogen.");
+        showAlert("Erfolg", newStatus === 1 ? "Eintrag veröffentlicht! E-Mail wird gesendet." : "Eintrag zurückgezogen.");
       }
       if (selectedClient) await loadEntries(selectedClient.id);
     } catch (err: any) {
       console.error("togglePublished error:", err);
-      Alert.alert("Fehler", `Status konnte nicht geändert werden: ${err.message || "Netzwerkfehler"}`);
+      showAlert("Fehler", `Status konnte nicht geändert werden: ${err.message || "Netzwerkfehler"}`);
     } finally {
       setTogglingId(null);
     }
