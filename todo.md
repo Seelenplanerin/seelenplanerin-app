@@ -595,4 +595,4 @@
 - [x] Ausbildungs-Benachrichtigung: E-Mail an hallo@seelenplanerin.de wenn jemand sich für Ausbildung einträgt
 - [x] BUG FIX: Seelenjournal Admin - Klientin anlegen funktioniert nicht auf Render (API-URL zeigte auf Sandbox statt relative URL)
 - [x] BUG FIX: Seelenjournal Admin - Eintrag mit PDF-Anhang speichern funktioniert nicht auf iOS Safari (Alert.alert unsichtbar auf Web → showAlert mit window.alert)
-- [ ] Shop-Seite neu gestalten: Einzelne Produkte entfernen, nur schöne Weiterleitung zum externen Shop mit Sneak-Peek
+- [x] Shop-Seite neu gestalten: Einzelne Produkte entfernen, nur schöne Weiterleitung zum externen Shop mit Sneak-Peek
