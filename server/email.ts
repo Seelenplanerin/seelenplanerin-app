@@ -360,6 +360,54 @@ export async function sendAcademyWaitlistEmail(params: {
   }
 }
 
+// ── Academy Warteliste – Benachrichtigung an Lara ──
+
+export async function sendAcademyNotificationToOwner(params: {
+  subscriberEmail: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const ownerEmail = "hallo@seelenplanerin.de";
+    const now = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
+
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">
+        Neue Anmeldung für die Seelen Academy! 🎓
+      </h2>
+      <p style="margin:0 0 16px;color:#5C3317;line-height:1.7;">
+        Jemand hat sich auf die <strong>Warteliste der Seelen Academy</strong> eingetragen:
+      </p>
+      <table style="margin:0 0 16px;border-collapse:collapse;">
+        <tr>
+          <td style="padding:8px 16px;background:#F5EDE8;color:#5C3317;font-weight:bold;border-radius:8px 0 0 0;">E-Mail</td>
+          <td style="padding:8px 16px;background:#FDF8F4;color:#5C3317;border-radius:0 8px 0 0;">${params.subscriberEmail}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;background:#F5EDE8;color:#5C3317;font-weight:bold;border-radius:0 0 0 8px;">Datum</td>
+          <td style="padding:8px 16px;background:#FDF8F4;color:#5C3317;border-radius:0 0 8px 0;">${now}</td>
+        </tr>
+      </table>
+      <p style="margin:0;color:#A08070;font-size:13px;">
+        Diese Nachricht wurde automatisch von deiner Seelenplanerin App gesendet.
+      </p>
+    `;
+
+    await transporter.sendMail({
+      from: `"Die Seelenplanerin App" <${config.user}>`,
+      to: ownerEmail,
+      subject: `🎓 Neue Academy-Anmeldung: ${params.subscriberEmail}`,
+      html: emailTemplate(content),
+    });
+
+    console.log(`[Email] Academy-Benachrichtigung an ${ownerEmail} gesendet für ${params.subscriberEmail}`);
+    return { success: true };
+  } catch (err: any) {
+    console.error("[Email] Academy-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
+
 // ── SMTP Verbindungstest ──
 
 export async function verifySmtpConnection(): Promise<{ success: boolean; error?: string }> {

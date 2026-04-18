@@ -589,3 +589,7 @@
 - [x] Soul Talk: Link auf Klarheitsgespräch (Calendly) ändern
 - [x] Meditation "Mut" hochladen (MOV → MP3 → S3 → DB)
 - [x] Soul Talk Link auf Calendly Klarheit Call ändern: https://calendly.com/hallo-seelenplanerin/30min
+
+## Feedback Runde (18.04.2026)
+- [x] Tab-Icons auf kleine Herzen ändern (alle Tabs)
+- [x] Ausbildungs-Benachrichtigung: E-Mail an hallo@seelenplanerin.de wenn jemand sich für Ausbildung einträgt

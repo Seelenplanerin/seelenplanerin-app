@@ -1298,6 +1298,46 @@ async function sendAcademyWaitlistEmail(params) {
     return { success: false, error: err.message || "Unbekannter Fehler" };
   }
 }
+async function sendAcademyNotificationToOwner(params) {
+  try {
+    const config = getSmtpConfig();
+    const transporter = createTransporter();
+    const ownerEmail = "hallo@seelenplanerin.de";
+    const now = (/* @__PURE__ */ new Date()).toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
+    const content = `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#5C3317;">
+        Neue Anmeldung f\xFCr die Seelen Academy! \u{1F393}
+      </h2>
+      <p style="margin:0 0 16px;color:#5C3317;line-height:1.7;">
+        Jemand hat sich auf die <strong>Warteliste der Seelen Academy</strong> eingetragen:
+      </p>
+      <table style="margin:0 0 16px;border-collapse:collapse;">
+        <tr>
+          <td style="padding:8px 16px;background:#F5EDE8;color:#5C3317;font-weight:bold;border-radius:8px 0 0 0;">E-Mail</td>
+          <td style="padding:8px 16px;background:#FDF8F4;color:#5C3317;border-radius:0 8px 0 0;">${params.subscriberEmail}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 16px;background:#F5EDE8;color:#5C3317;font-weight:bold;border-radius:0 0 0 8px;">Datum</td>
+          <td style="padding:8px 16px;background:#FDF8F4;color:#5C3317;border-radius:0 0 8px 0;">${now}</td>
+        </tr>
+      </table>
+      <p style="margin:0;color:#A08070;font-size:13px;">
+        Diese Nachricht wurde automatisch von deiner Seelenplanerin App gesendet.
+      </p>
+    `;
+    await transporter.sendMail({
+      from: `"Die Seelenplanerin App" <${config.user}>`,
+      to: ownerEmail,
+      subject: `\u{1F393} Neue Academy-Anmeldung: ${params.subscriberEmail}`,
+      html: emailTemplate(content)
+    });
+    console.log(`[Email] Academy-Benachrichtigung an ${ownerEmail} gesendet f\xFCr ${params.subscriberEmail}`);
+    return { success: true };
+  } catch (err) {
+    console.error("[Email] Academy-Benachrichtigung Fehler:", err);
+    return { success: false, error: err.message || "Unbekannter Fehler" };
+  }
+}
 async function verifySmtpConnection() {
   try {
     const transporter = createTransporter();
@@ -1614,6 +1654,11 @@ var appRouter = router({
           await sendAcademyWaitlistEmail({ toEmail: email });
         } catch (e) {
           console.error("Academy email failed:", e);
+        }
+        try {
+          await sendAcademyNotificationToOwner({ subscriberEmail: email });
+        } catch (e) {
+          console.error("Academy owner notification failed:", e);
         }
         return { success: true };
       } catch (e) {

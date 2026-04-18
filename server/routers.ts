@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAcademyWaitlistEmail, verifySmtpConnection } from "./email";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAcademyWaitlistEmail, sendAcademyNotificationToOwner, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
 
@@ -321,10 +321,14 @@ export const appRouter = router({
         try {
           const email = input.email.trim().toLowerCase();
           await db.addAcademyWaitlist(email);
-          // Send confirmation email
+          // Send confirmation email to subscriber
           try {
             await sendAcademyWaitlistEmail({ toEmail: email });
           } catch (e) { console.error("Academy email failed:", e); }
+          // Send notification to Lara (hallo@seelenplanerin.de)
+          try {
+            await sendAcademyNotificationToOwner({ subscriberEmail: email });
+          } catch (e) { console.error("Academy owner notification failed:", e); }
           return { success: true };
         } catch (e: any) {
           if (e.message?.includes("duplicate") || e.code === "23505") {

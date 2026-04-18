@@ -40,42 +40,42 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Aktuelles",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="sparkles" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="mond"
         options={{
           title: "Mond",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="moon.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="rituale"
         options={{
           title: "Rituale",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="leaf.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="community"
         options={{
           title: "Community",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.2.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="shop"
         options={{
           title: "Shop",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="storefront.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="ich"
         options={{
           title: "Ich",
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       {/* Versteckte Screens – nicht in Tab-Bar */}
