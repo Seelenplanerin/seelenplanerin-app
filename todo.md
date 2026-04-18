@@ -601,5 +601,5 @@
 
 ## iOS TestFlight Build Fix (18.04.2026)
 - [x] iOS buildNumber auf "2" erhöht (Build 1 war schon in App Store Connect)
-- [ ] Neuen Checkpoint speichern damit Publish-Button wieder aktiv wird
+- [x] Neuen Checkpoint speichern damit Publish-Button wieder aktiv wird
 - [ ] Neuen iOS Build über Manus UI starten → TestFlight Upload
