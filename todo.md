@@ -566,3 +566,20 @@
 
 ## Bugfix Runde 7 (17.04.2026)
 - [x] Rituale: Alle Tentary-Links korrekt pro Ritual einpflegen (aus bereits gesendeten Links)
+
+## Umfassender App-Test für TestFlight (18.04.2026)
+- [x] TypeScript-Kompilierung: 0 Fehler
+- [x] Alle 109 Tests bestehen (moon-phase, seelenjournal, auth, smtp, emoji)
+- [x] Alle Routen existieren und sind erreichbar (12 interne Routen geprüft)
+- [x] Alle externen Links funktionieren (Tentary, Instagram, Calendly, dieseelenplanerin.de)
+- [x] Alle 12 Tentary Ritual-Set Links korrekt zugeordnet
+- [x] Kein "Druzy" mehr im Code – überall korrekt "Schwarzer Turmalin"
+- [x] DancingScript-Font korrekt geladen (Regular + Bold)
+- [x] SMTP-Verbindung funktioniert (E-Mail-Versand aktiv)
+- [x] Community Login/Registrierung über DB (tRPC-Endpunkte aktiv)
+- [x] Passwort-Reset-Flow: DB-Update + E-Mail-Versand implementiert
+- [x] DSGVO E-Mail-Einwilligung Toggle in Community vorhanden
+- [x] Admin-Zugang versteckt (5x Version tippen auf Ich-Seite, ✦ auf Lara-Seite)
+- [x] Keine leeren onPress-Handler gefunden
+- [x] web-dist und server dist neu gebaut
+- [x] Auf GitHub gepusht (Commit 94ef163)
