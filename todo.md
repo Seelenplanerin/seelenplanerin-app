@@ -596,3 +596,5 @@
 - [x] BUG FIX: Seelenjournal Admin - Klientin anlegen funktioniert nicht auf Render (API-URL zeigte auf Sandbox statt relative URL)
 - [x] BUG FIX: Seelenjournal Admin - Eintrag mit PDF-Anhang speichern funktioniert nicht auf iOS Safari (Alert.alert unsichtbar auf Web → showAlert mit window.alert)
 - [x] Shop-Seite neu gestalten: Einzelne Produkte entfernen, nur schöne Weiterleitung zum externen Shop mit Sneak-Peek
+- [ ] Shop-Links mit In-App-Browser (expo-web-browser) öffnen statt externer Safari, damit Zurück-Button vorhanden
+- [ ] Checkpoint für TestFlight & Google Play Publish erstellen

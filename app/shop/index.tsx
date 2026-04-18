@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
   Image, Linking, Dimensions, Platform, Animated,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
@@ -56,14 +57,25 @@ export default function ShopScreen() {
     ]).start();
   }, []);
 
+  const openInAppBrowser = async (url: string) => {
+    if (Platform.OS !== "web") {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      await WebBrowser.openBrowserAsync(url, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+        controlsColor: "#C4897B",
+        toolbarColor: "#FFF8F5",
+      });
+    } else {
+      Linking.openURL(url);
+    }
+  };
+
   const openShop = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Linking.openURL("https://dieseelenplanerin.de");
+    openInAppBrowser("https://dieseelenplanerin.de");
   };
 
   const openTentary = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL("https://dieseelenplanerin.tentary.com");
+    openInAppBrowser("https://dieseelenplanerin.tentary.com");
   };
 
   return (
@@ -128,7 +140,7 @@ export default function ShopScreen() {
           <Text style={s.sectionTitle}>Persönliche Sessions</Text>
           <TouchableOpacity
             style={s.serviceCard}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/TuOzYS")}
+            onPress={() => openInAppBrowser("https://dieseelenplanerin.tentary.com/p/TuOzYS")}
             activeOpacity={0.8}
           >
             <View style={s.serviceLeft}>
@@ -145,7 +157,7 @@ export default function ShopScreen() {
 
           <TouchableOpacity
             style={s.serviceCard}
-            onPress={() => Linking.openURL("https://calendly.com/hallo-seelenplanerin/30min")}
+            onPress={() => openInAppBrowser("https://calendly.com/hallo-seelenplanerin/30min")}
             activeOpacity={0.8}
           >
             <View style={s.serviceLeft}>
