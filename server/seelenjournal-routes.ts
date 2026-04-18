@@ -4,50 +4,18 @@
  */
 import { Router, Request, Response, NextFunction } from "express";
 import { createHash, randomBytes } from "crypto";
-import { v2 as cloudinary } from "cloudinary";
-
-
-// Cloudinary konfigurieren
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
-  api_key: process.env.CLOUDINARY_API_KEY || "",
-  api_secret: process.env.CLOUDINARY_API_SECRET || "",
-});
+import { storagePut } from "./storage";
 
 async function uploadFile(fileKey: string, buffer: Buffer, mimetype: string): Promise<string> {
-  // Upload zu Cloudinary
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error("Cloudinary nicht konfiguriert. Bitte CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY und CLOUDINARY_API_SECRET setzen.");
+  // Upload zum eingebauten S3-Speicher (keine extra Konfiguration nötig)
+  try {
+    const { url } = await storagePut(fileKey, buffer, mimetype);
+    console.log(`[Seelenjournal] S3 Upload erfolgreich: ${fileKey} → ${url}`);
+    return url;
+  } catch (err: any) {
+    console.error(`[Seelenjournal] S3 Upload Fehler:`, err.message);
+    throw new Error(`Datei-Upload fehlgeschlagen: ${err.message}`);
   }
-
-  return new Promise((resolve, reject) => {
-    const resourceType = mimetype.startsWith("image/") ? "image" as const : "raw" as const;
-    // public_id OHNE Dateiendung - die Download-Proxy-Route setzt den Content-Type korrekt
-    const baseName = fileKey.replace(/\.[^.]+$/, "").replace(/[\/\s]/g, "_");
-    const publicId = baseName;
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder: "seelenjournal",
-        public_id: publicId,
-        resource_type: resourceType,
-      },
-      (error, result) => {
-        if (error) {
-          console.error("[Seelenjournal] Cloudinary Upload Fehler:", error.message);
-          reject(error);
-        } else if (result) {
-          resolve(result.secure_url);
-        } else {
-          reject(new Error("Kein Ergebnis von Cloudinary"));
-        }
-      }
-    );
-    uploadStream.end(buffer);
-  });
 }
 import multer from "multer";
 import * as sjDb from "./seelenjournal-db";

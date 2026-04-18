@@ -603,3 +603,7 @@
 - [x] iOS buildNumber auf "2" erhöht (Build 1 war schon in App Store Connect)
 - [x] Neuen Checkpoint speichern damit Publish-Button wieder aktiv wird
 - [ ] Neuen iOS Build über Manus UI starten → TestFlight Upload
+
+## Bugfix: Seelenjournal Admin Datei-Upload (18.04.2026)
+- [ ] BUG: Datei-Upload im Seelenjournal Admin funktioniert nicht auf Render
+- [ ] BUG: Shop-Seite leitet auch zu die-seelenplanerin.de statt nur zu Tentary
