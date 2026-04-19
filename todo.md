@@ -624,9 +624,14 @@
 - [x] Shop: Aura Reading Link auf dieseelenplanerin.de geändert
 
 ## Alle Links korrekt setzen (19.04.2026)
-- [ ] "Alle 10 Ritual-Sets ansehen" Button entfernen
-- [ ] Runen-Quiz: Nach Ergebnis auf Tentary Runen-Seite verlinken
-- [ ] Heilstein-Quiz: Nach Ergebnis auf dieseelenplanerin.de Energiearmbänder verlinken
-- [ ] Shop "Zum Shop" / "Ich biete" → dieseelenplanerin.de
-- [ ] Shop Kategorien (Energiearmbänder, Meditationskerzen, Räuchern, Heilsteine, Bodyguard, Frequenz) → korrekte dieseelenplanerin.de URLs
-- [ ] Alle Links auf dieseelenplanerin.de prüfen und korrigieren
+- [x] "Alle 10 Ritual-Sets ansehen" Button entfernen (shop/index.tsx + tabs/shop.tsx)
+- [x] Runen-Quiz: CTA auf Tentary Runen-Armband Seite (tentary.com/p/qnl3vN)
+- [x] Heilstein-Quiz: CTA auf dieseelenplanerin.de/kategorie/energiearmbaender
+- [x] Kerzen-Quiz: CTA auf dieseelenplanerin.de/kategorie/meditationskerzen
+- [x] Shop "Zum Shop" / "Ich biete" → dieseelenplanerin.de
+- [x] Shop Kategorien individuell verlinkt auf korrekte dieseelenplanerin.de/kategorie/ URLs
+- [x] Aura Reading Link auf Tentary Aura Reading Seite (tentary.com/p/sJhy6F)
+- [x] Runen-Tab Shop-Link auf Tentary Runen-Seite
+- [x] Ich-Tab "Zum Shop" auf dieseelenplanerin.de
+- [x] Alle /collections/ und /products/ URLs entfernt – keine falschen URLs mehr im Code
+- [x] web-dist und server dist neu gebaut, auf GitHub gepusht
