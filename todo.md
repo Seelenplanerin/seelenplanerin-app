@@ -637,10 +637,9 @@
 - [x] web-dist und server dist neu gebaut, auf GitHub gepusht
 
 ## Echte Armbänder als Quiz-Empfehlungen (19.04.2026)
-- [ ] Echte Armbänder von dieseelenplanerin.de scrapen (Namen, Bilder, Kategorien, Links)
-- [ ] Heilstein-Quiz: Falsche Armband-Namen (Happy Harmony, Energy Mix etc.) durch echte Armbänder ersetzen
-- [ ] Kerzen-Quiz: Armband-Empfehlungen mit echten Armbändern
-- [ ] Runen-Quiz: Armband-Empfehlungen mit echten Armbändern
-- [ ] Mondtyp-Quiz: Armband-Empfehlungen mit echten Armbändern (falls vorhanden)
-- [ ] Echte Produktbilder von dieseelenplanerin.de einbinden
-- [ ] Jedes Armband auf seine korrekte Produktseite verlinken
+- [x] Echte Armbänder von dieseelenplanerin.de scrapen (20 Armbänder: Namen, Bilder, Kategorien, Links)
+- [x] Heilstein-Quiz: Alle 5 Ergebnisse mit echten Armbändern + Produktbildern + Preisen + Links
+- [x] Kerzen-Quiz: Passende Armbänder pro Heilstein-Ergebnis (8 Heilsteine abgedeckt)
+- [x] Runen-Quiz: Passende Armbänder pro Kategorie (8 Kategorien abgedeckt)
+- [x] Echte Produktbilder von dieseelenplanerin.de eingebunden (CDN-URLs)
+- [x] Jedes Armband verlinkt auf seine korrekte Produktseite (dieseelenplanerin.de/produkt/...)
