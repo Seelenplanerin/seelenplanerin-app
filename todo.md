@@ -602,7 +602,7 @@
 ## iOS TestFlight Build Fix (18.04.2026)
 - [x] iOS buildNumber auf "2" erhöht (Build 1 war schon in App Store Connect)
 - [x] Neuen Checkpoint speichern damit Publish-Button wieder aktiv wird
-- [ ] Neuen iOS Build über Manus UI starten → TestFlight Upload
+- [x] Neuen iOS Build über Manus UI gestartet → TestFlight Upload erfolgreich (Build 10000)
 
 ## Bugfix: Seelenjournal Admin Datei-Upload (18.04.2026)
 - [x] BUG: Datei-Upload im Seelenjournal Admin funktioniert nicht auf Render
@@ -618,7 +618,7 @@
 - [ ] Kerzen-Quiz: Link nach Ergebnis auf www.dieseelenplanerin.de Meditationskerze ändern
 
 ## Shop Ritual-Sets einzeln verlinken (18.04.2026)
-- [ ] Ritual-Sets im Shop: Jedes Set einzeln auf seinen Tentary-Link verlinken (nicht pauschal)
-- [ ] "Alle 10 Ritual-Sets ansehen" Button: Link anpassen
+- [x] Ritual-Sets im Shop: Jedes Set einzeln auf seinen Tentary-Link verlinkt
+- [x] "Alle 10 Ritual-Sets ansehen" Button: Link angepasst
 - [x] Heilstein-Quiz: Link auf dieseelenplanerin.de/collections/energiearmbander geändert
 - [x] Shop: Aura Reading Link auf dieseelenplanerin.de geändert
