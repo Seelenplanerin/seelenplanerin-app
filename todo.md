@@ -660,7 +660,8 @@
 - [x] In _layout.tsx integriert: initialRouteName basierend auf Onboarding-Status
 
 ## Impressum + Push bei neuer Nachricht (19.04.2026)
-- [ ] Impressum-Seite erstellen mit rechtlichen Angaben
-- [ ] Impressum im Ich-Tab verlinken (sichtbar für alle Nutzer)
-- [ ] Push-Benachrichtigung senden wenn Klientin eine Nachricht schreibt (Server-seitig)
-- [ ] Push-Token-System für Admin/Lara nutzen um Benachrichtigung zu triggern
+- [x] Impressum-Seite erstellt (app/impressum.tsx) mit TMG-Angaben, Datenschutz, Haftungsausschluss, Urheberrecht
+- [x] Impressum im Ich-Tab verlinkt unter "Rechtliches" Sektion + Datenschutzerklärung-Link
+- [x] Push-Benachrichtigung an alle registrierten Geräte wenn Klientin Nachricht sendet
+- [x] Expo Push API in seelenjournal-routes.ts integriert (POST /messages Endpunkt)
+- [x] Auf GitHub gepusht, Render-Deployment läuft automatisch
