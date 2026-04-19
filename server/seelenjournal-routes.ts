@@ -20,6 +20,7 @@ async function uploadFile(fileKey: string, buffer: Buffer, mimetype: string): Pr
 import multer from "multer";
 import * as sjDb from "./seelenjournal-db";
 import { sendSeelenjournalMessageNotification, sendSeelenjournalEntryNotification } from "./email";
+import { getAllActivePushTokens } from "./db";
 
 const router = Router();
 
@@ -157,6 +158,44 @@ router.post("/messages", authClient, async (req: Request, res: Response) => {
       content: content.trim(),
       fromAdmin: 0,
     });
+
+    // Push-Benachrichtigung an Admin/Lara senden
+    try {
+      const client = await sjDb.getJournalClientById((req as any).sjClientId);
+      const clientName = client?.name || "Eine Klientin";
+      const preview = content.trim().length > 80 ? content.trim().substring(0, 80) + "…" : content.trim();
+      
+      // Alle registrierten Push-Tokens benachrichtigen (Admin bekommt Push)
+      const tokens = await getAllActivePushTokens();
+      if (tokens.length > 0) {
+        const pushMessages = tokens.map((t: any) => ({
+          to: t.token,
+          sound: "default" as const,
+          title: `💌 Neue Nachricht von ${clientName}`,
+          body: preview,
+          data: { type: "seelenjournal_message", clientId: (req as any).sjClientId },
+        }));
+
+        // In Chunks von 100 senden
+        for (let i = 0; i < pushMessages.length; i += 100) {
+          const chunk = pushMessages.slice(i, i + 100);
+          fetch("https://exp.host/--/api/v2/push/send", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Accept-encoding": "gzip, deflate",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(chunk),
+          }).catch(e => console.error("[Seelenjournal] Push-Fehler:", e));
+        }
+        console.log(`[Seelenjournal] Push-Benachrichtigung gesendet: Neue Nachricht von ${clientName} an ${tokens.length} Geräte`);
+      }
+    } catch (pushErr) {
+      console.error("[Seelenjournal] Push-Benachrichtigung Fehler:", pushErr);
+      // Nicht blockierend – Nachricht wurde trotzdem gespeichert
+    }
+
     res.json({ success: true, id });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

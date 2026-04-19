@@ -2170,6 +2170,7 @@ async function getClientsWithUnreadMessages() {
 }
 
 // server/seelenjournal-routes.ts
+init_db();
 async function uploadFile(fileKey, buffer, mimetype) {
   try {
     const { url } = await storagePut(fileKey, buffer, mimetype);
@@ -2318,6 +2319,36 @@ router2.post("/messages", authClient, async (req, res) => {
       content: content.trim(),
       fromAdmin: 0
     });
+    try {
+      const client = await getJournalClientById(req.sjClientId);
+      const clientName = client?.name || "Eine Klientin";
+      const preview = content.trim().length > 80 ? content.trim().substring(0, 80) + "\u2026" : content.trim();
+      const tokens = await getAllActivePushTokens();
+      if (tokens.length > 0) {
+        const pushMessages2 = tokens.map((t2) => ({
+          to: t2.token,
+          sound: "default",
+          title: `\u{1F48C} Neue Nachricht von ${clientName}`,
+          body: preview,
+          data: { type: "seelenjournal_message", clientId: req.sjClientId }
+        }));
+        for (let i = 0; i < pushMessages2.length; i += 100) {
+          const chunk = pushMessages2.slice(i, i + 100);
+          fetch("https://exp.host/--/api/v2/push/send", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Accept-encoding": "gzip, deflate",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(chunk)
+          }).catch((e) => console.error("[Seelenjournal] Push-Fehler:", e));
+        }
+        console.log(`[Seelenjournal] Push-Benachrichtigung gesendet: Neue Nachricht von ${clientName} an ${tokens.length} Ger\xE4te`);
+      }
+    } catch (pushErr) {
+      console.error("[Seelenjournal] Push-Benachrichtigung Fehler:", pushErr);
+    }
     res.json({ success: true, id });
   } catch (err) {
     res.status(500).json({ error: err.message });

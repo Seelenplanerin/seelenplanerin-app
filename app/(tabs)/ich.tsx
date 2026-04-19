@@ -372,6 +372,35 @@ export default function IchScreen() {
         </View>
 
 
+        {/* Rechtliches */}
+        <Text style={s.sec}>Rechtliches</Text>
+        <View style={s.menuSection}>
+          <TouchableOpacity
+            style={[s.menuItem, s.menuItemBorder]}
+            onPress={() => router.push("/impressum" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={s.menuEmoji}>📋</Text>
+            <View style={s.menuTextWrap}>
+              <Text style={s.menuLabel}>Impressum & Datenschutz</Text>
+              <Text style={s.menuDesc}>Rechtliche Angaben & DSGVO</Text>
+            </View>
+            <Text style={s.menuArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={s.menuItem}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.de/datenschutz")}
+            activeOpacity={0.8}
+          >
+            <Text style={s.menuEmoji}>🔒</Text>
+            <View style={s.menuTextWrap}>
+              <Text style={s.menuLabel}>Datenschutzerklärung</Text>
+              <Text style={s.menuDesc}>Auf dieseelenplanerin.de</Text>
+            </View>
+            <Text style={s.menuArrow}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Über die App */}
         <View style={s.aboutCard}>
           <Text style={s.aboutTitle}>Über Die Seelenplanerin</Text>
