@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, ScrollView,
-  ActivityIndicator, Alert, Modal, Platform, KeyboardAvoidingView,
+  ActivityIndicator, Alert, Modal, Platform, KeyboardAvoidingView, Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system/legacy";
@@ -785,8 +786,8 @@ export default function SeelenjournalAdminScreen() {
   // ══════════════════════════════════════════════════════════════
   if (activeView === "messages" && selectedClient) {
     return (
-      <ScreenContainer edges={["top", "bottom", "left", "right"]} containerClassName="bg-background">
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.bg }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
+        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.bg }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
           <View style={s.navBar}>
             <TouchableOpacity onPress={goBackToClients}><Text style={s.navBack}>← Zurück</Text></TouchableOpacity>
             <Text style={s.navTitle} numberOfLines={1}>💌 {selectedClient.name}</Text>
@@ -811,11 +812,20 @@ export default function SeelenjournalAdminScreen() {
                 </View>
               );
             }}
-            ListEmptyComponent={<Text style={s.emptyText}>Noch keine Nachrichten.</Text>}
+            ListEmptyComponent={
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={{ paddingTop: 40, alignItems: "center" }}>
+                  <Text style={s.emptyText}>Noch keine Nachrichten.</Text>
+                </View>
+              </TouchableWithoutFeedback>
+            }
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
           />
           <View style={s.inputBar}>
             <TextInput style={s.msgInput} value={newMessage} onChangeText={setNewMessage}
-              placeholder="Nachricht an Klientin..." multiline maxLength={2000} placeholderTextColor={C.muted} />
+              placeholder="Nachricht an Klientin..." multiline maxLength={2000} placeholderTextColor={C.muted}
+              returnKeyType="send" onSubmitEditing={sendMessage} blurOnSubmit={false} />
             <TouchableOpacity style={[s.sendBtn, !newMessage.trim() && { opacity: 0.4 }]}
               onPress={sendMessage} disabled={!newMessage.trim()}>
               <Text style={s.sendBtnText}>↑</Text>
@@ -1012,7 +1022,7 @@ const s = StyleSheet.create({
   msgBubbleClient: { backgroundColor: C.card, borderWidth: 1, borderColor: C.border, borderBottomLeftRadius: 4 },
   msgText: { fontSize: 15, lineHeight: 22 },
   msgTime: { fontSize: 10, marginTop: 4, alignSelf: "flex-end" },
-  inputBar: { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.border, backgroundColor: C.card },
+  inputBar: { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingTop: 10, paddingBottom: Platform.OS === "ios" ? 24 : 10, borderTopWidth: 1, borderTopColor: C.border, backgroundColor: C.card },
   msgInput: { flex: 1, backgroundColor: C.bg, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, fontSize: 15, color: C.brown, maxHeight: 100, borderWidth: 1, borderColor: C.border },
   sendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.rose, justifyContent: "center", alignItems: "center", marginLeft: 8 },
   sendBtnText: { color: "#FFF", fontSize: 20, fontWeight: "700" },

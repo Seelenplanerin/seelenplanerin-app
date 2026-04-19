@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList,
-  ActivityIndicator, KeyboardAvoidingView, Platform,
+  ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -117,11 +118,11 @@ export default function SeelenjournalMessagesScreen() {
   }
 
   return (
-    <ScreenContainer edges={["top", "bottom", "left", "right"]} containerClassName="bg-background">
+    <ScreenContainer edges={["top", "left", "right"]} containerClassName="bg-background">
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: C.bg }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         {/* Header */}
         <View style={s.header}>
@@ -134,11 +135,13 @@ export default function SeelenjournalMessagesScreen() {
 
         {/* Nachrichten-Liste */}
         {messages.length === 0 ? (
-          <View style={s.emptyState}>
-            <Text style={s.emptyEmoji}>💌</Text>
-            <Text style={s.emptyText}>Noch keine Nachrichten.</Text>
-            <Text style={s.emptySub}>Schreibe der Seelenplanerin eine Nachricht!</Text>
-          </View>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={s.emptyState}>
+              <Text style={s.emptyEmoji}>💌</Text>
+              <Text style={s.emptyText}>Noch keine Nachrichten.</Text>
+              <Text style={s.emptySub}>Schreibe der Seelenplanerin eine Nachricht!</Text>
+            </View>
+          </TouchableWithoutFeedback>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -147,6 +150,8 @@ export default function SeelenjournalMessagesScreen() {
             renderItem={renderMessage}
             contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
             onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
           />
         )}
 
@@ -160,7 +165,9 @@ export default function SeelenjournalMessagesScreen() {
             onChangeText={setNewMsg}
             multiline
             maxLength={2000}
-            returnKeyType="default"
+            returnKeyType="send"
+            onSubmitEditing={handleSend}
+            blurOnSubmit={false}
           />
           <TouchableOpacity
             style={[s.sendBtn, !newMsg.trim() && { opacity: 0.4 }]}
@@ -206,7 +213,8 @@ const s = StyleSheet.create({
   msgTimeAdmin: { color: C.muted },
   msgTimeClient: { color: "rgba(255,255,255,0.7)" },
   inputBar: {
-    flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingVertical: 10,
+    flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingTop: 10,
+    paddingBottom: Platform.OS === "ios" ? 24 : 10,
     borderTopWidth: 1, borderTopColor: C.border, backgroundColor: C.card,
   },
   input: {

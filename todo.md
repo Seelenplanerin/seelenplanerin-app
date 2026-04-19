@@ -643,3 +643,17 @@
 - [x] Runen-Quiz: Passende Armbänder pro Kategorie (8 Kategorien abgedeckt)
 - [x] Echte Produktbilder von dieseelenplanerin.de eingebunden (CDN-URLs)
 - [x] Jedes Armband verlinkt auf seine korrekte Produktseite (dieseelenplanerin.de/produkt/...)
+
+## Bugs: Nachrichten senden nicht möglich (19.04.2026)
+- [ ] User-Nachrichten-Screen: Tastatur verdeckt Eingabefeld, Senden-Button nicht erreichbar
+- [ ] Admin Seelenjournal: Gleicher Bug – Tastatur verdeckt Eingabe beim Hochladen/Nachricht senden
+- [ ] Tastatur kann nicht wieder runtergeschoben werden
+- [ ] KeyboardAvoidingView oder ähnliche Lösung implementieren
+
+## Onboarding-Screen beim ersten Start (19.04.2026)
+- [ ] Onboarding-Screen erstellen: DSGVO-Zustimmung erforderlich
+- [ ] Push-Benachrichtigungen: Erlaubnis beim ersten Start abfragen
+- [ ] Text: "Mit der Nutzung der App stimmst du der DSGVO zu"
+- [ ] Text: "Erlaube der Seelenplanerin dir Nachrichten zu schicken"
+- [ ] Onboarding nur beim allerersten Start zeigen (AsyncStorage Flag)
+- [ ] App erst nach Zustimmung nutzbar
