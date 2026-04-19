@@ -343,7 +343,7 @@ export default function HeilsteinQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.de/collections/energiearmbander");
+                Linking.openURL("https://dieseelenplanerin.de/kategorie/energiearmbaender");
               }}
               activeOpacity={0.85}
             >

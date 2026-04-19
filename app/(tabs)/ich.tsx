@@ -323,7 +323,7 @@ export default function IchScreen() {
         <View style={s.menuSection}>
           <TouchableOpacity
             style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com")}
+            onPress={() => Linking.openURL("https://dieseelenplanerin.de")}
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>✨</Text>

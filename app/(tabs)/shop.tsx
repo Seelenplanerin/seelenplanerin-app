@@ -41,12 +41,12 @@ const SNEAK_PEEK = [
 ];
 
 const SHOP_CATEGORIES = [
-  { emoji: "📿", label: "Energiearmbänder", sub: "22 einzigartige Designs" },
-  { emoji: "🕯️", label: "Meditationskerzen", sub: "Mit echtem Heilstein" },
-  { emoji: "🌿", label: "Räuchern", sub: "Palo Santo & mehr" },
-  { emoji: "💎", label: "Heilsteine", sub: "Selenit & Kristalle" },
-  { emoji: "🔑", label: "Bodyguard Anhänger", sub: "Schwarzer Turmalin" },
-  { emoji: "🖤", label: "Frequenz-Armbänder", sub: "Energetischer Schutz" },
+  { emoji: "📿", label: "Energiearmbänder", sub: "22 einzigartige Designs", url: "https://dieseelenplanerin.de/kategorie/energiearmbaender" },
+  { emoji: "🕯️", label: "Meditationskerzen", sub: "Mit echtem Heilstein", url: "https://dieseelenplanerin.de/kategorie/meditationskerzen" },
+  { emoji: "🌿", label: "Räuchern", sub: "Palo Santo & mehr", url: "https://dieseelenplanerin.de/kategorie/raeuchern" },
+  { emoji: "💎", label: "Heilsteine", sub: "Selenit & Kristalle", url: "https://dieseelenplanerin.de/kategorie/heilsteine-zubehoer" },
+  { emoji: "🔑", label: "Bodyguard Anhänger", sub: "Schwarzer Turmalin", url: "https://dieseelenplanerin.de/kategorie/schluesselanhaenger" },
+  { emoji: "🖤", label: "Frequenz-Armbänder", sub: "Energetischer Schutz", url: "https://dieseelenplanerin.de/kategorie/frequenz-armbaender" },
 ];
 
 export default function ShopScreen() {
@@ -79,7 +79,7 @@ export default function ShopScreen() {
   };
 
   const openTentary = () => {
-    openInAppBrowser("https://dieseelenplanerin.tentary.com");
+    openInAppBrowser("https://dieseelenplanerin.de");
   };
 
   return (
@@ -120,9 +120,7 @@ export default function ShopScreen() {
               </TouchableOpacity>
             ))}
           </View>
-          <TouchableOpacity style={s.sneakBtn} onPress={() => openInAppBrowser("https://dieseelenplanerin.de")} activeOpacity={0.8}>
-            <Text style={s.sneakBtnText}>Alle 10 Ritual-Sets ansehen  →</Text>
-          </TouchableOpacity>
+
         </View>
 
         {/* Was dich erwartet */}
@@ -130,7 +128,7 @@ export default function ShopScreen() {
           <Text style={s.sectionTitle}>Was dich im Shop erwartet</Text>
           <View style={s.catGrid}>
             {SHOP_CATEGORIES.map((cat, i) => (
-              <TouchableOpacity key={i} style={s.catCard} onPress={openShop} activeOpacity={0.8}>
+              <TouchableOpacity key={i} style={s.catCard} onPress={() => openInAppBrowser(cat.url)} activeOpacity={0.8}>
                 <Text style={s.catEmoji}>{cat.emoji}</Text>
                 <Text style={s.catLabel}>{cat.label}</Text>
                 <Text style={s.catSub}>{cat.sub}</Text>
@@ -144,7 +142,7 @@ export default function ShopScreen() {
           <Text style={s.sectionTitle}>Persönliche Sessions</Text>
           <TouchableOpacity
             style={s.serviceCard}
-            onPress={() => openInAppBrowser("https://dieseelenplanerin.de/products/aura-reading")}
+            onPress={() => openInAppBrowser("https://dieseelenplanerin.tentary.com/p/sJhy6F")}
             activeOpacity={0.8}
           >
             <View style={s.serviceLeft}>

@@ -622,3 +622,11 @@
 - [x] "Alle 10 Ritual-Sets ansehen" Button: Link angepasst
 - [x] Heilstein-Quiz: Link auf dieseelenplanerin.de/collections/energiearmbander geändert
 - [x] Shop: Aura Reading Link auf dieseelenplanerin.de geändert
+
+## Alle Links korrekt setzen (19.04.2026)
+- [ ] "Alle 10 Ritual-Sets ansehen" Button entfernen
+- [ ] Runen-Quiz: Nach Ergebnis auf Tentary Runen-Seite verlinken
+- [ ] Heilstein-Quiz: Nach Ergebnis auf dieseelenplanerin.de Energiearmbänder verlinken
+- [ ] Shop "Zum Shop" / "Ich biete" → dieseelenplanerin.de
+- [ ] Shop Kategorien (Energiearmbänder, Meditationskerzen, Räuchern, Heilsteine, Bodyguard, Frequenz) → korrekte dieseelenplanerin.de URLs
+- [ ] Alle Links auf dieseelenplanerin.de prüfen und korrigieren
