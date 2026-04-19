@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Image, Platform,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import { RUNEN_QUESTIONS, type RunenCategory } from "@/lib/quiz-data";
 import { RUNEN_SETS, getSetsByKategorie } from "@/lib/runen-sets";
-
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
   gold: "#C9A96E", goldLight: "#FAF3E7", brown: "#5C3317", brownMid: "#8B5E3C",
@@ -14,6 +15,63 @@ const C = {
 };
 
 // Kategorie-Infos für die Ergebnis-Anzeige
+// Echte Armbänder von dieseelenplanerin.de, nach Kategorie zugeordnet
+const KATEGORIE_ARMBAENDER: Record<string, { name: string; steine: string; image: string; url: string }[]> = {
+  liebe: [
+    { name: "Happy Soul", steine: "Rosenquarz + Rhodonit", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Happysoul_e2fbf042.jpg", url: "https://dieseelenplanerin.de/produkt/happy-soul" },
+    { name: "Pure Love", steine: "Rosenquarz", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purelove2_604f308d.jpg", url: "https://dieseelenplanerin.de/produkt/pure-love" },
+    { name: "True Love", steine: "Pinker Achat + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/truelove_fe6ec462.jpg", url: "https://dieseelenplanerin.de/produkt/true-love" },
+  ],
+  fuelle: [
+    { name: "Positive Mind", steine: "Citrin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/positivemnd,_001160a8.jpg", url: "https://dieseelenplanerin.de/produkt/positive-mind" },
+    { name: "Golden Power", steine: "Citrin + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Potitivemind_41a4770e.jpg", url: "https://dieseelenplanerin.de/produkt/golden-power" },
+    { name: "Soul Letters \u2013 Citrin", steine: "Wei\u00dfe Perlen + Citrin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SoulLetterCitrin_37a595b5.jpg", url: "https://dieseelenplanerin.de/produkt/soul-letters-citrin" },
+  ],
+  gesundheit: [
+    { name: "Clear Mind", steine: "Bergkristall + Lapislazuli + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Clearmind_c5930d21.jpg", url: "https://dieseelenplanerin.de/produkt/clear-mind" },
+    { name: "Pure Spirit", steine: "Mondstein + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purespirit_9f2b6a28.jpg", url: "https://dieseelenplanerin.de/produkt/pure-spirit" },
+    { name: "Calm Spirit", steine: "Blauer Apatit + Lapislazuli + Bergkristall", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/CalmSpirit_b7d87f56.jpg", url: "https://dieseelenplanerin.de/produkt/calm-spirit" },
+  ],
+  transformation: [
+    { name: "Inner Power", steine: "Malachit + Pinker Achat", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/InnerPower_2c1f936d.jpg", url: "https://dieseelenplanerin.de/produkt/inner-power" },
+    { name: "Divine Circle", steine: "Mondstein", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/DivineCircle_b6030451.jpg", url: "https://dieseelenplanerin.de/produkt/divine-circle" },
+    { name: "Spirit Glow", steine: "Peridot + Citrin + Rosenquarz", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SpiritGlow_578dbe79.PNG", url: "https://dieseelenplanerin.de/produkt/spirit-glow" },
+  ],
+  selbstvertrauen: [
+    { name: "Bodyguard", steine: "Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/bodyguard_c0a58b10.jpg", url: "https://dieseelenplanerin.de/produkt/bodyguard-armband" },
+    { name: "Power Shield", steine: "Tigerauge + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Powershield_bbdefa32.jpg", url: "https://dieseelenplanerin.de/produkt/power-shield" },
+    { name: "Safe Light", steine: "Schwarzer Turmalin + Dalmatiner Jaspis", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SafeLight_f4ea2538.jpg", url: "https://dieseelenplanerin.de/produkt/safe-light" },
+  ],
+  spirituell: [
+    { name: "Pure Spirit", steine: "Mondstein + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purespirit_9f2b6a28.jpg", url: "https://dieseelenplanerin.de/produkt/pure-spirit" },
+    { name: "Clear Mind", steine: "Bergkristall + Lapislazuli + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Clearmind_c5930d21.jpg", url: "https://dieseelenplanerin.de/produkt/clear-mind" },
+    { name: "Divine Circle", steine: "Mondstein", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/DivineCircle_b6030451.jpg", url: "https://dieseelenplanerin.de/produkt/divine-circle" },
+  ],
+  familie: [
+    { name: "Happy Soul", steine: "Rosenquarz + Rhodonit", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Happysoul_e2fbf042.jpg", url: "https://dieseelenplanerin.de/produkt/happy-soul" },
+    { name: "Pure Grace", steine: "Opal + Bergkristall + Rosenquarz + Mondstein", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/PureGrace_44f99243.jpg", url: "https://dieseelenplanerin.de/produkt/pure-grace" },
+    { name: "Positive Vibes", steine: "Wassermelonen-Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/PositiveVibe_9a8e6407.PNG", url: "https://dieseelenplanerin.de/produkt/positive-vibes" },
+  ],
+  kommunikation: [
+    { name: "True Voice", steine: "Blauer Apatit + T\u00fcrkis", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/truevoice_c4b1c1dd.jpg", url: "https://dieseelenplanerin.de/produkt/true-voice" },
+    { name: "Calm Spirit", steine: "Blauer Apatit + Lapislazuli + Bergkristall", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/CalmSpirit_b7d87f56.jpg", url: "https://dieseelenplanerin.de/produkt/calm-spirit" },
+    { name: "Clear Mind", steine: "Bergkristall + Lapislazuli + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Clearmind_c5930d21.jpg", url: "https://dieseelenplanerin.de/produkt/clear-mind" },
+  ],
+};
+
+const openProduct = (url: string) => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    WebBrowser.openBrowserAsync(url, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+      controlsColor: "#C4897B",
+      toolbarColor: "#FFF8F5",
+    });
+  } else {
+    Linking.openURL(url);
+  }
+};
+
 const KATEGORIE_INFO: Record<RunenCategory, {
   titel: string; emoji: string; beschreibung: string; farbe: string; farbHell: string;
   heilstein: string; heilsteinBeschreibung: string;
@@ -213,6 +271,33 @@ export default function RunenQuizScreen() {
             </Text>
           </View>
 
+          {/* Passende Energiearmbänder */}
+          {KATEGORIE_ARMBAENDER[ergebnis] && (
+            <View style={s.card}>
+              <Text style={s.cardTitel}>💎 Passende Energiearmbänder</Text>
+              <Text style={[s.cardText, { marginBottom: 12 }]}>
+                Ergänze dein Runen-Armband mit einem passenden Energiearmband von der Seelenplanerin.
+              </Text>
+              <View style={{ gap: 12 }}>
+                {KATEGORIE_ARMBAENDER[ergebnis].map((ab, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={s.armbandItem}
+                    onPress={() => openProduct(ab.url)}
+                    activeOpacity={0.8}
+                  >
+                    <Image source={{ uri: ab.image }} style={s.armbandImage} resizeMode="cover" />
+                    <View style={s.armbandInfo}>
+                      <Text style={s.armbandName}>{ab.name}</Text>
+                      <Text style={s.armbandSteine}>{ab.steine}</Text>
+                      <Text style={s.armbandPreis}>33,00 €</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Armband bestellen CTA */}
           <View style={s.ctaCard}>
             <Text style={s.ctaTitel}>Dein Runen-Armband bestellen</Text>
@@ -368,4 +453,15 @@ const s = StyleSheet.create({
 
   neuStartenBtn: { marginHorizontal: 16, marginTop: 8, padding: 14, alignItems: "center" },
   neuStartenText: { fontSize: 14, color: C.muted, textDecorationLine: "underline" },
+
+  // Armbänder
+  armbandItem: {
+    flexDirection: "row" as const, backgroundColor: "#FFF8F5", borderRadius: 16,
+    overflow: "hidden" as const, borderWidth: 1, borderColor: C.border,
+  },
+  armbandImage: { width: 90, height: 90 },
+  armbandInfo: { flex: 1, padding: 12, justifyContent: "center" as const },
+  armbandName: { fontSize: 15, fontWeight: "700" as const, color: C.brown, marginBottom: 3 },
+  armbandSteine: { fontSize: 12, color: C.muted, marginBottom: 4, lineHeight: 16 },
+  armbandPreis: { fontSize: 14, fontWeight: "700" as const, color: C.rose },
 });

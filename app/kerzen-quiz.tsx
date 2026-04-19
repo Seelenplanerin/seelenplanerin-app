@@ -1,12 +1,67 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Image, Linking, Dimensions,
+  Image, Linking, Dimensions, Platform,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
+
+// Echte Armbänder von dieseelenplanerin.de, nach Heilstein zugeordnet
+const ARMBAND_MAP: Record<string, { name: string; steine: string; image: string; url: string }[]> = {
+  mondstein: [
+    { name: "Divine Circle", steine: "Mondstein", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/DivineCircle_b6030451.jpg", url: "https://dieseelenplanerin.de/produkt/divine-circle" },
+    { name: "Pure Spirit", steine: "Mondstein + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purespirit_9f2b6a28.jpg", url: "https://dieseelenplanerin.de/produkt/pure-spirit" },
+    { name: "Pure Grace", steine: "Opal + Bergkristall + Rosenquarz + Mondstein", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/PureGrace_44f99243.jpg", url: "https://dieseelenplanerin.de/produkt/pure-grace" },
+  ],
+  rosenquarz: [
+    { name: "Happy Soul", steine: "Rosenquarz + Rhodonit", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Happysoul_e2fbf042.jpg", url: "https://dieseelenplanerin.de/produkt/happy-soul" },
+    { name: "Pure Love", steine: "Rosenquarz", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purelove2_604f308d.jpg", url: "https://dieseelenplanerin.de/produkt/pure-love" },
+    { name: "Soul Letters \u2013 Rosenquarz", steine: "Wei\u00dfe Perlen + Rosenquarz", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/soulletterrosenquarz._8399a510.jpg", url: "https://dieseelenplanerin.de/produkt/soul-letters-rosenquarz" },
+  ],
+  "schwarzer-turmalin": [
+    { name: "Bodyguard", steine: "Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/bodyguard_c0a58b10.jpg", url: "https://dieseelenplanerin.de/produkt/bodyguard-armband" },
+    { name: "Safe Light", steine: "Schwarzer Turmalin + Dalmatiner Jaspis", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SafeLight_f4ea2538.jpg", url: "https://dieseelenplanerin.de/produkt/safe-light" },
+    { name: "Power Shield", steine: "Tigerauge + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Powershield_bbdefa32.jpg", url: "https://dieseelenplanerin.de/produkt/power-shield" },
+  ],
+  amethyst: [
+    { name: "Clear Mind", steine: "Bergkristall + Lapislazuli + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Clearmind_c5930d21.jpg", url: "https://dieseelenplanerin.de/produkt/clear-mind" },
+    { name: "Pure Spirit", steine: "Mondstein + Amethyst", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/purespirit_9f2b6a28.jpg", url: "https://dieseelenplanerin.de/produkt/pure-spirit" },
+  ],
+  citrin: [
+    { name: "Positive Mind", steine: "Citrin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/positivemnd,_001160a8.jpg", url: "https://dieseelenplanerin.de/produkt/positive-mind" },
+    { name: "Golden Power", steine: "Citrin + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Potitivemind_41a4770e.jpg", url: "https://dieseelenplanerin.de/produkt/golden-power" },
+    { name: "Soul Letters \u2013 Citrin", steine: "Wei\u00dfe Perlen + Citrin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SoulLetterCitrin_37a595b5.jpg", url: "https://dieseelenplanerin.de/produkt/soul-letters-citrin" },
+    { name: "Spirit Glow", steine: "Peridot + Citrin + Rosenquarz", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/SpiritGlow_578dbe79.PNG", url: "https://dieseelenplanerin.de/produkt/spirit-glow" },
+  ],
+  labradorit: [
+    { name: "Calm Spirit", steine: "Blauer Apatit + Lapislazuli + Bergkristall", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/CalmSpirit_b7d87f56.jpg", url: "https://dieseelenplanerin.de/produkt/calm-spirit" },
+    { name: "True Voice", steine: "Blauer Apatit + T\u00fcrkis", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/truevoice_c4b1c1dd.jpg", url: "https://dieseelenplanerin.de/produkt/true-voice" },
+  ],
+  pyrit: [
+    { name: "Golden Power", steine: "Citrin + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Potitivemind_41a4770e.jpg", url: "https://dieseelenplanerin.de/produkt/golden-power" },
+    { name: "Power Shield", steine: "Tigerauge + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/Powershield_bbdefa32.jpg", url: "https://dieseelenplanerin.de/produkt/power-shield" },
+  ],
+  carneol: [
+    { name: "Inner Power", steine: "Malachit + Pinker Achat", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/InnerPower_2c1f936d.jpg", url: "https://dieseelenplanerin.de/produkt/inner-power" },
+    { name: "Energy Flower", steine: "Peridot + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/EnergyFlower_43dc2b42.jpg", url: "https://dieseelenplanerin.de/produkt/energy-flower" },
+    { name: "True Love", steine: "Pinker Achat + Schwarzer Turmalin", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663350288528/6xNnCqiUctcuk4Htpiw8hj/truelove_fe6ec462.jpg", url: "https://dieseelenplanerin.de/produkt/true-love" },
+  ],
+};
+
+const openProduct = (url: string) => {
+  if (Platform.OS !== "web") {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    WebBrowser.openBrowserAsync(url, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
+      controlsColor: "#C4897B",
+      toolbarColor: "#FFF8F5",
+    });
+  } else {
+    Linking.openURL(url);
+  }
+};
 
 const { width } = Dimensions.get("window");
 
@@ -444,6 +499,30 @@ export default function KerzenQuizScreen() {
             </View>
           )}
 
+          {/* Passende Armbänder */}
+          {ARMBAND_MAP[ergebnis.id] && (
+            <View style={st.ergebnisCard}>
+              <Text style={st.ergebnisCardTitel}>💎 Passende Armbänder mit {ergebnis.name}</Text>
+              <View style={st.armbandList}>
+                {ARMBAND_MAP[ergebnis.id].map((ab, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={st.armbandItem}
+                    onPress={() => openProduct(ab.url)}
+                    activeOpacity={0.8}
+                  >
+                    <Image source={{ uri: ab.image }} style={st.armbandImage} resizeMode="cover" />
+                    <View style={st.armbandInfo}>
+                      <Text style={st.armbandName}>{ab.name}</Text>
+                      <Text style={st.armbandSteine}>{ab.steine}</Text>
+                      <Text style={st.armbandPreis}>33,00 €</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* CTA – Kerze bestellen */}
           <View style={st.ctaCard}>
             <Image
@@ -538,6 +617,18 @@ const st = StyleSheet.create({
   ctaText: { fontSize: 14, color: C.brownMid, textAlign: "center", lineHeight: 21, marginBottom: 16 },
   ctaBtn: { backgroundColor: C.rose, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 28 },
   ctaBtnText: { color: "#FFF", fontSize: 15, fontWeight: "700" },
+  // Armbänder
+  armbandList: { marginTop: 12, gap: 12 },
+  armbandItem: {
+    flexDirection: "row", backgroundColor: "#FFF8F5", borderRadius: 16,
+    overflow: "hidden", borderWidth: 1, borderColor: C.border,
+  },
+  armbandImage: { width: 90, height: 90 },
+  armbandInfo: { flex: 1, padding: 12, justifyContent: "center" },
+  armbandName: { fontSize: 15, fontWeight: "700", color: C.brown, marginBottom: 3 },
+  armbandSteine: { fontSize: 12, color: C.muted, marginBottom: 4, lineHeight: 16 },
+  armbandPreis: { fontSize: 14, fontWeight: "700", color: C.rose },
+
   neuBtn: { backgroundColor: C.surface, borderRadius: 14, paddingVertical: 14, alignItems: "center", borderWidth: 1, borderColor: C.border },
   neuBtnText: { fontSize: 15, color: C.brownMid, fontWeight: "600" },
 });

@@ -635,3 +635,12 @@
 - [x] Ich-Tab "Zum Shop" auf dieseelenplanerin.de
 - [x] Alle /collections/ und /products/ URLs entfernt – keine falschen URLs mehr im Code
 - [x] web-dist und server dist neu gebaut, auf GitHub gepusht
+
+## Echte Armbänder als Quiz-Empfehlungen (19.04.2026)
+- [ ] Echte Armbänder von dieseelenplanerin.de scrapen (Namen, Bilder, Kategorien, Links)
+- [ ] Heilstein-Quiz: Falsche Armband-Namen (Happy Harmony, Energy Mix etc.) durch echte Armbänder ersetzen
+- [ ] Kerzen-Quiz: Armband-Empfehlungen mit echten Armbändern
+- [ ] Runen-Quiz: Armband-Empfehlungen mit echten Armbändern
+- [ ] Mondtyp-Quiz: Armband-Empfehlungen mit echten Armbändern (falls vorhanden)
+- [ ] Echte Produktbilder von dieseelenplanerin.de einbinden
+- [ ] Jedes Armband auf seine korrekte Produktseite verlinken
