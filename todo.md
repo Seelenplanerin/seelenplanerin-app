@@ -645,15 +645,16 @@
 - [x] Jedes Armband verlinkt auf seine korrekte Produktseite (dieseelenplanerin.de/produkt/...)
 
 ## Bugs: Nachrichten senden nicht möglich (19.04.2026)
-- [ ] User-Nachrichten-Screen: Tastatur verdeckt Eingabefeld, Senden-Button nicht erreichbar
-- [ ] Admin Seelenjournal: Gleicher Bug – Tastatur verdeckt Eingabe beim Hochladen/Nachricht senden
-- [ ] Tastatur kann nicht wieder runtergeschoben werden
-- [ ] KeyboardAvoidingView oder ähnliche Lösung implementieren
+- [x] User-Nachrichten-Screen: KeyboardAvoidingView mit behavior="padding"/"height", keyboardDismissMode="interactive"
+- [x] Admin Seelenjournal: Gleicher Fix – KeyboardAvoidingView + Keyboard.dismiss + returnKeyType="send"
+- [x] Tastatur kann jetzt per Wisch oder Tippen außerhalb runtergeschoben werden
+- [x] Senden-Button und Eingabefeld immer über der Tastatur sichtbar (SafeArea bottom padding)
 
 ## Onboarding-Screen beim ersten Start (19.04.2026)
-- [ ] Onboarding-Screen erstellen: DSGVO-Zustimmung erforderlich
-- [ ] Push-Benachrichtigungen: Erlaubnis beim ersten Start abfragen
-- [ ] Text: "Mit der Nutzung der App stimmst du der DSGVO zu"
-- [ ] Text: "Erlaube der Seelenplanerin dir Nachrichten zu schicken"
-- [ ] Onboarding nur beim allerersten Start zeigen (AsyncStorage Flag)
-- [ ] App erst nach Zustimmung nutzbar
+- [x] Onboarding-Screen erstellt: DSGVO-Zustimmung als Pflichtfeld
+- [x] Push-Benachrichtigungen: Erlaubnis beim ersten Start abfragen (optional, empfohlen)
+- [x] DSGVO-Text + Link zu dieseelenplanerin.de/datenschutz
+- [x] Push-Text: "Erlaube der Seelenplanerin dir Nachrichten zu schicken"
+- [x] Onboarding nur beim allerersten Start (AsyncStorage Flag seelenplanerin_onboarding_done)
+- [x] App erst nach DSGVO-Zustimmung nutzbar (Button deaktiviert ohne Checkbox)
+- [x] In _layout.tsx integriert: initialRouteName basierend auf Onboarding-Status
