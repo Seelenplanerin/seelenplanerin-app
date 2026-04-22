@@ -179,7 +179,7 @@ export default function RitualDetailScreen() {
               onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
               activeOpacity={0.85}
             >
-              <Text style={s.premiumCtaBtnText}>17 € / Monat · Jetzt entdecken →</Text>
+              <Text style={s.premiumCtaBtnText}>Exklusive Inhalte · Jetzt entdecken →</Text>
             </TouchableOpacity>
           </View>
 

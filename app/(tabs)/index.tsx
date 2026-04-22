@@ -319,7 +319,7 @@ export default function AktuellesScreen() {
               Exklusive Meditationen, tiefe Rituale, persönliche Impulse von der Seelenplanerin – nur für dich.
             </Text>
             <View style={s.premiumBadge}>
-              <Text style={s.premiumBadgeText}>17 € / Monat · Jetzt entdecken →</Text>
+              <Text style={s.premiumBadgeText}>Exklusive Inhalte · Jetzt entdecken →</Text>
             </View>
           </LinearGradient>
         </TouchableOpacity>

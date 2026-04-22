@@ -46,7 +46,7 @@ export default function SeelenimpulsScreen() {
             resizeMode="cover"
           />
           <View style={s.heroBadge}>
-            <Text style={s.heroBadgeText}>17 € / Monat</Text>
+            <Text style={s.heroBadgeText}>Exklusive Inhalte</Text>
           </View>
         </View>
 
@@ -87,8 +87,8 @@ export default function SeelenimpulsScreen() {
         {/* Preis */}
         <View style={s.preisCard}>
           <Text style={s.preisTitle}>Seelenimpuls Mitgliedschaft</Text>
-          <Text style={s.preis}>17 €</Text>
-          <Text style={s.preisUnit}>pro Monat - jederzeit kündbar</Text>
+          <Text style={s.preis}>Seelenimpuls</Text>
+          <Text style={s.preisUnit}>Exklusiv für Mitglieder</Text>
           <View style={s.preisFeatures}>
             {["Alle exklusiven Inhalte", "Persönliche Impulse von der Seelenplanerin", "Monatlicher Community-Call mit der Seelenplanerin", "Community-Zugang", "Jederzeit kündbar"].map((f, i) => (
               <View key={i} style={s.preisFeatureRow}>

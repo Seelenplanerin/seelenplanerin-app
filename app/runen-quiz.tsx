@@ -323,7 +323,7 @@ export default function RunenQuizScreen() {
               onPress={() => router.push("/seelenimpuls")}
               activeOpacity={0.85}
             >
-              <Text style={s.ctaBtnText}>Zum Seelenimpuls → 17 € / Monat</Text>
+              <Text style={s.ctaBtnText}>Zum Seelenimpuls →</Text>
             </TouchableOpacity>
           </View>
 

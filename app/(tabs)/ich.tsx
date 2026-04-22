@@ -353,7 +353,7 @@ export default function IchScreen() {
             <Text style={s.menuEmoji}>👑</Text>
             <View style={s.menuTextWrap}>
               <Text style={s.menuLabel}>Seelenimpuls Premium</Text>
-              <Text style={s.menuDesc}>17 € / Monat · Exklusive Inhalte</Text>
+              <Text style={s.menuDesc}>Exklusive Inhalte</Text>
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>

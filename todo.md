@@ -672,3 +672,4 @@
 - [x] Version auf 1.0.2 / buildNumber 3 erhöht für Resubmission
 - [ ] Apple Review Antwort: Geschäftsmodell erklären (Guideline 2.1.0)
 - [ ] Neuen Build erstellen und bei Apple einreichen
+- [x] Alle Preisangaben (17 € / Monat) aus der App-UI entfernt (7 Stellen in 7 Dateien)
