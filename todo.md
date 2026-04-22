@@ -665,3 +665,10 @@
 - [x] Push-Benachrichtigung an alle registrierten Geräte wenn Klientin Nachricht sendet
 - [x] Expo Push API in seelenjournal-routes.ts integriert (POST /messages Endpunkt)
 - [x] Auf GitHub gepusht, Render-Deployment läuft automatisch
+
+## Apple App Review Fix (22.04.2026)
+- [x] Fix Guideline 2.5.4: expo-video supportsBackgroundPlayback auf false gesetzt
+- [x] Fix Guideline 2.5.4: expo-video supportsPictureInPicture auf false gesetzt
+- [x] Version auf 1.0.2 / buildNumber 3 erhöht für Resubmission
+- [ ] Apple Review Antwort: Geschäftsmodell erklären (Guideline 2.1.0)
+- [ ] Neuen Build erstellen und bei Apple einreichen

@@ -18,7 +18,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.1",
+  version: "1.0.2",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   scheme: env.scheme,
@@ -27,7 +27,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
-    buildNumber: "2",
+    buildNumber: "3",
   },
   android: {
     adaptiveIcon: {
@@ -57,7 +57,7 @@ const config: ExpoConfig = {
   plugins: [
     "expo-router",
     ["expo-audio", { microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone." }],
-    ["expo-video", { supportsBackgroundPlayback: true, supportsPictureInPicture: true }],
+    ["expo-video", { supportsBackgroundPlayback: false, supportsPictureInPicture: false }],
     [
       "expo-splash-screen",
       {
