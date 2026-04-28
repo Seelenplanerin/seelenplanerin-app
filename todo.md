@@ -678,3 +678,15 @@
 - [x] Android Package Name korrigiert: space.manus.seelenplanerin.app.t20250225100756 (passend zu Google Play Console)
 - [x] Fix: Meditation audio playback not working on native (iOS/Android) - expo-audio createAudioPlayer implementiert
 - [x] Fix: Runen-Armbänder Shop-Link korrigiert auf https://dieseelenplanerin.de/runenarmbander (runen.tsx, runen-quiz.tsx, shop.tsx)
+
+## Meditation Upload System (Apr 2026)
+- [x] Server-API für Meditation-Upload (S3 File Storage, bis 200 MB pro Datei)
+- [x] Admin-Panel: Meditationen hochladen (Audio + Titel + Beschreibung + Emoji)
+- [x] Admin-Panel: Meditationen bearbeiten und löschen
+- [x] Premium Inhalte Screen: Meditationen vom Server laden statt hardcoded
+- [x] Keine Apple-Prüfung nötig bei neuen Meditationen
+- [x] Multipart-Upload via Multer (kein Base64-Limit)
+- [x] expo-document-picker für native Dateiauswahl
+- [x] Web-Upload via HTML input type=file
+- [x] Meditation-Screen (meditation.tsx) lädt auch vom Server
+- [x] Fallback auf AsyncStorage wenn Server nicht erreichbar
