@@ -3,6 +3,7 @@ import "./scripts/load-env.js";
 import type { ExpoConfig } from "expo/config";
 
 const bundleId = "space.manus.seelenplanerin.app.t20250225150448";
+const androidBundleId = "space.manus.seelenplanerin.app.t20250225100756";
 const timestamp = bundleId.split(".").pop()?.replace(/^t/, "") ?? "";
 const schemeFromBundleId = `manus${timestamp}`;
 
@@ -12,7 +13,7 @@ const env = {
   logoUrl: "",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
-  androidPackage: bundleId,
+  androidPackage: androidBundleId,
 };
 
 const config: ExpoConfig = {

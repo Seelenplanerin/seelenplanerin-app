@@ -673,3 +673,6 @@
 - [ ] Apple Review Antwort: Geschäftsmodell erklären (Guideline 2.1.0)
 - [ ] Neuen Build erstellen und bei Apple einreichen
 - [x] Alle Preisangaben (17 € / Monat) aus der App-UI entfernt (7 Stellen in 7 Dateien)
+
+## Google Play Store (Apr 2026)
+- [x] Android Package Name korrigiert: space.manus.seelenplanerin.app.t20250225100756 (passend zu Google Play Console)
