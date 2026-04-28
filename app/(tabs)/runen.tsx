@@ -119,7 +119,7 @@ export default function RunenScreen() {
   }
 
   function handleShopOeffnen() {
-    const url = "https://dieseelenplanerin.tentary.com/p/qnl3vN";
+    const url = "https://dieseelenplanerin.de/runenarmbander";
     Linking.openURL(url);
   }
 

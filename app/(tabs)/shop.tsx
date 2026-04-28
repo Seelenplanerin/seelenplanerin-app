@@ -41,6 +41,7 @@ const SNEAK_PEEK = [
 ];
 
 const SHOP_CATEGORIES = [
+  { emoji: "ᚱ", label: "Runen-Armbänder", sub: "Handgraviert & einzigartig", url: "https://dieseelenplanerin.de/runenarmbander" },
   { emoji: "📿", label: "Energiearmbänder", sub: "22 einzigartige Designs", url: "https://dieseelenplanerin.de/kategorie/energiearmbaender" },
   { emoji: "🕯️", label: "Meditationskerzen", sub: "Mit echtem Heilstein", url: "https://dieseelenplanerin.de/kategorie/meditationskerzen" },
   { emoji: "🌿", label: "Räuchern", sub: "Palo Santo & mehr", url: "https://dieseelenplanerin.de/kategorie/raeuchern" },

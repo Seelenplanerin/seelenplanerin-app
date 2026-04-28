@@ -307,7 +307,7 @@ export default function RunenQuizScreen() {
             <Text style={s.ctaPreis}>57,00 € zzgl. 4,90 € Versand</Text>
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: info.farbe }]}
-              onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/qnl3vN")}
+              onPress={() => Linking.openURL("https://dieseelenplanerin.de/runenarmbander")}
               activeOpacity={0.85}
             >
               <Text style={s.ctaBtnText}>Jetzt bestellen →</Text>

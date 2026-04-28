@@ -67,21 +67,29 @@ interface Song {
   verfuegbar: boolean;
 }
 
-// ── Audio-Manager für Web ──
+// ── Audio-Manager (cross-platform: Web + iOS + Android) ──
 function usePremiumAudio() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const audioRef = React.useRef<any>(null);
   const intervalRef = React.useRef<any>(null);
+  const nativePlayerRef = React.useRef<any>(null);
 
   const stop = useCallback(() => {
     if (Platform.OS === "web" && audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
+    }
+    if (Platform.OS !== "web" && nativePlayerRef.current) {
+      try {
+        nativePlayerRef.current.pause();
+        nativePlayerRef.current.remove();
+      } catch (e) { /* ignore */ }
+      nativePlayerRef.current = null;
     }
     if (intervalRef.current) clearInterval(intervalRef.current);
     setIsPlaying(false);
@@ -90,7 +98,7 @@ function usePremiumAudio() {
     setDuration(0);
   }, []);
 
-  const play = useCallback((url: string) => {
+  const play = useCallback(async (url: string) => {
     if (currentUrl === url && isPlaying) { stop(); return; }
     stop();
     setLoading(true);
@@ -106,6 +114,46 @@ function usePremiumAudio() {
         if (audio && !audio.paused) setCurrentTime(audio.currentTime || 0);
       }, 500);
       audio.play().catch(() => { setLoading(false); });
+    } else {
+      // Native (iOS/Android) using expo-audio
+      try {
+        const { createAudioPlayer, setAudioModeAsync } = require("expo-audio");
+        await setAudioModeAsync({ playsInSilentMode: true });
+        const player = createAudioPlayer({ uri: url });
+        nativePlayerRef.current = player;
+        // Listen for status changes
+        player.addListener("playbackStatusUpdate", (status: any) => {
+          if (status.isLoaded) {
+            setDuration(status.duration || 0);
+            setCurrentTime(status.currentTime || 0);
+            if (status.playing) {
+              setIsPlaying(true);
+              setLoading(false);
+            }
+            if (status.didJustFinish) {
+              stop();
+            }
+          }
+        });
+        // Poll progress as fallback
+        intervalRef.current = setInterval(() => {
+          if (nativePlayerRef.current) {
+            try {
+              setCurrentTime(nativePlayerRef.current.currentTime || 0);
+              if (nativePlayerRef.current.duration) {
+                setDuration(nativePlayerRef.current.duration);
+              }
+            } catch (e) { /* ignore */ }
+          }
+        }, 500);
+        player.play();
+        setIsPlaying(true);
+        setLoading(false);
+      } catch (e) {
+        console.error("Audio playback error:", e);
+        setLoading(false);
+        stop();
+      }
     }
   }, [currentUrl, isPlaying, stop]);
 

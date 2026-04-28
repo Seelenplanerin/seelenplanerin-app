@@ -676,3 +676,5 @@
 
 ## Google Play Store (Apr 2026)
 - [x] Android Package Name korrigiert: space.manus.seelenplanerin.app.t20250225100756 (passend zu Google Play Console)
+- [x] Fix: Meditation audio playback not working on native (iOS/Android) - expo-audio createAudioPlayer implementiert
+- [x] Fix: Runen-Armbänder Shop-Link korrigiert auf https://dieseelenplanerin.de/runenarmbander (runen.tsx, runen-quiz.tsx, shop.tsx)
