@@ -93,3 +93,39 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
     url: await buildDownloadUrl(baseUrl, key, apiKey),
   };
 }
+
+/**
+ * Returns a presigned upload URL + the final download URL for a given key.
+ * The client can PUT the file directly to the upload URL, bypassing the server proxy.
+ */
+export async function storageGetUploadUrl(
+  relKey: string,
+  contentType = "application/octet-stream",
+): Promise<{ key: string; uploadUrl: string; headers: Record<string, string> }> {
+  const { baseUrl, apiKey } = getStorageConfig();
+  const key = normalizeKey(relKey);
+  const uploadUrl = buildUploadUrl(baseUrl, key);
+  return {
+    key,
+    uploadUrl: uploadUrl.toString(),
+    headers: {
+      ...buildAuthHeaders(apiKey) as Record<string, string>,
+    },
+  };
+}
+
+/**
+ * Upload a file to storage using the presigned upload URL flow.
+ * Server-side: fetches the file from a temporary URL and uploads it.
+ * This is used as a fallback when direct client upload isn't possible.
+ */
+export async function storagePutFromUrl(
+  relKey: string,
+  sourceUrl: string,
+  contentType = "application/octet-stream",
+): Promise<{ key: string; url: string }> {
+  const response = await fetch(sourceUrl);
+  if (!response.ok) throw new Error(`Failed to fetch source: ${response.status}`);
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return storagePut(relKey, buffer, contentType);
+}

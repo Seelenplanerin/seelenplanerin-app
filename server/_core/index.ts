@@ -13,7 +13,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import multer from "multer";
-import { storagePut } from "../storage";
+import { storagePut, storageGetUploadUrl } from "../storage";
 import { runMigrations } from "../db-migrate";
 import seelenjournalRoutes from "../seelenjournal-routes";
 
@@ -178,7 +178,43 @@ async function startServer() {
     }
   });
 
-  // Multipart-Upload-Route für große Dateien (bis 200 MB)
+  // Presigned Upload URL - Client lädt direkt zum Storage hoch (umgeht Render-Proxy-Limit)
+  app.post("/api/get-upload-url", express.json(), async (req, res) => {
+    try {
+      const { fileName, mimeType } = req.body;
+      if (!fileName) {
+        res.status(400).json({ success: false, error: "fileName fehlt" });
+        return;
+      }
+      const randomSuffix = Math.random().toString(36).slice(2, 8);
+      const safeName = (fileName || "audio.mp3").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const fileKey = `audio/${safeName}-${randomSuffix}`;
+      const result = await storageGetUploadUrl(fileKey, mimeType || "audio/mpeg");
+      res.json({ success: true, ...result });
+    } catch (err: any) {
+      console.error("Get upload URL error:", err);
+      res.status(500).json({ success: false, error: err.message || "Fehler beim Erstellen der Upload-URL" });
+    }
+  });
+
+  // Confirm upload - nach dem direkten Upload wird hier die Download-URL geholt
+  app.post("/api/confirm-upload", express.json(), async (req, res) => {
+    try {
+      const { key } = req.body;
+      if (!key) {
+        res.status(400).json({ success: false, error: "key fehlt" });
+        return;
+      }
+      const { storageGet } = await import("../storage");
+      const result = await storageGet(key);
+      res.json({ success: true, url: result.url, key: result.key });
+    } catch (err: any) {
+      console.error("Confirm upload error:", err);
+      res.status(500).json({ success: false, error: err.message || "Fehler" });
+    }
+  });
+
+  // Multipart-Upload-Route für große Dateien (bis 200 MB) - Fallback
   const upload = multer({ limits: { fileSize: 200 * 1024 * 1024 } });
   app.post("/api/upload-audio", upload.single("file"), async (req, res) => {
     try {

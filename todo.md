@@ -690,3 +690,11 @@
 - [x] Web-Upload via HTML input type=file
 - [x] Meditation-Screen (meditation.tsx) lädt auch vom Server
 - [x] Fallback auf AsyncStorage wenn Server nicht erreichbar
+
+## Fix: 413 Payload Too Large beim Meditation-Upload (Apr/Mai 2026)
+- [x] Direct-to-Storage Upload: Client lädt direkt zum S3-Storage hoch (umgeht Render-Proxy-Limit)
+- [x] Server-Endpoint /api/get-upload-url: Gibt presigned Upload-URL + Auth-Headers zurück
+- [x] Server-Endpoint /api/confirm-upload: Holt Download-URL nach erfolgreichem Upload
+- [x] Admin.tsx: processAndUploadFile auf 2-Schritt-Upload umgestellt (URL holen → direkt hochladen)
+- [x] Lokal getestet: Direct upload zum Storage-Proxy funktioniert
+- [ ] Render-Deployment nach GitHub-Push

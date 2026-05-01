@@ -455,62 +455,90 @@ export default function AdminScreen() {
     setFileName(fileName);
     try {
       const apiBase = getApiBaseUrl();
-      const uploadUrl = `${apiBase}/api/upload-audio`;
-      console.log("[Upload] URL:", uploadUrl, "File:", fileName, "Type:", mimeType);
+      console.log("[Upload] Starting direct upload. File:", fileName, "Type:", mimeType);
+
+      // Step 1: Get presigned upload URL from server (small request, no file data)
+      const getUrlResp = await fetch(`${apiBase}/api/get-upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileName, mimeType: mimeType || "audio/mpeg" }),
+      });
+      if (!getUrlResp.ok) {
+        const errText = await getUrlResp.text();
+        Alert.alert("Upload fehlgeschlagen", `Konnte Upload-URL nicht abrufen (${getUrlResp.status})`);
+        return;
+      }
+      const urlData = await getUrlResp.json();
+      if (!urlData.success) {
+        Alert.alert("Upload fehlgeschlagen", urlData.error || "Fehler beim Abrufen der Upload-URL");
+        return;
+      }
+      console.log("[Upload] Got upload URL for key:", urlData.key);
+
+      // Step 2: Upload file directly to storage (bypasses Render proxy completely)
+      const { uploadUrl, headers, key } = urlData;
 
       if (Platform.OS === "web") {
-        // Web: fetch blob and send as FormData
+        // Web: fetch blob and upload directly via FormData
         const resp = await fetch(uri);
         const blob = await resp.blob();
-        console.log("[Upload] Blob size:", blob.size, "bytes");
+        console.log("[Upload] Blob size:", blob.size, "bytes - uploading directly to storage");
         const formData = new FormData();
         formData.append("file", blob, fileName);
-        const uploadResp = await fetch(uploadUrl, { method: "POST", body: formData });
-        const responseText = await uploadResp.text();
-        console.log("[Upload] Response status:", uploadResp.status, "Body:", responseText.substring(0, 200));
-        if (!uploadResp.ok) {
-          Alert.alert("Upload fehlgeschlagen", `Server-Fehler (${uploadResp.status}): ${responseText.substring(0, 100)}`);
+        const directResp = await fetch(uploadUrl, {
+          method: "POST",
+          headers: headers,
+          body: formData,
+        });
+        if (!directResp.ok) {
+          const errText = await directResp.text().catch(() => "");
+          console.error("[Upload] Direct upload failed:", directResp.status, errText);
+          Alert.alert("Upload fehlgeschlagen", `Speicher-Fehler (${directResp.status})`);
           return;
         }
-        let result;
-        try {
-          result = JSON.parse(responseText);
-        } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${responseText.substring(0, 100)}`);
-          return;
-        }
-        if (result.success) {
-          setUrl(result.url);
+        const directResult = await directResp.json();
+        const finalUrl = directResult.url;
+        if (finalUrl) {
+          setUrl(finalUrl);
           Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
         } else {
-          Alert.alert("Upload fehlgeschlagen", result.error || "Unbekannter Fehler");
+          Alert.alert("Upload fehlgeschlagen", "Keine URL in der Antwort");
         }
       } else {
-        // Native: use FileSystem.uploadAsync for direct multipart upload
+        // Native: read file as base64, convert to blob-like and upload
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        if (!fileInfo.exists) {
+          Alert.alert("Upload fehlgeschlagen", "Datei nicht gefunden");
+          return;
+        }
+        console.log("[Upload] Native file size:", (fileInfo as any).size, "bytes - uploading directly");
+        
+        // Use FileSystem.uploadAsync to upload directly to the storage URL
         const uploadResult = await FileSystem.uploadAsync(uploadUrl, uri, {
           httpMethod: "POST",
           uploadType: FileSystem.FileSystemUploadType.MULTIPART,
           fieldName: "file",
-          mimeType: mimeType,
-          parameters: { fileName },
+          mimeType: mimeType || "audio/mpeg",
+          headers: headers,
         });
-        console.log("[Upload] Native response status:", uploadResult.status, "Body:", uploadResult.body?.substring(0, 200));
-        if (uploadResult.status !== 200) {
-          Alert.alert("Upload fehlgeschlagen", `Server-Fehler (${uploadResult.status})`);
+        console.log("[Upload] Direct upload response:", uploadResult.status);
+        if (uploadResult.status < 200 || uploadResult.status >= 300) {
+          Alert.alert("Upload fehlgeschlagen", `Speicher-Fehler (${uploadResult.status})`);
           return;
         }
-        let result;
+        let directResult;
         try {
-          result = JSON.parse(uploadResult.body);
+          directResult = JSON.parse(uploadResult.body);
         } catch {
-          Alert.alert("Upload fehlgeschlagen", `Ungültige Server-Antwort: ${uploadResult.body?.substring(0, 100)}`);
+          Alert.alert("Upload fehlgeschlagen", "Ung\u00fcltige Antwort vom Speicher");
           return;
         }
-        if (result.success) {
-          setUrl(result.url);
+        const finalUrl = directResult.url;
+        if (finalUrl) {
+          setUrl(finalUrl);
           Alert.alert("Upload erfolgreich \u2713", `"${fileName}" wurde hochgeladen.`);
         } else {
-          Alert.alert("Upload fehlgeschlagen", result.error || "Unbekannter Fehler");
+          Alert.alert("Upload fehlgeschlagen", "Keine URL in der Antwort");
         }
       }
     } catch (err: any) {
