@@ -697,4 +697,9 @@
 - [x] Server-Endpoint /api/confirm-upload: Holt Download-URL nach erfolgreichem Upload
 - [x] Admin.tsx: processAndUploadFile auf 2-Schritt-Upload umgestellt (URL holen → direkt hochladen)
 - [x] Lokal getestet: Direct upload zum Storage-Proxy funktioniert
-- [ ] Render-Deployment nach GitHub-Push
+- [x] Render-Deployment nach GitHub-Push (auto-deploy via GitHub)
+
+## Fix: Seelenjournal Mitglieder anlegen funktioniert nicht (Mai 2026)
+- [ ] Bug identifizieren: Neues Mitglied im Seelenjournal-Club kann nicht angelegt werden
+- [ ] Fix implementieren und testen
+- [ ] Auf GitHub pushen (Render auto-deploy)

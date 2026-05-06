@@ -30,7 +30,7 @@ const SJ_SECRET = process.env.SEELENJOURNAL_JWT_SECRET || "seelenjournal-default
 const SJ_ADMIN_EMAIL = process.env.SEELENJOURNAL_ADMIN_EMAIL || "lara@die-seelenplanerin.de";
 const SJ_ADMIN_PASSWORD = process.env.SEELENJOURNAL_ADMIN_PASSWORD || "SeelenAdmin2026!";
 
-function createToken(payload: Record<string, any>, expiresInHours = 168): string {
+function createToken(payload: Record<string, any>, expiresInHours = 720): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
   const now = Math.floor(Date.now() / 1000);
   const body = Buffer.from(JSON.stringify({ ...payload, iat: now, exp: now + expiresInHours * 3600 })).toString("base64url");

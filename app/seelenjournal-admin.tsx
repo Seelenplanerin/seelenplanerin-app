@@ -116,6 +116,12 @@ export default function SeelenjournalAdminScreen() {
       });
       clearTimeout(timeoutId);
       const data = await res.json();
+      if (res.status === 401) {
+        // Token abgelaufen → automatisch ausloggen
+        await AsyncStorage.removeItem("sj_admin_token");
+        setIsLoggedIn(false);
+        throw new Error("Sitzung abgelaufen – bitte erneut einloggen.");
+      }
       if (!res.ok && data.error) {
         throw new Error(data.error);
       }
@@ -158,7 +164,19 @@ export default function SeelenjournalAdminScreen() {
   useEffect(() => {
     (async () => {
       const token = await AsyncStorage.getItem("sj_admin_token");
-      if (token) { setIsLoggedIn(true); loadClients(); }
+      if (token) {
+        // Prüfe ob Token noch gültig ist (einfache Expiry-Prüfung)
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+          if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+            // Token abgelaufen → entfernen
+            await AsyncStorage.removeItem("sj_admin_token");
+            return;
+          }
+        } catch { /* Token-Format ungültig, trotzdem versuchen */ }
+        setIsLoggedIn(true);
+        loadClients();
+      }
     })();
   }, []);
 
