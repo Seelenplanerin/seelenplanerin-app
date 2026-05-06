@@ -707,5 +707,10 @@
 - [x] Auf GitHub gepusht (Render auto-deploy)
 
 ## Feature: Community Admin-Antwort + Push-Benachrichtigung (Mai 2026)
-- [ ] Admin kann direkt auf Community-Fragen antworten (Antwort-Button/Feld)
-- [ ] Push-Benachrichtigung an Admin wenn jemand eine Frage in der Community stellt
+- [x] Q&A-Fragen von AsyncStorage auf Server/Datenbank umgestellt
+- [x] Neue DB-Tabelle community_questions erstellt
+- [x] tRPC-Routes: communityQA.list, communityQA.ask, communityQA.answer, communityQA.delete
+- [x] Admin kann direkt auf Community-Fragen antworten (hallo@seelenplanerin.de)
+- [x] Push-Benachrichtigung an alle Geräte wenn jemand eine Frage stellt
+- [x] Fragen sind jetzt für alle sichtbar (nicht mehr nur lokal auf einem Gerät)
+- [x] Auf GitHub gepusht (Render auto-deploy)
