@@ -43,6 +43,13 @@
       "when": 1776434601286,
       "tag": "0005_talented_obadiah_stane",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1778083247743,
+      "tag": "0006_shocking_kronos",
+      "breakpoints": true
     }
   ]
 }

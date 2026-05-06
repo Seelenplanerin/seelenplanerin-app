@@ -1,7 +1,7 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, pushTokens, pushMessages, InsertPushToken, InsertPushMessage } from "../drizzle/schema";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, pushTokens, pushMessages, InsertPushToken, InsertPushMessage, communityQuestions, InsertCommunityQuestion } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: any = null;
@@ -280,6 +280,44 @@ export async function getPushMessageHistory() {
   return withRetry(async () => {
     const db = getDbSync();
     return db.select().from(pushMessages).orderBy(desc(pushMessages.createdAt));
+  });
+}
+
+// ── Community Q&A ──
+
+export async function getAllCommunityQuestions() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(communityQuestions).orderBy(desc(communityQuestions.datum));
+  });
+}
+
+export async function createCommunityQuestion(data: { frage: string; von: string; vonEmail?: string }) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(communityQuestions).values({
+      frage: data.frage,
+      von: data.von,
+      vonEmail: data.vonEmail || null,
+    });
+    return Number(result[0].insertId);
+  });
+}
+
+export async function answerCommunityQuestion(id: number, antwort: string) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(communityQuestions).set({
+      antwort,
+      antwortDatum: new Date(),
+    }).where(eq(communityQuestions.id, id));
+  });
+}
+
+export async function deleteCommunityQuestion(id: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.delete(communityQuestions).where(eq(communityQuestions.id, id));
   });
 }
 

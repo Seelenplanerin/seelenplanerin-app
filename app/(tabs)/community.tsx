@@ -92,12 +92,13 @@ interface CommunityPost {
 }
 
 interface QAFrage {
-  id: string;
+  id: number | string;
   frage: string;
   von: string;
+  vonEmail?: string;
   datum: string;
-  antwort?: string;
-  antwortDatum?: string;
+  antwort?: string | null;
+  antwortDatum?: string | null;
 }
 
 const DEFAULT_POSTS: CommunityPost[] = [
@@ -183,43 +184,70 @@ async function savePosts(posts: CommunityPost[]) {
   await AsyncStorage.setItem(POSTS_KEY, JSON.stringify(posts));
 }
 
-const DEFAULT_QA: QAFrage[] = [
-  {
-    id: "qa-default-1",
-    frage: "Welcher Heilstein passt am besten zu mir, wenn ich gerade eine schwierige Phase durchmache?",
-    von: "Sarah M.",
-    datum: new Date(Date.now() - 172800000).toISOString(),
-    antwort: "Rosenquarz ist dein treuer Begleiter in schweren Zeiten – er öffnet dein Herz für Selbstliebe und Mitgefühl. Trage ihn nah am Herzen und spüre, wie er dich sanft trägt. Amethyst kann zusätzlich helfen, innere Ruhe zu finden. 💜",
-    antwortDatum: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: "qa-default-2",
-    frage: "Wie oft sollte ich meine Runen reinigen?",
-    von: "Julia K.",
-    datum: new Date(Date.now() - 345600000).toISOString(),
-    antwort: "Ich empfehle, deine Runen bei jedem Vollmond zu reinigen – lege sie ins Mondlicht oder räuchere sie mit weißem Salbei. Wenn du sie täglich nutzt, kannst du sie auch wöchentlich kurz unter fließendes Wasser halten. Höre auf deine Intuition! ✨",
-    antwortDatum: new Date(Date.now() - 259200000).toISOString(),
-  },
-  {
-    id: "qa-default-3",
-    frage: "Kann ich das Neumond-Ritual auch alleine machen oder brauche ich jemanden dafür?",
-    von: "Lena B.",
-    datum: new Date(Date.now() - 86400000).toISOString(),
-  },
-];
-
 async function getQAFragen(): Promise<QAFrage[]> {
-  const data = await AsyncStorage.getItem(QA_KEY);
-  if (data) {
-    const parsed = JSON.parse(data);
-    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityQA.list`);
+    const json = await res.json();
+    const questions = json?.result?.data?.json || json?.result?.data || [];
+    return questions.map((q: any) => ({
+      id: q.id,
+      frage: q.frage,
+      von: q.von,
+      vonEmail: q.vonEmail,
+      datum: q.datum,
+      antwort: q.antwort || undefined,
+      antwortDatum: q.antwortDatum || undefined,
+    }));
+  } catch (e) {
+    console.warn("[QA] Fehler beim Laden der Fragen:", e);
+    return [];
   }
-  await AsyncStorage.setItem(QA_KEY, JSON.stringify(DEFAULT_QA));
-  return DEFAULT_QA;
 }
 
-async function saveQAFragen(fragen: QAFrage[]) {
-  await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
+async function saveQAAnswer(id: number, antwort: string): Promise<boolean> {
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityQA.answer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ json: { id, antwort } }),
+    });
+    return res.ok;
+  } catch (e) {
+    console.warn("[QA] Fehler beim Antworten:", e);
+    return false;
+  }
+}
+
+async function submitQuestion(frage: string, von: string, vonEmail?: string): Promise<boolean> {
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityQA.ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ json: { frage, von, vonEmail } }),
+    });
+    return res.ok;
+  } catch (e) {
+    console.warn("[QA] Fehler beim Senden der Frage:", e);
+    return false;
+  }
+}
+
+async function deleteQuestion(id: number): Promise<boolean> {
+  try {
+    const API_URL = getApiBaseUrl();
+    const res = await fetch(`${API_URL}/api/trpc/communityQA.delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ json: { id } }),
+    });
+    return res.ok;
+  } catch (e) {
+    console.warn("[QA] Fehler beim Löschen:", e);
+    return false;
+  }
 }
 
 function formatDatum(isoString: string): string {
@@ -469,7 +497,7 @@ export default function CommunityScreen() {
   const [showNewFrage, setShowNewFrage] = useState(false);
   const [newFrage, setNewFrage] = useState("");
   const [frageGesendet, setFrageGesendet] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<number | string | null>(null);
   const [replyText, setReplyText] = useState("");
 
   // Passwort ändern
@@ -732,19 +760,18 @@ export default function CommunityScreen() {
 
   const handleSendFrage = async () => {
     if (!newFrage.trim()) return;
-    const frage: QAFrage = {
-      id: `qa-${Date.now()}`,
-      frage: newFrage.trim(),
-      von: userName,
-      datum: new Date().toISOString(),
-    };
-    const updated = [frage, ...qaFragen];
-    setQaFragen(updated);
-    await saveQAFragen(updated);
-    setNewFrage("");
-    setShowNewFrage(false);
-    setFrageGesendet(true);
-    setTimeout(() => setFrageGesendet(false), 4000);
+    const success = await submitQuestion(newFrage.trim(), userName, currentUser?.email);
+    if (success) {
+      // Fragen neu laden vom Server
+      const updated = await getQAFragen();
+      setQaFragen(updated);
+      setNewFrage("");
+      setShowNewFrage(false);
+      setFrageGesendet(true);
+      setTimeout(() => setFrageGesendet(false), 4000);
+    } else {
+      Alert.alert("Fehler", "Deine Frage konnte nicht gesendet werden. Bitte versuche es erneut.");
+    }
   };
 
   const handleCreatePost = async () => {
@@ -1162,13 +1189,15 @@ export default function CommunityScreen() {
                               style={[s.qaSendBtn, { flex: 1 }]}
                               onPress={async () => {
                                 if (!replyText.trim()) return;
-                                const updated = qaFragen.map(q =>
-                                  q.id === f.id ? { ...q, antwort: replyText.trim(), antwortDatum: new Date().toISOString() } : q
-                                );
-                                setQaFragen(updated);
-                                await saveQAFragen(updated);
-                                setReplyingTo(null);
-                                setReplyText("");
+                                const success = await saveQAAnswer(Number(f.id), replyText.trim());
+                                if (success) {
+                                  const updated = await getQAFragen();
+                                  setQaFragen(updated);
+                                  setReplyingTo(null);
+                                  setReplyText("");
+                                } else {
+                                  Alert.alert("Fehler", "Antwort konnte nicht gespeichert werden.");
+                                }
                               }}
                               activeOpacity={0.85}
                             >

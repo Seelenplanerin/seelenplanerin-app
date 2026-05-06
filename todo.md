@@ -705,3 +705,7 @@
 - [x] Fix: Auto-Logout bei abgelaufenem Token (zeigt Login-Screen statt Fehlermeldung)
 - [x] Fix: Token-Expiry-Prüfung beim App-Start (kein falscher eingeloggt-Status)
 - [x] Auf GitHub gepusht (Render auto-deploy)
+
+## Feature: Community Admin-Antwort + Push-Benachrichtigung (Mai 2026)
+- [ ] Admin kann direkt auf Community-Fragen antworten (Antwort-Button/Feld)
+- [ ] Push-Benachrichtigung an Admin wenn jemand eine Frage in der Community stellt

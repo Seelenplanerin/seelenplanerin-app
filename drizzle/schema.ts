@@ -181,6 +181,20 @@ export const seelenjournalMessages = mysqlTable("seelenjournal_messages", {
 export type SeelenjournalMessage = typeof seelenjournalMessages.$inferSelect;
 export type InsertSeelenjournalMessage = typeof seelenjournalMessages.$inferInsert;
 
+// ── Community Q&A ──
+
+export const communityQuestions = mysqlTable("community_questions", {
+  id: int("id").autoincrement().primaryKey(),
+  frage: text("frage").notNull(),
+  von: varchar("von", { length: 255 }).notNull(),
+  vonEmail: varchar("vonEmail", { length: 320 }),
+  datum: timestamp("datum").defaultNow().notNull(),
+  antwort: text("antwort"),
+  antwortDatum: timestamp("antwortDatum"),
+});
+export type CommunityQuestion = typeof communityQuestions.$inferSelect;
+export type InsertCommunityQuestion = typeof communityQuestions.$inferInsert;
+
 // ── Academy Waitlist ──
 
 export const academyWaitlist = mysqlTable("academy_waitlist", {

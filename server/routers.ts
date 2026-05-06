@@ -341,6 +341,71 @@ export const appRouter = router({
       return db.getAcademyWaitlist();
     }),
   }),
+  communityQA: router({
+    // Alle Fragen laden
+    list: publicProcedure.query(async () => {
+      return db.getAllCommunityQuestions();
+    }),
+
+    // Neue Frage stellen (sendet Push an Admin)
+    ask: publicProcedure
+      .input(z.object({
+        frage: z.string().min(1),
+        von: z.string().min(1),
+        vonEmail: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const id = await db.createCommunityQuestion(input);
+        // Push-Benachrichtigung an Admin (hallo@seelenplanerin.de) senden
+        try {
+          const tokens = await db.getAllActivePushTokens();
+          if (tokens.length > 0) {
+            // Sende an alle registrierten Geräte (Admin bekommt es auch)
+            const adminMessage = {
+              to: tokens.map((t: any) => t.token),
+              sound: "default" as const,
+              title: "🌙 Neue Frage in der Community",
+              body: `${input.von}: ${input.frage.substring(0, 80)}${input.frage.length > 80 ? "..." : ""}`,
+              data: { type: "community_question", questionId: id },
+            };
+            // Nur an Admin-Token senden (communityEmail = hallo@seelenplanerin.de)
+            // Da wir communityEmail nicht speichern, senden wir an alle - Admin sieht es
+            // In Zukunft könnte man hier filtern
+            await fetch("https://exp.host/--/api/v2/push/send", {
+              method: "POST",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify([adminMessage]),
+            });
+          }
+        } catch (e) {
+          console.error("[Push] Fehler beim Senden der Community-Frage-Benachrichtigung:", e);
+        }
+        return { success: true, id };
+      }),
+
+    // Frage beantworten (Admin)
+    answer: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        antwort: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        await db.answerCommunityQuestion(input.id, input.antwort);
+        return { success: true };
+      }),
+
+    // Frage löschen (Admin)
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteCommunityQuestion(input.id);
+        return { success: true };
+      }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({
