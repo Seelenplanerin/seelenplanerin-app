@@ -700,6 +700,8 @@
 - [x] Render-Deployment nach GitHub-Push (auto-deploy via GitHub)
 
 ## Fix: Seelenjournal Mitglieder anlegen funktioniert nicht (Mai 2026)
-- [ ] Bug identifizieren: Neues Mitglied im Seelenjournal-Club kann nicht angelegt werden
-- [ ] Fix implementieren und testen
-- [ ] Auf GitHub pushen (Render auto-deploy)
+- [x] Bug identifiziert: Admin-Token war abgelaufen (7-Tage-Limit), Server lehnte Anfragen mit "Kein Admin-Zugang" ab
+- [x] Fix: Token-Gültigkeit auf 30 Tage verlängert
+- [x] Fix: Auto-Logout bei abgelaufenem Token (zeigt Login-Screen statt Fehlermeldung)
+- [x] Fix: Token-Expiry-Prüfung beim App-Start (kein falscher eingeloggt-Status)
+- [x] Auf GitHub gepusht (Render auto-deploy)
