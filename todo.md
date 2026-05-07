@@ -722,3 +722,11 @@
 - [x] Manueller Trigger-Endpoint: POST /api/send-daily-impuls (zum Testen)
 - [x] Ungültige Tokens werden automatisch deaktiviert
 - [x] Auf GitHub gepusht (Render auto-deploy)
+
+## Feature: Portaltage Push-Benachrichtigung mit Mini-Tipps (Mai 2026)
+- [x] Alle 52 Portaltage 2026 recherchiert und hinterlegt (Maya-Kalender / Tzolk'in)
+- [x] 30 spirituelle Mini-Tipps für Portaltage erstellt
+- [x] Push um 7:05 Uhr an Portaltagen (5 Min nach Tagesimpuls)
+- [x] Manueller Trigger: POST /api/send-portaltag-push
+- [x] Status-Endpoint: GET /api/portaltage-status
+- [x] Auf GitHub gepusht (Render auto-deploy)
