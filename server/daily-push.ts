@@ -138,11 +138,13 @@ export async function sendDailyImpulsPush(): Promise<void> {
 
 /**
  * Startet den täglichen Cron-Job.
- * Prüft jede Minute ob es 7:00 Uhr in Europe/Berlin ist.
+ * Prüft jede Minute ob es 7:00 / 19:00 Uhr in Europe/Berlin ist.
  * 
  * Zeitplan:
- * - 7:00 Uhr: Tagesimpuls-Push
- * - 7:05 Uhr: Portaltag-Push (nur an Portaltagen)
+ * - 7:00 Uhr: Tagesimpuls-Push (jeden Tag)
+ * - 19:00 Uhr: Portaltag-Push (nur an Portaltagen)
+ *   → Abends, damit die Nutzerin den Tag bewusst reflektieren kann
+ *   → Passt zur Abend-Meditation / Journaling-Routine
  */
 export function startDailyPushCron(): void {
   let lastImpulsDate = "";
@@ -165,8 +167,9 @@ export function startDailyPushCron(): void {
       });
     }
 
-    // Um 7:05 Uhr: Portaltag-Push senden (nur an Portaltagen)
-    if (hour === 7 && minute === 5 && lastPortaltagDate !== dateStr) {
+    // Um 19:00 Uhr: Portaltag-Push senden (nur an Portaltagen)
+    // Abends zur Reflexionszeit – perfekt für Journaling & Abend-Meditation
+    if (hour === 19 && minute === 0 && lastPortaltagDate !== dateStr) {
       lastPortaltagDate = dateStr;
       sendPortaltagPush().catch(err => {
         console.error("[portaltage] Fehler beim Senden:", err);
@@ -174,5 +177,5 @@ export function startDailyPushCron(): void {
     }
   }, 60_000); // Jede Minute prüfen
 
-  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 7:05 (Europe/Berlin)");
+  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 19:00 (Europe/Berlin)");
 }
