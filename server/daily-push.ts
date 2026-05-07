@@ -5,6 +5,7 @@
  */
 
 import { getAllActivePushTokens, createPushMessage, updatePushMessage, deactivatePushToken } from "./db";
+import { sendPortaltagPush } from "./portaltage";
 
 // Die gleichen Impulse wie in der App (app/(tabs)/index.tsx)
 const IMPULSE = [
@@ -138,9 +139,14 @@ export async function sendDailyImpulsPush(): Promise<void> {
 /**
  * Startet den täglichen Cron-Job.
  * Prüft jede Minute ob es 7:00 Uhr in Europe/Berlin ist.
+ * 
+ * Zeitplan:
+ * - 7:00 Uhr: Tagesimpuls-Push
+ * - 7:05 Uhr: Portaltag-Push (nur an Portaltagen)
  */
 export function startDailyPushCron(): void {
-  let lastSentDate = "";
+  let lastImpulsDate = "";
+  let lastPortaltagDate = "";
 
   // Prüfe jede Minute
   setInterval(() => {
@@ -151,14 +157,22 @@ export function startDailyPushCron(): void {
     const minute = berlinTime.getMinutes();
     const dateStr = berlinTime.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    // Um 7:00 Uhr (zwischen 7:00 und 7:01) senden, aber nur einmal pro Tag
-    if (hour === 7 && minute === 0 && lastSentDate !== dateStr) {
-      lastSentDate = dateStr;
+    // Um 7:00 Uhr: Tagesimpuls senden
+    if (hour === 7 && minute === 0 && lastImpulsDate !== dateStr) {
+      lastImpulsDate = dateStr;
       sendDailyImpulsPush().catch(err => {
         console.error("[daily-push] Fehler beim Senden:", err);
       });
     }
+
+    // Um 7:05 Uhr: Portaltag-Push senden (nur an Portaltagen)
+    if (hour === 7 && minute === 5 && lastPortaltagDate !== dateStr) {
+      lastPortaltagDate = dateStr;
+      sendPortaltagPush().catch(err => {
+        console.error("[portaltage] Fehler beim Senden:", err);
+      });
+    }
   }, 60_000); // Jede Minute prüfen
 
-  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls täglich um 7:00 Uhr (Europe/Berlin)");
+  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 7:05 (Europe/Berlin)");
 }

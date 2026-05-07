@@ -17,6 +17,7 @@ import { storagePut, storageGetUploadUrl } from "../storage";
 import { runMigrations } from "../db-migrate";
 import seelenjournalRoutes from "../seelenjournal-routes";
 import { startDailyPushCron, sendDailyImpulsPush } from "../daily-push";
+import { sendPortaltagPush, isPortaltag } from "../portaltage";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -540,6 +541,26 @@ async function startServer() {
     } catch (err: any) {
       res.status(500).json({ success: false, error: err.message });
     }
+  });
+
+  // Manueller Trigger für Portaltag-Push (zum Testen)
+  app.post("/api/send-portaltag-push", async (_req, res) => {
+    try {
+      const heute = isPortaltag();
+      if (!heute) {
+        res.json({ success: true, message: "Heute ist kein Portaltag. Push wird trotzdem zum Testen gesendet.", isPortaltag: false });
+      }
+      await sendPortaltagPush();
+      res.json({ success: true, message: "Portaltag-Push gesendet", isPortaltag: heute });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Status-Endpoint: Nächster Portaltag
+  app.get("/api/portaltage-status", (_req, res) => {
+    const heute = isPortaltag();
+    res.json({ success: true, isPortaltagHeute: heute });
   });
 
   server.listen(port, () => {
