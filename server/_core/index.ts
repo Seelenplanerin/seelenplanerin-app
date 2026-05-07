@@ -16,6 +16,7 @@ import multer from "multer";
 import { storagePut, storageGetUploadUrl } from "../storage";
 import { runMigrations } from "../db-migrate";
 import seelenjournalRoutes from "../seelenjournal-routes";
+import { startDailyPushCron, sendDailyImpulsPush } from "../daily-push";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -531,8 +532,20 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
+  // Manueller Trigger für Tagesimpuls-Push (zum Testen)
+  app.post("/api/send-daily-impuls", async (_req, res) => {
+    try {
+      await sendDailyImpulsPush();
+      res.json({ success: true, message: "Tagesimpuls-Push gesendet" });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   server.listen(port, () => {
     console.log(`[api] server listening on port ${port}`);
+    // Starte den täglichen Push-Cron-Job
+    startDailyPushCron();
   });
 }
 
