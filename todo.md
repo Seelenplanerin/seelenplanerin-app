@@ -716,7 +716,9 @@
 - [x] Auf GitHub gepusht (Render auto-deploy)
 
 ## Feature: Tägliche Push-Benachrichtigung um 7:00 Uhr mit Tagesimpuls (Mai 2026)
-- [ ] Tagesimpuls-Logik auf dem Server verstehen (woher kommen die Impulse?)
-- [ ] Server-seitigen Cron-Job für 7:00 Uhr morgens einrichten
-- [ ] Push-Nachricht mit aktuellem Tagesimpuls an alle registrierten Geräte senden
-- [ ] Auf GitHub pushen (Render auto-deploy)
+- [x] Tagesimpuls-Logik auf dem Server verstehen (30 Impulse, Rotation nach Datum)
+- [x] Server-seitigen Cron-Job für 7:00 Uhr morgens (Europe/Berlin) eingerichtet
+- [x] Push-Nachricht mit aktuellem Tagesimpuls an alle registrierten Geräte senden
+- [x] Manueller Trigger-Endpoint: POST /api/send-daily-impuls (zum Testen)
+- [x] Ungültige Tokens werden automatisch deaktiviert
+- [x] Auf GitHub gepusht (Render auto-deploy)
