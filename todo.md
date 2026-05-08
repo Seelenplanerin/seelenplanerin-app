@@ -730,3 +730,7 @@
 - [x] Manueller Trigger: POST /api/send-portaltag-push
 - [x] Status-Endpoint: GET /api/portaltage-status
 - [x] Auf GitHub gepusht (Render auto-deploy)
+
+## Fix: Google Play Store AAB Upload (Mai 2026)
+- [ ] Korrekten EAS Build für Android (.aab) erstellen
+- [ ] AAB erfolgreich in Google Play Console hochladen
