@@ -119,6 +119,12 @@ export async function sendPortaltagPush(): Promise<void> {
 
     console.log(`[portaltage] Tipp: "${tipp.substring(0, 50)}..." → ${tokens.length} Geräte`);
 
+    // Auch an Web-Push-Subscriber senden
+    const { sendWebPushToAll } = await import("./web-push");
+    sendWebPushToAll({ title, body, data: { type: "portaltag" } })
+      .then(r => console.log(`[portaltage] Web-Push: ${r.sent} gesendet, ${r.failed} fehlgeschlagen`))
+      .catch(e => console.error("[portaltage] Web-Push Fehler:", e));
+
     // In DB speichern
     const messageId = await createPushMessage({
       title,

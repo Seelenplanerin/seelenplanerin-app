@@ -473,6 +473,49 @@ async function startServer() {
   // Seelenjournal REST API (separates JWT-System)
   app.use("/api/seelenjournal", seelenjournalRoutes);
 
+  // Web Push Subscription Endpunkt
+  app.post("/api/web-push/subscribe", express.json(), async (req, res) => {
+    try {
+      const { subscription } = req.body;
+      if (!subscription || !subscription.endpoint) {
+        return res.status(400).json({ success: false, error: "Keine Subscription angegeben" });
+      }
+      const { saveWebPushSubscription } = await import("../db");
+      await saveWebPushSubscription(subscription.endpoint, JSON.stringify(subscription));
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[WebPush] Subscribe-Fehler:", error.message);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Web Push: Nachricht an alle senden (nur Admin)
+  app.post("/api/web-push/send", express.json(), async (req, res) => {
+    try {
+      const { title, body } = req.body;
+      if (!title || !body) {
+        return res.status(400).json({ success: false, error: "Titel und Text erforderlich" });
+      }
+      const { sendWebPushToAll } = await import("../web-push");
+      const result = await sendWebPushToAll({ title, body });
+      res.json({ success: true, ...result });
+    } catch (error: any) {
+      console.error("[WebPush] Send-Fehler:", error.message);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Web Push: Anzahl aktiver Subscriptions
+  app.get("/api/web-push/count", async (_req, res) => {
+    try {
+      const { getWebPushSubscriptionCount } = await import("../db");
+      const count = await getWebPushSubscriptionCount();
+      res.json({ success: true, count });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({

@@ -749,3 +749,12 @@
 - [x] Content-Datenstruktur: 28 Tage mit allen Sektionen (Platzhalter-Content zum Befüllen)
 - [x] Offline-Fähigkeit: Content lokal cachen nach erstem Laden
 - [x] Design: Mystisch-winterliches Theme für den Raunächte-Bereich
+
+## Feature: PWA + Web Push für Android (Mai 2026)
+- [x] PWA-Manifest einrichten (Homescreen-Installation auf Android)
+- [x] Service Worker für Offline-Caching und Push-Empfang
+- [x] Web Push API: VAPID Keys generieren
+- [x] Web Push: Subscription-Endpunkt im Server
+- [x] Web Push: Nutzerinnen können Push-Benachrichtigungen aktivieren
+- [x] Web Push in bestehende Cron-Logik integrieren (tägliche Push + Raunächte)
+- [x] PWA-Installationshinweis für Android-Nutzerinnen anzeigen

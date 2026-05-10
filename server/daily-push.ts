@@ -6,6 +6,7 @@
 
 import { getAllActivePushTokens, createPushMessage, updatePushMessage, deactivatePushToken } from "./db";
 import { sendPortaltagPush } from "./portaltage";
+import { sendWebPushToAll } from "./web-push";
 
 // Die gleichen Impulse wie in der App (app/(tabs)/index.tsx)
 const IMPULSE = [
@@ -66,6 +67,11 @@ export async function sendDailyImpulsPush(): Promise<void> {
 
     const impuls = getTagesimpuls();
     console.log(`[daily-push] Tagesimpuls: "${impuls.substring(0, 50)}..." → ${tokens.length} Geräte`);
+
+    // Auch an Web-Push-Subscriber senden
+    sendWebPushToAll({ title: "✨ Dein Tagesimpuls", body: impuls, data: { type: "tagesimpuls" } })
+      .then(r => console.log(`[daily-push] Web-Push: ${r.sent} gesendet, ${r.failed} fehlgeschlagen`))
+      .catch(e => console.error("[daily-push] Web-Push Fehler:", e));
 
     // Push-Nachricht in DB speichern
     const messageId = await createPushMessage({
@@ -184,6 +190,11 @@ async function sendRaunaechteAbendPush(): Promise<void> {
     const thema = themen[raunaechteTag - 1] || "Raunächte";
     const title = `🕯️ Raunacht ${raunaechteTag}: ${thema}`;
     const body = "Deine heutige Raunacht-Begleitung wartet auf dich. Nimm dir Zeit für dein Ritual.";
+
+    // Auch an Web-Push-Subscriber senden
+    sendWebPushToAll({ title, body, data: { type: "raunaechte", day: raunaechteTag } })
+      .then(r => console.log(`[raunaechte-push] Web-Push: ${r.sent} gesendet, ${r.failed} fehlgeschlagen`))
+      .catch(e => console.error("[raunaechte-push] Web-Push Fehler:", e));
 
     const messageId = await createPushMessage({
       title,

@@ -218,3 +218,16 @@ export const raunaechteCode = mysqlTable("raunaechte_codes", {
 });
 export type RaunaechteCode = typeof raunaechteCode.$inferSelect;
 export type InsertRaunaechteCode = typeof raunaechteCode.$inferInsert;
+
+// ── Web Push Subscriptions ──
+
+export const webPushSubscriptions = mysqlTable("web_push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  endpoint: varchar("endpoint", { length: 512 }).notNull().unique(),
+  subscription: text("subscription").notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull().onUpdateNow(),
+});
+export type WebPushSub = typeof webPushSubscriptions.$inferSelect;
+export type InsertWebPushSub = typeof webPushSubscriptions.$inferInsert;

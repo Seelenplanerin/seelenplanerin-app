@@ -407,3 +407,28 @@ export async function getRaunaechteCodeStats(year: number) {
     return { total, activated, available, deactivated };
   });
 }
+
+// ── Web Push Subscriptions ──
+
+import { webPushSubscriptions } from "../drizzle/schema";
+
+export async function getAllWebPushSubscriptions() {
+  const conn = await getDb();
+  return conn.select().from(webPushSubscriptions).where(eq(webPushSubscriptions.isActive, 1));
+}
+
+export async function saveWebPushSubscription(endpoint: string, subscription: string): Promise<void> {
+  const conn = await getDb();
+  await conn.insert(webPushSubscriptions).values({ endpoint, subscription }).onDuplicateKeyUpdate({ set: { subscription, isActive: 1 } });
+}
+
+export async function deactivateWebPushSubscription(id: number): Promise<void> {
+  const conn = await getDb();
+  await conn.update(webPushSubscriptions).set({ isActive: 0 }).where(eq(webPushSubscriptions.id, id));
+}
+
+export async function getWebPushSubscriptionCount(): Promise<number> {
+  const conn = await getDb();
+  const result = await conn.select({ count: sql<number>`COUNT(*)` }).from(webPushSubscriptions).where(eq(webPushSubscriptions.isActive, 1));
+  return result[0]?.count ?? 0;
+}
