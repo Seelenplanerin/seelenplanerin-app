@@ -758,3 +758,7 @@
 - [x] Web Push: Nutzerinnen können Push-Benachrichtigungen aktivieren
 - [x] Web Push in bestehende Cron-Logik integrieren (tägliche Push + Raunächte)
 - [x] PWA-Installationshinweis für Android-Nutzerinnen anzeigen
+
+## Offene Probleme (Mai 2026)
+- [ ] Custom Domain app.dieseelenplanerin.de einrichten (SSL + DNS)
+- [ ] Raunächte-Tab in iOS-App sichtbar machen (OTA-Update Problem)
