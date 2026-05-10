@@ -204,3 +204,17 @@ export const academyWaitlist = mysqlTable("academy_waitlist", {
 });
 export type AcademyWaitlist = typeof academyWaitlist.$inferSelect;
 export type InsertAcademyWaitlist = typeof academyWaitlist.$inferInsert;
+
+// ── Raunächte Zugangscodes ──
+
+export const raunaechteCode = mysqlTable("raunaechte_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 16 }).notNull().unique(),
+  deviceId: varchar("deviceId", { length: 255 }),
+  year: int("year").notNull(),
+  isActive: int("isActive").default(1).notNull(),
+  activatedAt: timestamp("activatedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type RaunaechteCode = typeof raunaechteCode.$inferSelect;
+export type InsertRaunaechteCode = typeof raunaechteCode.$inferInsert;

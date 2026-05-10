@@ -140,7 +140,7 @@ const KAT_OPTIONS: { key: Song["kategorie"]; label: string }[] = [
   { key: "meditation", label: "Meditation" },
 ];
 
-type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "academy" | "qa" | "einstellungen";
+type AdminTab = "mitglieder" | "musik" | "meditationen" | "impulse" | "nachrichten" | "push" | "academy" | "qa" | "raunaechte" | "einstellungen";
 
 interface QAFrage {
   id: string;
@@ -159,6 +159,138 @@ async function saveQAFragen(fragen: QAFrage[]) {
   await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
 }
 
+
+// ═══════ Raunächte Admin Komponente ═══════
+function RaunaechteAdmin() {
+  const [codes, setCodes] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [generating, setGenerating] = React.useState(false);
+  const [count, setCount] = React.useState("10");
+  const [newCodes, setNewCodes] = React.useState<string[]>([]);
+  const year = new Date().getMonth() >= 9 ? new Date().getFullYear() : new Date().getFullYear() - 1;
+
+  const loadCodes = async () => {
+    setLoading(true);
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/trpc/raunaechte.listCodes?input=${encodeURIComponent(JSON.stringify({ json: { year } }))}`);
+      const result = await res.json();
+      setCodes(result?.result?.data?.json || []);
+    } catch (e) {
+      console.error("Fehler beim Laden:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateCodes = async () => {
+    setGenerating(true);
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/trpc/raunaechte.generateCodes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ json: { count: parseInt(count) || 10, year } }),
+      });
+      const result = await res.json();
+      const generated = result?.result?.data?.json?.codes || [];
+      setNewCodes(generated);
+      loadCodes();
+    } catch (e) {
+      Alert.alert("Fehler", "Codes konnten nicht generiert werden.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  React.useEffect(() => { loadCodes(); }, []);
+
+  const activeCount = codes.filter((c: any) => c.isActive && c.activatedAt).length;
+  const unusedCount = codes.filter((c: any) => c.isActive && !c.activatedAt).length;
+  const totalCount = codes.length;
+
+  return (
+    <View style={{ marginTop: 16 }}>
+      {/* Statistiken */}
+      <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
+        <View style={{ flex: 1, backgroundColor: C.goldLight, borderRadius: 12, padding: 12, alignItems: "center" }}>
+          <Text style={{ fontSize: 20, fontWeight: "700", color: C.gold }}>{totalCount}</Text>
+          <Text style={{ fontSize: 11, color: C.muted }}>Gesamt</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: "#E8F5E9", borderRadius: 12, padding: 12, alignItems: "center" }}>
+          <Text style={{ fontSize: 20, fontWeight: "700", color: "#4CAF50" }}>{activeCount}</Text>
+          <Text style={{ fontSize: 11, color: C.muted }}>Aktiviert</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: C.roseLight, borderRadius: 12, padding: 12, alignItems: "center" }}>
+          <Text style={{ fontSize: 20, fontWeight: "700", color: C.rose }}>{unusedCount}</Text>
+          <Text style={{ fontSize: 11, color: C.muted }}>Verfügbar</Text>
+        </View>
+      </View>
+
+      {/* Codes generieren */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
+        <TextInput
+          style={{ flex: 1, backgroundColor: C.surface, borderRadius: 10, padding: 12, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border }}
+          value={count}
+          onChangeText={setCount}
+          keyboardType="number-pad"
+          placeholder="Anzahl"
+          placeholderTextColor={C.muted}
+        />
+        <TouchableOpacity
+          style={{ backgroundColor: C.gold, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, opacity: generating ? 0.6 : 1 }}
+          onPress={generateCodes}
+          disabled={generating}
+          activeOpacity={0.8}
+        >
+          <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
+            {generating ? "..." : "Generieren"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Neu generierte Codes */}
+      {newCodes.length > 0 && (
+        <View style={{ backgroundColor: C.goldLight, borderRadius: 12, padding: 16, marginBottom: 16 }}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: C.gold, marginBottom: 8 }}>
+            Neue Codes ({newCodes.length}):
+          </Text>
+          {newCodes.map((code, i) => (
+            <Text key={i} style={{ fontSize: 13, color: C.brown, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace", marginBottom: 4 }}>
+              {code}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {/* Code-Liste */}
+      {loading ? (
+        <ActivityIndicator color={C.gold} />
+      ) : (
+        <View style={{ gap: 8 }}>
+          {codes.slice(0, 20).map((c: any, i: number) => (
+            <View key={i} style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: C.border }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>
+                  {c.code}
+                </Text>
+                <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
+                  {c.activatedAt ? `Aktiviert: ${new Date(c.activatedAt).toLocaleDateString("de-DE")}` : "Noch nicht aktiviert"}
+                </Text>
+              </View>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c.activatedAt ? "#4CAF50" : c.isActive ? C.gold : "#ccc" }} />
+            </View>
+          ))}
+          {codes.length > 20 && (
+            <Text style={{ fontSize: 12, color: C.muted, textAlign: "center", marginTop: 8 }}>
+              ... und {codes.length - 20} weitere Codes
+            </Text>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -688,6 +820,7 @@ export default function AdminScreen() {
     { key: "push", label: "Push", emoji: "📲" },
     { key: "academy", label: "Academy", emoji: "🎓" },
     { key: "qa", label: "Q&A", emoji: "🌙" },
+    { key: "raunaechte", label: "Raunächte", emoji: "🕯️" },
     { key: "einstellungen", label: "Einstellungen", emoji: "⚙️" },
   ];
 
@@ -1792,6 +1925,19 @@ export default function AdminScreen() {
                     <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 4 }}>Sobald jemand eine Frage stellt, erscheint sie hier.</Text>
                   </View>
                 )}
+              </View>
+            </>
+          )}
+
+          {/* ═══════ RAUNÄCHTE TAB ═══════ */}
+          {activeTab === "raunaechte" && (
+            <>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🕯️ Raunächte-Codes verwalten</Text>
+                <Text style={s.sectionHint}>
+                  Generiere Zugangscodes für deine Raunächte-Begleitung. Jeder Code kann nur auf einem Gerät aktiviert werden.
+                </Text>
+                <RaunaechteAdmin />
               </View>
             </>
           )}

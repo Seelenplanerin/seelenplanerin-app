@@ -146,9 +146,94 @@ export async function sendDailyImpulsPush(): Promise<void> {
  *   → Abends, damit die Nutzerin den Tag bewusst reflektieren kann
  *   → Passt zur Abend-Meditation / Journaling-Routine
  */
+/**
+ * Sendet Raunächte-Push-Benachrichtigung (10. Dez – 6. Jan)
+ * Jeden Abend um 19:00 während der Raunächte-Zeit
+ */
+async function sendRaunaechteAbendPush(): Promise<void> {
+  const now = new Date();
+  const berlinTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
+  const month = berlinTime.getMonth(); // 0-11
+  const day = berlinTime.getDate();
+
+  // Nur während der Raunächte-Zeit senden (10. Dez – 6. Jan)
+  const isRaunaechteZeit = (month === 11 && day >= 10) || (month === 0 && day <= 6);
+  if (!isRaunaechteZeit) return;
+
+  console.log("[raunaechte-push] Sende Raunächte-Abend-Push...");
+  try {
+    const tokens = await getAllActivePushTokens();
+    if (!tokens || tokens.length === 0) return;
+
+    // Berechne welcher Raunächte-Tag es ist
+    let raunaechteTag = 0;
+    if (month === 11) raunaechteTag = day - 9; // 10. Dez = Tag 1
+    else raunaechteTag = 22 + day; // 1. Jan = Tag 23
+
+    const themen = [
+      "Ankunft & Einkehr", "Stille & Innenschau", "Loslassen", "Dankbarkeit",
+      "Ahnen & Wurzeln", "Träume & Visionen", "Reinigung", "Selbstliebe",
+      "Intuition", "Vergebung", "Inneres Kind", "Transformation",
+      "Wintersonnenwende", "Wiedergeburt des Lichts", "Heilung",
+      "Fülle & Manifestation", "Verbindung", "Weibliche Kraft",
+      "Mut & Stärke", "Kreativität", "Freiheit", "Vertrauen",
+      "Klarheit", "Schutz", "Neuanfang", "Lebensfreude",
+      "Seelenplan", "Integration & Abschluss",
+    ];
+
+    const thema = themen[raunaechteTag - 1] || "Raunächte";
+    const title = `🕯️ Raunacht ${raunaechteTag}: ${thema}`;
+    const body = "Deine heutige Raunacht-Begleitung wartet auf dich. Nimm dir Zeit für dein Ritual.";
+
+    const messageId = await createPushMessage({
+      title,
+      body,
+      data: JSON.stringify({ type: "raunaechte", day: raunaechteTag }),
+    });
+
+    const tokenStrings = tokens.map((t: any) => t.token);
+    const messages = tokenStrings.map((token: string) => ({
+      to: token,
+      sound: "default" as const,
+      title,
+      body,
+      data: { type: "raunaechte", day: raunaechteTag },
+    }));
+
+    // Sende in Chunks von 100
+    let sentSuccess = 0;
+    let sentFailed = 0;
+    for (let i = 0; i < messages.length; i += 100) {
+      const chunk = messages.slice(i, i + 100);
+      try {
+        const response = await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: { "Accept": "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify(chunk),
+        });
+        if (response.ok) {
+          const result = await response.json();
+          sentSuccess += (result.data || []).filter((d: any) => d.status === "ok").length;
+          sentFailed += (result.data || []).filter((d: any) => d.status !== "ok").length;
+        } else {
+          sentFailed += chunk.length;
+        }
+      } catch {
+        sentFailed += chunk.length;
+      }
+    }
+
+    await updatePushMessage(messageId, { sentSuccess, sentFailed });
+    console.log(`[raunaechte-push] Fertig: ${sentSuccess} erfolgreich, ${sentFailed} fehlgeschlagen`);
+  } catch (err) {
+    console.error("[raunaechte-push] Fehler:", err);
+  }
+}
+
 export function startDailyPushCron(): void {
   let lastImpulsDate = "";
   let lastPortaltagDate = "";
+  let lastRaunaechteDate = "";
 
   // Prüfe jede Minute
   setInterval(() => {
@@ -167,15 +252,22 @@ export function startDailyPushCron(): void {
       });
     }
 
-    // Um 19:00 Uhr: Portaltag-Push senden (nur an Portaltagen)
-    // Abends zur Reflexionszeit – perfekt für Journaling & Abend-Meditation
+    // Um 19:00 Uhr: Portaltag-Push + Raunächte-Push senden
     if (hour === 19 && minute === 0 && lastPortaltagDate !== dateStr) {
       lastPortaltagDate = dateStr;
       sendPortaltagPush().catch(err => {
         console.error("[portaltage] Fehler beim Senden:", err);
       });
     }
+
+    // Um 18:00 Uhr: Raunächte-Abend-Push (separate Zeit, damit es nicht kollidiert)
+    if (hour === 18 && minute === 0 && lastRaunaechteDate !== dateStr) {
+      lastRaunaechteDate = dateStr;
+      sendRaunaechteAbendPush().catch(err => {
+        console.error("[raunaechte-push] Fehler beim Senden:", err);
+      });
+    }
   }, 60_000); // Jede Minute prüfen
 
-  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 19:00 (Europe/Berlin)");
+  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 19:00 + Raunächte 18:00 (Europe/Berlin)");
 }

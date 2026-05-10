@@ -406,6 +406,55 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Raunächte ──
+  raunaechte: router({
+    // Code validieren (App → Server)
+    validateCode: publicProcedure
+      .input(z.object({ code: z.string().min(1), deviceId: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        return db.validateRaunaechteCode(input.code.toUpperCase().trim(), input.deviceId);
+      }),
+
+    // Codes generieren (Admin)
+    generateCodes: publicProcedure
+      .input(z.object({ count: z.number().min(1).max(100), year: z.number() }))
+      .mutation(async ({ input }) => {
+        const codes: string[] = [];
+        for (let i = 0; i < input.count; i++) {
+          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          let code = "RN-";
+          for (let j = 0; j < 4; j++) code += chars[Math.floor(Math.random() * chars.length)];
+          code += "-";
+          for (let j = 0; j < 4; j++) code += chars[Math.floor(Math.random() * chars.length)];
+          codes.push(code);
+        }
+        await db.createRaunaechteCodesBatch(codes, input.year);
+        return { success: true, codes, count: codes.length };
+      }),
+
+    // Alle Codes für ein Jahr (Admin)
+    listCodes: publicProcedure
+      .input(z.object({ year: z.number() }))
+      .query(async ({ input }) => {
+        return db.getAllRaunaechteCodesForYear(input.year);
+      }),
+
+    // Code deaktivieren (Admin)
+    deactivateCode: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deactivateRaunaechteCode(input.id);
+        return { success: true };
+      }),
+
+    // Statistiken (Admin)
+    stats: publicProcedure
+      .input(z.object({ year: z.number() }))
+      .query(async ({ input }) => {
+        return db.getRaunaechteCodeStats(input.year);
+      }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

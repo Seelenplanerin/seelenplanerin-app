@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `raunaechte_codes` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `code` varchar(16) NOT NULL,\n  `deviceId` varchar(255),\n  `year` int NOT NULL,\n  `isActive` int NOT NULL DEFAULT 1,\n  `activatedAt` timestamp,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `raunaechte_codes_id` PRIMARY KEY(`id`),\n  CONSTRAINT `raunaechte_codes_code_unique` UNIQUE(`code`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute CREATE TABLE IF NOT EXISTS `raunaechte_codes` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `code` varchar(16) NOT NULL,\n  `deviceId` varchar(255),\n  `year` int NOT NULL,\n  `isActive` int NOT NULL DEFAULT 1,\n  `activatedAt` timestamp,\n  `createdAt` timestamp NOT NULL DEFAULT (now()),\n  CONSTRAINT `raunaechte_codes_id` PRIMARY KEY(`id`),\n  CONSTRAINT `raunaechte_codes_code_unique` UNIQUE(`code`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 533
+}

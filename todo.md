@@ -734,3 +734,18 @@
 ## Fix: Google Play Store AAB Upload (Mai 2026)
 - [ ] Korrekten EAS Build für Android (.aab) erstellen
 - [ ] AAB erfolgreich in Google Play Console hochladen
+
+## Feature: Raunächte Premium-Bereich (Mai 2026)
+- [x] Neuer Tab "Raunächte" in der Tab-Bar (mit Stern/Schneeflocke-Icon)
+- [x] Zugangscode-System: Individueller Code pro Käuferin, Geräte-Bindung
+- [x] Zugangscode-Eingabe-Screen (Lock-Screen vor dem Content)
+- [x] Admin: Zugangscodes generieren und verwalten
+- [x] Adventskalender-Logik: Tägliche Freischaltung (10. Dez – 6. Jan = 28 Tage)
+- [x] Tages-Übersicht: Kalender/Grid mit 28 Tagen + Fortschritts-Tracker
+- [x] Tages-Content-Screen mit Sektionen: Impuls, Meditation, Ritual, Journal, Klang, Rune, Affirmation
+- [x] Journal-Funktion: Direkt in der App schreiben (pro Tag eine Reflexionsfrage)
+- [x] Portaltage-Integration: Extra-Markierung und Bonus-Content an Portaltagen
+- [x] Push-Nachrichten: Tägliche Erinnerung während der Raunächte (19:00 Uhr)
+- [x] Content-Datenstruktur: 28 Tage mit allen Sektionen (Platzhalter-Content zum Befüllen)
+- [x] Offline-Fähigkeit: Content lokal cachen nach erstem Laden
+- [x] Design: Mystisch-winterliches Theme für den Raunächte-Bereich

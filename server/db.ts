@@ -338,3 +338,72 @@ export async function getAcademyWaitlist() {
     return db.select().from(academyWaitlist).orderBy(desc(academyWaitlist.createdAt));
   });
 }
+
+// ── Raunächte Zugangscodes ──
+import { raunaechteCode, InsertRaunaechteCode } from "../drizzle/schema";
+
+export async function createRaunaechteCode(code: string, year: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const result = await db.insert(raunaechteCode).values({ code, year });
+    return result[0].insertId;
+  });
+}
+
+export async function createRaunaechteCodesBatch(codes: string[], year: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const values = codes.map(code => ({ code, year }));
+    await db.insert(raunaechteCode).values(values);
+    return codes.length;
+  });
+}
+
+export async function validateRaunaechteCode(code: string, deviceId: string) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const results = await db.select().from(raunaechteCode).where(eq(raunaechteCode.code, code));
+    if (results.length === 0) return { valid: false, error: "Code nicht gefunden" };
+    const entry = results[0];
+    if (!entry.isActive) return { valid: false, error: "Code ist deaktiviert" };
+    // Prüfe Geräte-Bindung
+    if (entry.deviceId && entry.deviceId !== deviceId) {
+      return { valid: false, error: "Code ist bereits auf einem anderen Gerät aktiviert" };
+    }
+    // Aktiviere den Code auf diesem Gerät
+    if (!entry.deviceId) {
+      await db.update(raunaechteCode)
+        .set({ deviceId, activatedAt: new Date() })
+        .where(eq(raunaechteCode.id, entry.id));
+    }
+    return { valid: true, year: entry.year };
+  });
+}
+
+export async function getAllRaunaechteCodesForYear(year: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(raunaechteCode)
+      .where(eq(raunaechteCode.year, year))
+      .orderBy(desc(raunaechteCode.createdAt));
+  });
+}
+
+export async function deactivateRaunaechteCode(id: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.update(raunaechteCode).set({ isActive: 0 }).where(eq(raunaechteCode.id, id));
+  });
+}
+
+export async function getRaunaechteCodeStats(year: number) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const all = await db.select().from(raunaechteCode).where(eq(raunaechteCode.year, year));
+    const total = all.length;
+    const activated = all.filter((c: any) => c.deviceId !== null).length;
+    const available = all.filter((c: any) => c.deviceId === null && c.isActive === 1).length;
+    const deactivated = all.filter((c: any) => c.isActive === 0).length;
+    return { total, activated, available, deactivated };
+  });
+}

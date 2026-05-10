@@ -53,6 +53,8 @@ const MAPPING: IconMapping = {
   "crown.fill": "workspace-premium",
   "sparkle": "auto-awesome",
   "storefront.fill": "storefront",
+  "snowflake": "ac-unit",
+  "star.circle.fill": "stars",
 };
 
 /**
