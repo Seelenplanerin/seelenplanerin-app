@@ -68,7 +68,7 @@ export default function TabLayout() {
         name="raunaechte"
         options={{
           title: "Raunächte",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="snowflake" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen

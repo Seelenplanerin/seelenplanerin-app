@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Dimensions, Alert, Platform, ActivityIndicator,
+  StyleSheet, Dimensions, Platform, ActivityIndicator, Linking,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -17,19 +17,23 @@ import { getApiBaseUrl } from "@/constants/oauth";
 
 const { width } = Dimensions.get("window");
 
-// Raunächte Farbschema (mystisch-dunkel)
+// Helles Farbschema – passend zum Rest der App
 const RN = {
-  bg: "#1A1425",
-  surface: "#2A2035",
-  primary: "#C9A96E",
-  text: "#F5EDE8",
-  muted: "#9B8A9E",
-  border: "#3D2F4A",
-  accent: "#7B5EA7",
-  locked: "#4A3D5A",
+  bg: "#FDF8F4",
+  surface: "#FFF0EB",
+  primary: "#C4826A",
+  text: "#3D2B1F",
+  muted: "#9C7B6E",
+  border: "#EDD9D0",
+  accent: "#B5675A",
+  locked: "#E0D0C8",
   gold: "#C9A96E",
   rose: "#C4826A",
+  blush: "#F2C4B8",
+  white: "#FFFFFF",
 };
+
+const SHOP_URL = "https://dieseelenplanerin.de/rauhnaechte";
 
 export default function RaunaechteScreen() {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
@@ -65,7 +69,6 @@ export default function RaunaechteScreen() {
     try {
       const deviceId = await getDeviceId();
       const baseUrl = getApiBaseUrl();
-      // Verwende tRPC-Route direkt
       const response = await fetch(`${baseUrl}/api/trpc/raunaechte.validateCode`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,6 +96,11 @@ export default function RaunaechteScreen() {
     if (!isDayUnlocked(day, currentDay)) return;
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push({ pathname: "/raunaechte-tag", params: { day: day.toString(), year: year.toString() } });
+  };
+
+  const openShop = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Linking.openURL(SHOP_URL);
   };
 
   // Loading state
@@ -139,7 +147,7 @@ export default function RaunaechteScreen() {
                 value={code}
                 onChangeText={setCode}
                 placeholder="RN-XXXX-XXXX"
-                placeholderTextColor={RN.muted}
+                placeholderTextColor={RN.locked}
                 autoCapitalize="characters"
                 autoCorrect={false}
                 returnKeyType="done"
@@ -153,17 +161,27 @@ export default function RaunaechteScreen() {
                 activeOpacity={0.8}
               >
                 {loading ? (
-                  <ActivityIndicator color={RN.bg} size="small" />
+                  <ActivityIndicator color={RN.white} size="small" />
                 ) : (
                   <Text style={styles.codeButtonText}>Code einlösen</Text>
                 )}
               </TouchableOpacity>
             </View>
 
-            {/* Hinweis */}
-            <Text style={styles.lockHint}>
-              Noch keinen Code? Besuche dieseelenplanerin.de für mehr Infos.
-            </Text>
+            {/* Shop-Link */}
+            <View style={styles.shopSection}>
+              <Text style={styles.shopText}>
+                Noch keinen Code? Sichere dir jetzt deine 28-Tage-Begleitung:
+              </Text>
+              <TouchableOpacity
+                style={styles.shopButton}
+                onPress={openShop}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.shopButtonText}>Jetzt dabei sein – 11,11 € →</Text>
+              </TouchableOpacity>
+              <Text style={styles.shopHint}>Einmalige Zahlung · Kein Abo · Zugang über die App</Text>
+            </View>
           </ScrollView>
         </ScreenContainer>
       </View>
@@ -227,7 +245,7 @@ export default function RaunaechteScreen() {
                     activeOpacity={0.7}
                   >
                     {!unlocked ? (
-                      <IconSymbol name="lock.fill" size={14} color={RN.muted} />
+                      <IconSymbol name="lock.fill" size={14} color={RN.locked} />
                     ) : completed ? (
                       <IconSymbol name="checkmark" size={14} color={RN.gold} />
                     ) : (
@@ -254,13 +272,24 @@ export default function RaunaechteScreen() {
               <Text style={styles.legendText}>Abgeschlossen</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: RN.accent }]} />
+              <View style={[styles.legendDot, { backgroundColor: RN.rose }]} />
               <Text style={styles.legendText}>Portaltag</Text>
             </View>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: RN.locked }]} />
               <Text style={styles.legendText}>Gesperrt</Text>
             </View>
+          </View>
+
+          {/* Shop-Link unten */}
+          <View style={styles.shopSectionBottom}>
+            <TouchableOpacity
+              style={styles.shopButtonBottom}
+              onPress={openShop}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.shopButtonBottomText}>Zum Shop – dieseelenplanerin.de →</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </ScreenContainer>
@@ -301,12 +330,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   lockCard: {
-    backgroundColor: RN.surface,
+    backgroundColor: RN.white,
     borderRadius: 20,
     padding: 24,
     marginBottom: 32,
     borderWidth: 1,
     borderColor: RN.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   lockCardTitle: {
     fontSize: 20,
@@ -339,7 +373,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   codeInput: {
-    backgroundColor: RN.surface,
+    backgroundColor: RN.white,
     borderRadius: 12,
     padding: 16,
     fontSize: 18,
@@ -351,13 +385,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   errorText: {
-    color: "#E87C82",
+    color: "#C87C82",
     fontSize: 13,
     textAlign: "center",
     marginTop: 8,
   },
   codeButton: {
-    backgroundColor: RN.gold,
+    backgroundColor: RN.rose,
     borderRadius: 12,
     padding: 16,
     marginTop: 16,
@@ -366,13 +400,45 @@ const styles = StyleSheet.create({
   codeButtonText: {
     fontSize: 16,
     fontWeight: "700",
-    color: RN.bg,
+    color: RN.white,
   },
-  lockHint: {
-    fontSize: 13,
+  // Shop Section (Lock Screen)
+  shopSection: {
+    alignItems: "center",
+    marginTop: 8,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: RN.border,
+  },
+  shopText: {
+    fontSize: 14,
     color: RN.muted,
     textAlign: "center",
     lineHeight: 20,
+    marginBottom: 16,
+  },
+  shopButton: {
+    backgroundColor: RN.gold,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  shopButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: RN.white,
+  },
+  shopHint: {
+    fontSize: 12,
+    color: RN.muted,
+    textAlign: "center",
+    marginTop: 12,
   },
   // Main Content
   mainContent: {
@@ -395,12 +461,17 @@ const styles = StyleSheet.create({
   },
   // Progress
   progressCard: {
-    backgroundColor: RN.surface,
+    backgroundColor: RN.white,
     borderRadius: 16,
     padding: 20,
     marginBottom: 28,
     borderWidth: 1,
     borderColor: RN.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   progressHeader: {
     flexDirection: "row",
@@ -420,7 +491,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 6,
-    backgroundColor: RN.locked,
+    backgroundColor: RN.blush,
     borderRadius: 3,
     overflow: "hidden",
   },
@@ -452,7 +523,7 @@ const styles = StyleSheet.create({
   dayCell: {
     width: CELL_SIZE - 4,
     height: CELL_SIZE + 8,
-    backgroundColor: RN.surface,
+    backgroundColor: RN.white,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -465,16 +536,16 @@ const styles = StyleSheet.create({
   },
   dayCellCompleted: {
     borderColor: RN.gold,
-    backgroundColor: "rgba(201, 169, 110, 0.1)",
+    backgroundColor: "rgba(201, 169, 110, 0.08)",
   },
   dayCellToday: {
     borderColor: RN.gold,
     borderWidth: 2,
-    backgroundColor: "rgba(201, 169, 110, 0.15)",
+    backgroundColor: "rgba(201, 169, 110, 0.12)",
   },
   dayCellPortaltag: {
-    borderColor: RN.accent,
-    backgroundColor: "rgba(123, 94, 167, 0.1)",
+    borderColor: RN.rose,
+    backgroundColor: "rgba(196, 130, 106, 0.08)",
   },
   dayNumber: {
     fontSize: 14,
@@ -490,7 +561,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 2,
     right: 2,
-    backgroundColor: RN.accent,
+    backgroundColor: RN.rose,
     borderRadius: 6,
     width: 12,
     height: 12,
@@ -522,5 +593,30 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 11,
     color: RN.muted,
+  },
+  // Shop Section Bottom (Main Content)
+  shopSectionBottom: {
+    marginTop: 32,
+    alignItems: "center",
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: RN.border,
+  },
+  shopButtonBottom: {
+    backgroundColor: RN.gold,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  shopButtonBottomText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: RN.white,
   },
 });

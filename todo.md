@@ -760,5 +760,11 @@
 - [x] PWA-Installationshinweis für Android-Nutzerinnen anzeigen
 
 ## Offene Probleme (Mai 2026)
-- [ ] Custom Domain app.dieseelenplanerin.de einrichten (SSL + DNS)
+- [ ] Custom Domain app.dieseelenplanerin.de einrichten (SSL + DNS) – DNS korrekt, wartet auf Plattform-Registrierung
 - [x] Raunächte-Tab in iOS-App sichtbar machen (OTA-Update Problem) – expo-updates installiert + konfiguriert, neuer Build nötig
+
+## Raunächte-Tab Anpassungen (Mai 2026)
+- [x] Tab-Icon von Schneeflocke zu Herz ändern
+- [x] Design heller machen, passend zum Rest der App (nicht so dunkel)
+- [x] Shop-Link zu https://dieseelenplanerin.de/rauhnaechte hinzugefügt (Lock-Screen + Hauptansicht)
+- [x] Shop-Verlinkung zu dieseelenplanerin.de unten eingefügt
