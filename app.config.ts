@@ -25,6 +25,14 @@ const config: ExpoConfig = {
   scheme: env.scheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  runtimeVersion: {
+    policy: "appVersion",
+  },
+  updates: {
+    url: "https://u.expo.dev/58884191-4c4b-493b-94c4-7d0c6514db64",
+    enabled: true,
+    fallbackToCacheTimeout: 0,
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,

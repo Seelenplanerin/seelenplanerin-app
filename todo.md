@@ -761,4 +761,4 @@
 
 ## Offene Probleme (Mai 2026)
 - [ ] Custom Domain app.dieseelenplanerin.de einrichten (SSL + DNS)
-- [ ] Raunächte-Tab in iOS-App sichtbar machen (OTA-Update Problem)
+- [x] Raunächte-Tab in iOS-App sichtbar machen (OTA-Update Problem) – expo-updates installiert + konfiguriert, neuer Build nötig
