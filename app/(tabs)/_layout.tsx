@@ -22,9 +22,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontWeight: "600",
-          marginTop: 2,
+          marginTop: 1,
         },
         tabBarStyle: {
           paddingTop: 8,
@@ -60,15 +60,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: "Community",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          title: "Commu...",
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="raunaechte"
         options={{
-          title: "Raunächte",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          title: "Raunacht",
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
