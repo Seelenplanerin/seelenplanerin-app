@@ -768,3 +768,7 @@
 - [x] Design heller machen, passend zum Rest der App (nicht so dunkel)
 - [x] Shop-Link zu https://dieseelenplanerin.de/rauhnaechte hinzugefügt (Lock-Screen + Hauptansicht)
 - [x] Shop-Verlinkung zu dieseelenplanerin.de unten eingefügt
+
+## Domain-Änderungen (Mai 2026)
+- [ ] Domain in Aura-Analyse PDF auf app.dieseelenplanerin.de ändern (statt Manus-URL)
+- [ ] Custom Domain für Android Web-App einrichten (nicht manus.space/render.com)
