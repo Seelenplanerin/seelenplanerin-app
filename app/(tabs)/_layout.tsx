@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Platform } from "react-native";
+import { Platform, ScrollView, View, Text, StyleSheet } from "react-native";
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 
@@ -11,8 +11,8 @@ const BORDER = "#EDD9D0";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPadding = Platform.OS === "web" ? 12 : Math.max(insets.bottom, 8);
-  const tabBarHeight = 60 + bottomPadding;
+  const bottomPadding = Platform.OS === "web" ? 8 : Math.max(insets.bottom, 8);
+  const tabBarHeight = 56 + bottomPadding;
 
   return (
     <Tabs
@@ -21,13 +21,14 @@ export default function TabLayout() {
         tabBarInactiveTintColor: MUTED,
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarItemStyle: Platform.OS === "web" ? { width: 'auto' as any, minWidth: 50, paddingHorizontal: 2 } : undefined,
         tabBarLabelStyle: {
           fontSize: 9,
           fontWeight: "600",
           marginTop: 1,
         },
         tabBarStyle: {
-          paddingTop: 8,
+          paddingTop: 6,
           paddingBottom: bottomPadding,
           height: tabBarHeight,
           backgroundColor: BG,
@@ -40,27 +41,20 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Aktuelles",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="mond"
         options={{
           title: "Mond",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="rituale"
         options={{
           title: "Rituale",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: "Commu...",
           tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
@@ -72,17 +66,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="community"
+        options={{
+          title: "Community",
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="shop"
         options={{
           title: "Shop",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="ich"
         options={{
           title: "Ich",
-          tabBarIcon: ({ color }) => <IconSymbol size={22} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
       {/* Versteckte Screens – nicht in Tab-Bar */}

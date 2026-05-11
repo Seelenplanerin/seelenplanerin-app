@@ -14,6 +14,9 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files
 COPY . .
 
+# Build web app (Expo static export)
+RUN npx expo export --platform web --output-dir web-dist
+
 # Build server bundle into server-dist/ to avoid overwriting web-dist/ or dist/
 RUN pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=server-dist
 
