@@ -778,3 +778,4 @@
 - [x] Dockerfile aktualisiert: baut web-dist automatisch bei jedem Deploy (npx expo export)
 - [x] Alle 7 Tabs sichtbar auf mobilem Viewport (Tab-Items kompakter)
 - [x] Push zu GitHub für Render-Redeploy
+- [x] Community-Tab umbenennen: "Commu..." → "Inner Circle"

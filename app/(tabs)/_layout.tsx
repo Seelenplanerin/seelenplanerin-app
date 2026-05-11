@@ -68,7 +68,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="community"
         options={{
-          title: "Community",
+          title: "Inner Circle",
           tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />
