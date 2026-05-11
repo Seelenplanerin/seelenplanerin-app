@@ -772,3 +772,9 @@
 ## Domain-Änderungen (Mai 2026)
 - [ ] Domain in Aura-Analyse PDF auf app.dieseelenplanerin.de ändern (statt Manus-URL)
 - [ ] Custom Domain für Android Web-App einrichten (nicht manus.space/render.com)
+
+## Web-Deployment Fix (Mai 2026)
+- [x] web-dist neu gebaut mit Raunächte-Tab (fehlte komplett im statischen Build)
+- [x] Dockerfile aktualisiert: baut web-dist automatisch bei jedem Deploy (npx expo export)
+- [x] Alle 7 Tabs sichtbar auf mobilem Viewport (Tab-Items kompakter)
+- [x] Push zu GitHub für Render-Redeploy
