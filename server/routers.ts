@@ -239,8 +239,30 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         const tokens = await db.getAllActivePushTokens();
+        
+        // Auch Web-Push an Android PWA-Nutzerinnen senden
+        let webPushSent = 0;
+        let webPushFailed = 0;
+        try {
+          const { sendWebPushToAll } = await import("./web-push");
+          const webResult = await sendWebPushToAll({
+            title: input.title,
+            body: input.body,
+            data: input.data ? JSON.parse(input.data) : { url: "/" },
+          });
+          webPushSent = webResult.sent;
+          webPushFailed = webResult.failed;
+        } catch (e) {
+          console.error("[Push] Web-Push Fehler:", e);
+        }
+
+        if (tokens.length === 0 && webPushSent === 0) {
+          return { success: false, sent: 0, failed: 0, error: "Keine registrierten Ger\u00e4te vorhanden." };
+        }
+        
+        // Wenn keine Expo-Tokens aber Web-Push erfolgreich
         if (tokens.length === 0) {
-          return { success: false, sent: 0, failed: 0, error: "Keine registrierten Geräte vorhanden." };
+          return { success: true, sent: webPushSent, failed: webPushFailed, total: webPushSent + webPushFailed };
         }
 
         // Nachricht in Historie speichern
@@ -303,9 +325,9 @@ export const appRouter = router({
         }
 
         // Historie aktualisieren
-        await db.updatePushMessage(messageId, { sentSuccess, sentFailed });
+        await db.updatePushMessage(messageId, { sentSuccess: sentSuccess + webPushSent, sentFailed: sentFailed + webPushFailed });
 
-        return { success: true, sent: sentSuccess, failed: sentFailed, total: tokens.length };
+        return { success: true, sent: sentSuccess + webPushSent, failed: sentFailed + webPushFailed, total: tokens.length + webPushSent + webPushFailed };
       }),
 
     // Nachrichten-Historie (Admin)

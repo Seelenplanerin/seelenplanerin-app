@@ -43,6 +43,11 @@ export function initNotificationHandler() {
         shouldShowList: true,
       }),
     });
+    // Response-Listener: Wenn Nutzerin auf die Notification tippt
+    N.addNotificationResponseReceivedListener((_response) => {
+      // App wird automatisch geöffnet/fokussiert durch Expo
+      // Keine weitere Navigation nötig – App öffnet sich auf dem letzten Screen
+    });
   });
 }
 
