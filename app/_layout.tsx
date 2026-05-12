@@ -24,6 +24,7 @@ import { FavoritesProvider } from "@/lib/favorites-store";
 import { initNotificationHandler, setupAndroidChannel, registerPushTokenWithServer } from "@/lib/notifications";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter, useSegments } from "expo-router";
+import { WebPushPrompt } from "@/components/web-push-prompt";
 
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
@@ -151,6 +152,7 @@ export default function RootLayout() {
             <Stack.Screen name="impressum" options={{ presentation: "card" }} />
           </Stack>
           <StatusBar style="auto" />
+          <WebPushPrompt />
           </FavoritesProvider>
         </QueryClientProvider>
       </trpc.Provider>

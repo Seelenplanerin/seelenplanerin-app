@@ -784,3 +784,4 @@
 - [x] Web Push API Integration für PWA (Service Worker + Push-Subscription)
 - [x] "Benachrichtigungen aktivieren" Button in der Web-App
 - [x] Push-Subscription an Server senden und speichern
+- [x] Push-Benachrichtigungs-Popup beim ersten Öffnen der Web-App (einmalig)
