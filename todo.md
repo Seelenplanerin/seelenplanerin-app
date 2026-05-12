@@ -781,6 +781,6 @@
 - [x] Community-Tab umbenennen: "Commu..." → "Inner Circle"
 
 ## Push-Benachrichtigungen für Android PWA (Mai 2026)
-- [ ] Web Push API Integration für PWA (Service Worker + Push-Subscription)
-- [ ] "Benachrichtigungen aktivieren" Button in der Web-App
-- [ ] Push-Subscription an Server senden und speichern
+- [x] Web Push API Integration für PWA (Service Worker + Push-Subscription)
+- [x] "Benachrichtigungen aktivieren" Button in der Web-App
+- [x] Push-Subscription an Server senden und speichern
