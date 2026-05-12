@@ -44,9 +44,22 @@ export function initNotificationHandler() {
       }),
     });
     // Response-Listener: Wenn Nutzerin auf die Notification tippt
-    N.addNotificationResponseReceivedListener((_response) => {
-      // App wird automatisch geöffnet/fokussiert durch Expo
-      // Keine weitere Navigation nötig – App öffnet sich auf dem letzten Screen
+    N.addNotificationResponseReceivedListener((response) => {
+      // Nachricht-Inhalt extrahieren und zum Nachrichten-Screen navigieren
+      const notification = response.notification;
+      const title = notification.request.content.title || "Die Seelenplanerin";
+      const body = notification.request.content.body || "";
+      // Dynamischer Import von router um Circular Dependencies zu vermeiden
+      try {
+        const { router } = require("expo-router");
+        router.push({
+          pathname: "/nachrichten",
+          params: { title, body },
+        });
+      } catch (e) {
+        // Falls Router noch nicht bereit ist, ignorieren
+        console.log("[Notifications] Router nicht bereit:", e);
+      }
     });
   });
 }

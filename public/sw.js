@@ -1,12 +1,12 @@
 /**
  * Service Worker für Die Seelenplanerin PWA
  * - Push-Nachrichten empfangen und anzeigen
- * - Klick auf Notification öffnet die App
+ * - Klick auf Notification öffnet Nachrichten-Screen mit Inhalt
  * - Basis-Caching für Offline-Nutzung
- * Version: 2 (Cache-Update erzwingt neuen SW)
+ * Version: 3 (Nachrichten-Screen Integration)
  */
 
-const CACHE_NAME = "seelenplanerin-v2";
+const CACHE_NAME = "seelenplanerin-v3";
 const APP_URL = "https://www.app.dieseelenplanerin.de";
 
 // Install: Cache grundlegende Assets + sofort aktivieren
@@ -21,7 +21,6 @@ self.addEventListener("install", (event) => {
       ]);
     })
   );
-  // Sofort den neuen Service Worker aktivieren
   self.skipWaiting();
 });
 
@@ -36,13 +35,11 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
-  // Sofort alle Clients übernehmen (ohne Reload)
   self.clients.claim();
 });
 
 // Fetch: Network-first mit Cache-Fallback
 self.addEventListener("fetch", (event) => {
-  // Nur GET-Requests cachen
   if (event.request.method !== "GET") return;
 
   event.respondWith(
@@ -79,13 +76,17 @@ self.addEventListener("push", (event) => {
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [100, 50, 100],
-    // URL zum Öffnen beim Klick - vollständige URL verwenden
+    // Speichere title + body für den Klick-Handler
     data: {
-      url: data.url || data.data?.url || APP_URL,
+      title: data.title || "Die Seelenplanerin",
+      body: data.body || "",
+      url: data.url || APP_URL,
     },
     // Notification zusammenfassen wenn mehrere kommen
-    tag: "seelenplanerin-notification",
+    tag: "seelenplanerin-" + Date.now(),
     renotify: true,
+    // Notification bleibt sichtbar bis der User sie antippt
+    requireInteraction: true,
   };
 
   event.waitUntil(
@@ -93,25 +94,23 @@ self.addEventListener("push", (event) => {
   );
 });
 
-// Klick auf Push-Nachricht - App öffnen oder fokussieren
+// Klick auf Push-Nachricht - Nachrichten-Screen öffnen mit Inhalt
 self.addEventListener("notificationclick", (event) => {
-  // Notification schließen
   event.notification.close();
 
-  // Ziel-URL bestimmen (immer absolute URL)
-  let targetUrl = event.notification.data?.url || APP_URL;
-  
-  // Relative URLs in absolute umwandeln
-  if (targetUrl.startsWith("/")) {
-    targetUrl = APP_URL + targetUrl;
-  }
+  // Nachricht-Daten aus der Notification holen
+  const notifData = event.notification.data || {};
+  const title = encodeURIComponent(notifData.title || "Die Seelenplanerin");
+  const body = encodeURIComponent(notifData.body || "");
+
+  // URL zum Nachrichten-Screen mit Titel und Text als Parameter
+  const targetUrl = APP_URL + "/nachrichten?title=" + title + "&body=" + body;
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Prüfen ob die App bereits in einem Tab/Fenster offen ist
+      // Prüfen ob die App bereits offen ist
       for (const client of clientList) {
         if ("focus" in client) {
-          // App ist bereits offen - fokussieren und navigieren
           return client.focus().then((focusedClient) => {
             if (focusedClient && "navigate" in focusedClient) {
               return focusedClient.navigate(targetUrl);
@@ -120,7 +119,7 @@ self.addEventListener("notificationclick", (event) => {
           });
         }
       }
-      // App ist nicht offen - neues Fenster/Tab öffnen
+      // App nicht offen - neues Fenster öffnen
       return self.clients.openWindow(targetUrl);
     })
   );

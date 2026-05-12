@@ -785,3 +785,8 @@
 - [x] "Benachrichtigungen aktivieren" Button in der Web-App
 - [x] Push-Subscription an Server senden und speichern
 - [x] Push-Benachrichtigungs-Popup beim ersten Öffnen der Web-App (einmalig)
+
+## Notification-Klick zeigt Nachricht in der App (Mai 2026)
+- [ ] Nachrichten-Screen erstellen der Push-Inhalte anzeigt
+- [ ] Service Worker leitet Notification-Klick an Nachrichten-Screen weiter
+- [ ] Nachrichten-Verlauf speichern (letzte Nachrichten sichtbar)
