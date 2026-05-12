@@ -1,12 +1,15 @@
 /**
  * Service Worker für Die Seelenplanerin PWA
  * - Push-Nachrichten empfangen und anzeigen
+ * - Klick auf Notification öffnet die App
  * - Basis-Caching für Offline-Nutzung
+ * Version: 2 (Cache-Update erzwingt neuen SW)
  */
 
-const CACHE_NAME = "seelenplanerin-v1";
+const CACHE_NAME = "seelenplanerin-v2";
+const APP_URL = "https://www.app.dieseelenplanerin.de";
 
-// Install: Cache grundlegende Assets
+// Install: Cache grundlegende Assets + sofort aktivieren
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -18,10 +21,11 @@ self.addEventListener("install", (event) => {
       ]);
     })
   );
+  // Sofort den neuen Service Worker aktivieren
   self.skipWaiting();
 });
 
-// Activate: Alte Caches löschen
+// Activate: Alte Caches löschen + sofort übernehmen
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -32,6 +36,7 @@ self.addEventListener("activate", (event) => {
       );
     })
   );
+  // Sofort alle Clients übernehmen (ohne Reload)
   self.clients.claim();
 });
 
@@ -39,11 +44,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   // Nur GET-Requests cachen
   if (event.request.method !== "GET") return;
-  
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Erfolgreiche Antwort cachen
         if (response.status === 200) {
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -53,16 +57,15 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(() => {
-        // Bei Netzwerkfehler: aus Cache laden
         return caches.match(event.request);
       })
   );
 });
 
-// Push-Nachricht empfangen
+// Push-Nachricht empfangen und anzeigen
 self.addEventListener("push", (event) => {
   let data = { title: "Die Seelenplanerin", body: "Du hast eine neue Nachricht" };
-  
+
   if (event.data) {
     try {
       data = event.data.json();
@@ -76,10 +79,13 @@ self.addEventListener("push", (event) => {
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [100, 50, 100],
-    data: data.data || {},
-    actions: [
-      { action: "open", title: "Öffnen" },
-    ],
+    // URL zum Öffnen beim Klick - vollständige URL verwenden
+    data: {
+      url: data.url || data.data?.url || APP_URL,
+    },
+    // Notification zusammenfassen wenn mehrere kommen
+    tag: "seelenplanerin-notification",
+    renotify: true,
   };
 
   event.waitUntil(
@@ -87,23 +93,35 @@ self.addEventListener("push", (event) => {
   );
 });
 
-// Klick auf Push-Nachricht
+// Klick auf Push-Nachricht - App öffnen oder fokussieren
 self.addEventListener("notificationclick", (event) => {
+  // Notification schließen
   event.notification.close();
 
-  const urlToOpen = event.notification.data?.url || "/";
+  // Ziel-URL bestimmen (immer absolute URL)
+  let targetUrl = event.notification.data?.url || APP_URL;
+  
+  // Relative URLs in absolute umwandeln
+  if (targetUrl.startsWith("/")) {
+    targetUrl = APP_URL + targetUrl;
+  }
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Wenn die App bereits offen ist, fokussieren
+      // Prüfen ob die App bereits in einem Tab/Fenster offen ist
       for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          client.navigate(urlToOpen);
-          return client.focus();
+        if ("focus" in client) {
+          // App ist bereits offen - fokussieren und navigieren
+          return client.focus().then((focusedClient) => {
+            if (focusedClient && "navigate" in focusedClient) {
+              return focusedClient.navigate(targetUrl);
+            }
+            return focusedClient;
+          });
         }
       }
-      // Sonst neues Fenster öffnen
-      return self.clients.openWindow(urlToOpen);
+      // App ist nicht offen - neues Fenster/Tab öffnen
+      return self.clients.openWindow(targetUrl);
     })
   );
 });

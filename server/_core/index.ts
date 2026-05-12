@@ -492,12 +492,12 @@ async function startServer() {
   // Web Push: Nachricht an alle senden (nur Admin)
   app.post("/api/web-push/send", express.json(), async (req, res) => {
     try {
-      const { title, body } = req.body;
+      const { title, body, url } = req.body;
       if (!title || !body) {
         return res.status(400).json({ success: false, error: "Titel und Text erforderlich" });
       }
       const { sendWebPushToAll } = await import("../web-push");
-      const result = await sendWebPushToAll({ title, body });
+      const result = await sendWebPushToAll({ title, body, url: url || "https://www.app.dieseelenplanerin.de" });
       res.json({ success: true, ...result });
     } catch (error: any) {
       console.error("[WebPush] Send-Fehler:", error.message);

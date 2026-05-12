@@ -29,7 +29,7 @@ export interface WebPushSubscription {
  */
 export async function sendWebPush(
   subscription: WebPushSubscription,
-  payload: { title: string; body: string; data?: Record<string, unknown> }
+  payload: { title: string; body: string; url?: string; data?: Record<string, unknown> }
 ): Promise<boolean> {
   try {
     await webpush.sendNotification(
@@ -55,7 +55,7 @@ export async function sendWebPush(
  * Sendet eine Push-Nachricht an alle aktiven Web-Push-Subscriptions
  */
 export async function sendWebPushToAll(
-  payload: { title: string; body: string; data?: Record<string, unknown> }
+  payload: { title: string; body: string; url?: string; data?: Record<string, unknown> }
 ): Promise<{ sent: number; failed: number }> {
   const subscriptions = await database.getAllWebPushSubscriptions();
   let sent = 0;

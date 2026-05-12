@@ -1,0 +1,22 @@
+{
+  "query": "SELECT id, endpoint, isActive, createdAt FROM web_push_subscriptions WHERE isActive = 1 ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT id, endpoint, isActive, createdAt FROM web_push_subscriptions WHERE isActive = 1 ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "2",
+      "endpoint": "https://web.push.apple.com/QGaQXl_mVSTxrrsN6F9z7YVbFDEDfDxDyE7U_YkC-731yHnnomyKGcJ4CBsgjtu49IHTyEuxlOJdBPZm1z2ULT4ZmKXYc_Pt3p8T9Ev2ibMDyVpOfGE-2whq8uNkVeqXRVhdTeZ2vSnpAXyaFk7714QFrMKV8ttBcedz4eqdYPY",
+      "isActive": "1",
+      "createdAt": "2026-05-12 05:39:08"
+    },
+    {
+      "id": "1",
+      "endpoint": "https://fcm.googleapis.com/fcm/send/cnTlkz_sP54:APA91bE-2P0yThq0npZUg66Jg5awKba2qNddHVt9MD-2nfoLgjnOU48wrZSiiOwuVxgXdhKqO21qRqCX_0qbLMUshNmWG_9py405o62ZJ5RXViaWqEo-xDe6mC6QY3CKY1FRrKQyExMZ",
+      "isActive": "1",
+      "createdAt": "2026-05-12 05:29:11"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tendpoint\tisActive\tcreatedAt\n2\thttps://web.push.apple.com/QGaQXl_mVSTxrrsN6F9z7YVbFDEDfDxDyE7U_YkC-731yHnnomyKGcJ4CBsgjtu49IHTyEuxlOJdBPZm1z2ULT4ZmKXYc_Pt3p8T9Ev2ibMDyVpOfGE-2whq8uNkVeqXRVhdTeZ2vSnpAXyaFk7714QFrMKV8ttBcedz4eqdYPY\t1\t2026-05-12 05:39:08\n1\thttps://fcm.googleapis.com/fcm/send/cnTlkz_sP54:APA91bE-2P0yThq0npZUg66Jg5awKba2qNddHVt9MD-2nfoLgjnOU48wrZSiiOwuVxgXdhKqO21qRqCX_0qbLMUshNmWG_9py405o62ZJ5RXViaWqEo-xDe6mC6QY3CKY1FRrKQyExMZ\t1\t2026-05-12 05:29:11\n",
+  "stderr": "",
+  "execution_time_ms": 266
+}
