@@ -792,4 +792,4 @@
 - [x] Nachrichten-Verlauf speichern (letzte Nachrichten sichtbar)
 
 ## Bugfix (Mai 2026)
-- [ ] Preis bei den Rauhnächten entfernen und durch Warteliste ersetzen
+- [x] Preis bei den Rauhnächten entfernen und durch Warteliste ersetzen
