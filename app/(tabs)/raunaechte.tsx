@@ -168,19 +168,19 @@ export default function RaunaechteScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Shop-Link */}
+            {/* Warteliste */}
             <View style={styles.shopSection}>
               <Text style={styles.shopText}>
-                Noch keinen Code? Sichere dir jetzt deine 28-Tage-Begleitung:
+                Die Raunächte-Begleitung ist aktuell nicht verfügbar. Trage dich auf die Warteliste ein und erfahre als Erste, wenn es wieder losgeht:
               </Text>
               <TouchableOpacity
                 style={styles.shopButton}
                 onPress={openShop}
                 activeOpacity={0.8}
               >
-                <Text style={styles.shopButtonText}>Jetzt dabei sein – 11,11 € →</Text>
+                <Text style={styles.shopButtonText}>Auf die Warteliste setzen →</Text>
               </TouchableOpacity>
-              <Text style={styles.shopHint}>Einmalige Zahlung · Kein Abo · Zugang über die App</Text>
+              <Text style={styles.shopHint}>Unverbindlich · Du wirst benachrichtigt, sobald es startet</Text>
             </View>
           </ScrollView>
         </ScreenContainer>

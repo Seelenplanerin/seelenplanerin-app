@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, subscription FROM web_push_subscriptions WHERE isActive = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT id, subscription FROM web_push_subscriptions WHERE isActive = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "subscription": "{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/cnTlkz_sP54:APA91bE-2P0yThq0npZUg66Jg5awKba2qNddHVt9MD-2nfoLgjnOU48wrZSiiOwuVxgXdhKqO21qRqCX_0qbLMUshNmWG_9py405o62ZJ5RXViaWqEo-xDe6mC6QY3CKY1FRrKQyExMZ\",\"expirationTime\":null,\"keys\":{\"p256dh\":\"BLB0fgXShW3bZOaP8lojqF-Mo37S7NsYLLPhNLvp4J2ovlX_ykFLF0GP3jxsQimXJv980tnmBxBS6nQfiVfjSIc\",\"auth\":\"GIsvJeXWbMaSj_QhdLVBRw\"}}"
+    },
+    {
+      "id": "2",
+      "subscription": "{\"endpoint\":\"https://web.push.apple.com/QGaQXl_mVSTxrrsN6F9z7YVbFDEDfDxDyE7U_YkC-731yHnnomyKGcJ4CBsgjtu49IHTyEuxlOJdBPZm1z2ULT4ZmKXYc_Pt3p8T9Ev2ibMDyVpOfGE-2whq8uNkVeqXRVhdTeZ2vSnpAXyaFk7714QFrMKV8ttBcedz4eqdYPY\",\"keys\":{\"p256dh\":\"BJZQgnNDmluKHK3AGrFQYuRPuGZSVZ9h3bybxYkQDB3G83-M1eg29FSMssAOBpLM-6bCbAXwNMDfEQdNsmZ09uk\",\"auth\":\"0FVb3e7MDTQsC2cc2bHCrA\"}}"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tsubscription\n1\t{\"endpoint\":\"https://fcm.googleapis.com/fcm/send/cnTlkz_sP54:APA91bE-2P0yThq0npZUg66Jg5awKba2qNddHVt9MD-2nfoLgjnOU48wrZSiiOwuVxgXdhKqO21qRqCX_0qbLMUshNmWG_9py405o62ZJ5RXViaWqEo-xDe6mC6QY3CKY1FRrKQyExMZ\",\"expirationTime\":null,\"keys\":{\"p256dh\":\"BLB0fgXShW3bZOaP8lojqF-Mo37S7NsYLLPhNLvp4J2ovlX_ykFLF0GP3jxsQimXJv980tnmBxBS6nQfiVfjSIc\",\"auth\":\"GIsvJeXWbMaSj_QhdLVBRw\"}}\n2\t{\"endpoint\":\"https://web.push.apple.com/QGaQXl_mVSTxrrsN6F9z7YVbFDEDfDxDyE7U_YkC-731yHnnomyKGcJ4CBsgjtu49IHTyEuxlOJdBPZm1z2ULT4ZmKXYc_Pt3p8T9Ev2ibMDyVpOfGE-2whq8uNkVeqXRVhdTeZ2vSnpAXyaFk7714QFrMKV8ttBcedz4eqdYPY\",\"keys\":{\"p256dh\":\"BJZQgnNDmluKHK3AGrFQYuRPuGZSVZ9h3bybxYkQDB3G83-M1eg29FSMssAOBpLM-6bCbAXwNMDfEQdNsmZ09uk\",\"auth\":\"0FVb3e7MDTQsC2cc2bHCrA\"}}\n",
+  "stderr": "",
+  "execution_time_ms": 257
+}

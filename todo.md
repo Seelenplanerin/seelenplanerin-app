@@ -790,3 +790,6 @@
 - [x] Nachrichten-Screen erstellen der Push-Inhalte anzeigt
 - [x] Service Worker leitet Notification-Klick an Nachrichten-Screen weiter
 - [x] Nachrichten-Verlauf speichern (letzte Nachrichten sichtbar)
+
+## Bugfix (Mai 2026)
+- [ ] Preis bei den Rauhnächten entfernen und durch Warteliste ersetzen
