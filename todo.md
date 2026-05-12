@@ -779,3 +779,8 @@
 - [x] Alle 7 Tabs sichtbar auf mobilem Viewport (Tab-Items kompakter)
 - [x] Push zu GitHub für Render-Redeploy
 - [x] Community-Tab umbenennen: "Commu..." → "Inner Circle"
+
+## Push-Benachrichtigungen für Android PWA (Mai 2026)
+- [ ] Web Push API Integration für PWA (Service Worker + Push-Subscription)
+- [ ] "Benachrichtigungen aktivieren" Button in der Web-App
+- [ ] Push-Subscription an Server senden und speichern
