@@ -64,6 +64,13 @@
       "when": 1778423767604,
       "tag": "0008_omniscient_jimmy_woo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1778657148690,
+      "tag": "0009_bitter_rictor",
+      "breakpoints": true
     }
   ]
 }
