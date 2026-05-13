@@ -225,6 +225,15 @@ export async function runMigrations(): Promise<void> {
       )
     `);
 
+    // raunaechte_waitlist table
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS raunaechte_waitlist (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(320) NOT NULL UNIQUE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+
     // seelenjournal_messages
     await conn.query(`
       CREATE TABLE IF NOT EXISTS seelenjournal_messages (

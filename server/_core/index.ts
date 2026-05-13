@@ -505,6 +505,26 @@ async function startServer() {
     }
   });
 
+  // Raunächte Warteliste
+  app.post("/api/raunaechte-waitlist", express.json(), async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || !email.includes("@")) {
+        return res.status(400).json({ success: false, error: "Ungültige E-Mail" });
+      }
+      const { addRaunaechteWaitlist } = await import("../db");
+      await addRaunaechteWaitlist(email.toLowerCase().trim());
+      res.json({ success: true });
+    } catch (error: any) {
+      // Duplicate email is fine
+      if (error.message?.includes("Duplicate")) {
+        return res.json({ success: true, message: "Bereits eingetragen" });
+      }
+      console.error("[Waitlist] Fehler:", error.message);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Web Push: Anzahl aktiver Subscriptions
   app.get("/api/web-push/count", async (_req, res) => {
     try {

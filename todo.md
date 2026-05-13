@@ -793,3 +793,4 @@
 
 ## Bugfix (Mai 2026)
 - [x] Preis bei den Rauhnächten entfernen und durch Warteliste ersetzen
+- [ ] In-App Warteliste-Formular (E-Mail-Eintragung) statt externer Link

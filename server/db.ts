@@ -339,6 +339,16 @@ export async function getAcademyWaitlist() {
   });
 }
 
+// ── Raunächte Warteliste ──
+import { raunaechteWaitlist } from "../drizzle/schema";
+
+export async function addRaunaechteWaitlist(email: string) {
+  return withRetry(async () => {
+    const db = getDbSync();
+    await db.insert(raunaechteWaitlist).values({ email: email.toLowerCase() });
+  });
+}
+
 // ── Raunächte Zugangscodes ──
 import { raunaechteCode, InsertRaunaechteCode } from "../drizzle/schema";
 

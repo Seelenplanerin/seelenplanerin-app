@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Dimensions, Platform, ActivityIndicator, Linking,
+  StyleSheet, Dimensions, Platform, ActivityIndicator, Alert,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -33,7 +33,6 @@ const RN = {
   white: "#FFFFFF",
 };
 
-const SHOP_URL = "https://dieseelenplanerin.de/rauhnaechte";
 
 export default function RaunaechteScreen() {
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
@@ -41,6 +40,9 @@ export default function RaunaechteScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgressState] = useState<{ completedDays: number[] }>({ completedDays: [] });
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [waitlistDone, setWaitlistDone] = useState(false);
 
   const year = getCurrentRaunaechteYear();
   const currentDay = getCurrentRaunaechteDay(year);
@@ -98,9 +100,30 @@ export default function RaunaechteScreen() {
     router.push({ pathname: "/raunaechte-tag", params: { day: day.toString(), year: year.toString() } });
   };
 
-  const openShop = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL(SHOP_URL);
+  const handleWaitlistSignup = async () => {
+    if (!waitlistEmail.trim() || !waitlistEmail.includes("@")) {
+      if (Platform.OS === "web") { window.alert("Bitte gib eine g\u00fcltige E-Mail-Adresse ein."); }
+      else { Alert.alert("Fehler", "Bitte gib eine g\u00fcltige E-Mail-Adresse ein."); }
+      return;
+    }
+    setWaitlistLoading(true);
+    try {
+      const base = getApiBaseUrl();
+      await fetch(`${base}/api/raunaechte-waitlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: waitlistEmail.trim().toLowerCase() }),
+      });
+      setWaitlistDone(true);
+      setWaitlistEmail("");
+      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch (e) {
+      console.error(e);
+      if (Platform.OS === "web") { window.alert("Fehler beim Eintragen. Bitte versuche es sp\u00e4ter erneut."); }
+      else { Alert.alert("Fehler", "Fehler beim Eintragen. Bitte versuche es sp\u00e4ter erneut."); }
+    } finally {
+      setWaitlistLoading(false);
+    }
   };
 
   // Loading state
@@ -171,15 +194,41 @@ export default function RaunaechteScreen() {
             {/* Warteliste */}
             <View style={styles.shopSection}>
               <Text style={styles.shopText}>
-                Die Raunächte-Begleitung ist aktuell nicht verfügbar. Trage dich auf die Warteliste ein und erfahre als Erste, wenn es wieder losgeht:
+                Die Raunächte-Begleitung ist aktuell nicht verfügbar.{"\n"}Trage dich auf die Warteliste ein und erfahre als Erste, wenn es wieder losgeht:
               </Text>
-              <TouchableOpacity
-                style={styles.shopButton}
-                onPress={openShop}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.shopButtonText}>Auf die Warteliste setzen →</Text>
-              </TouchableOpacity>
+              {waitlistDone ? (
+                <View style={styles.waitlistSuccess}>
+                  <Text style={styles.waitlistSuccessEmoji}>✨</Text>
+                  <Text style={styles.waitlistSuccessText}>Du bist auf der Warteliste! Wir benachrichtigen dich, sobald es losgeht.</Text>
+                </View>
+              ) : (
+                <View style={styles.waitlistForm}>
+                  <TextInput
+                    style={styles.waitlistInput}
+                    value={waitlistEmail}
+                    onChangeText={setWaitlistEmail}
+                    placeholder="Deine E-Mail-Adresse"
+                    placeholderTextColor={RN.locked}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="done"
+                    onSubmitEditing={handleWaitlistSignup}
+                  />
+                  <TouchableOpacity
+                    style={[styles.shopButton, waitlistLoading && { opacity: 0.6 }]}
+                    onPress={handleWaitlistSignup}
+                    disabled={waitlistLoading}
+                    activeOpacity={0.8}
+                  >
+                    {waitlistLoading ? (
+                      <ActivityIndicator color={RN.white} size="small" />
+                    ) : (
+                      <Text style={styles.shopButtonText}>Auf die Warteliste setzen</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
               <Text style={styles.shopHint}>Unverbindlich · Du wirst benachrichtigt, sobald es startet</Text>
             </View>
           </ScrollView>
@@ -281,16 +330,7 @@ export default function RaunaechteScreen() {
             </View>
           </View>
 
-          {/* Shop-Link unten */}
-          <View style={styles.shopSectionBottom}>
-            <TouchableOpacity
-              style={styles.shopButtonBottom}
-              onPress={openShop}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.shopButtonBottomText}>Zum Shop – dieseelenplanerin.de →</Text>
-            </TouchableOpacity>
-          </View>
+
         </ScrollView>
       </ScreenContainer>
     </View>
@@ -439,6 +479,37 @@ const styles = StyleSheet.create({
     color: RN.muted,
     textAlign: "center",
     marginTop: 12,
+  },
+  waitlistForm: {
+    width: "100%",
+    alignItems: "center",
+  },
+  waitlistInput: {
+    backgroundColor: RN.white,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    color: RN.text,
+    textAlign: "center",
+    borderWidth: 1,
+    borderColor: RN.border,
+    width: "100%",
+    marginBottom: 12,
+  },
+  waitlistSuccess: {
+    alignItems: "center",
+    padding: 16,
+  },
+  waitlistSuccessEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  waitlistSuccessText: {
+    fontSize: 15,
+    color: RN.gold,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 22,
   },
   // Main Content
   mainContent: {
