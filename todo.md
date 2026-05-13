@@ -794,3 +794,4 @@
 ## Bugfix (Mai 2026)
 - [x] Preis bei den Rauhnächten entfernen und durch Warteliste ersetzen
 - [x] In-App Warteliste-Formular (E-Mail-Eintragung) statt externer Link
+- [x] Update-Popup beim App-Start wenn neues OTA-Update verfügbar ist
