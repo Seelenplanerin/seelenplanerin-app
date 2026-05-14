@@ -77,7 +77,13 @@ const config: ExpoConfig = {
         dark: { backgroundColor: "#1C1410" },
       },
     ],
-    ["expo-build-properties", { android: { buildArchs: ["armeabi-v7a", "arm64-v8a"] } }],
+    ["expo-build-properties", {
+      android: {
+        targetSdkVersion: 35,
+        compileSdkVersion: 35,
+        buildArchs: ["armeabi-v7a", "arm64-v8a"],
+      },
+    }],
   ],
   extra: {
     eas: {
