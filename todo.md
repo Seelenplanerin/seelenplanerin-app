@@ -797,3 +797,4 @@
 - [x] Update-Popup beim App-Start wenn neues OTA-Update verfügbar ist
 - [ ] Google Play Protect Warnung fixen (targetSdkVersion auf 34+ setzen)
 - [x] Google Play Protect Warnung fixen (targetSdkVersion auf 35 setzen) - nur Android
+- [ ] Kakaozeremonie als Ausbildung im Ausbildungsstall hinzufügen

@@ -1775,6 +1775,18 @@ export default function AdminScreen() {
                     <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
                   </View>
                 </View>
+                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
+                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
+                    <Text style={{ color: "#FFF", fontSize: 16 }}>🍫</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.memberName}>Kakaozeremonie Ausbildung</Text>
+                    <Text style={s.memberEmail}>Coming Soon</Text>
+                  </View>
+                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
+                  </View>
+                </View>
               </View>
             </>
           )}

@@ -359,6 +359,14 @@ export default function AktuellesScreen() {
                   <Text style={s.academyCourseStatus}>Coming Soon</Text>
                 </View>
               </View>
+              <View style={s.academyCourseDivider} />
+              <View style={s.academyCourseRow}>
+                <Text style={s.academyCourseEmoji}>🍫</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.academyCourseName}>Kakaozeremonie Ausbildung</Text>
+                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
+                </View>
+              </View>
             </View>
 
             {/* Warteliste */}
