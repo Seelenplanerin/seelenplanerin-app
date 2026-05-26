@@ -798,4 +798,4 @@
 - [ ] Google Play Protect Warnung fixen (targetSdkVersion auf 34+ setzen)
 - [x] Google Play Protect Warnung fixen (targetSdkVersion auf 35 setzen) - nur Android
 - [x] Kakaozeremonie als Ausbildung im Ausbildungsstall hinzufügen
-- [ ] E-Mail-Benachrichtigung an laramwille@gmail.com bei Rauhnächte-Warteliste-Anmeldung
+- [x] E-Mail-Benachrichtigung an laramwille@gmail.com bei Rauhnächte-Warteliste-Anmeldung
