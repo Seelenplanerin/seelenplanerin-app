@@ -514,6 +514,41 @@ async function startServer() {
       }
       const { addRaunaechteWaitlist } = await import("../db");
       await addRaunaechteWaitlist(email.toLowerCase().trim());
+
+      // E-Mail-Benachrichtigung an Lara senden
+      try {
+        const smtpHost = process.env.SMTP_HOST;
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
+        const smtpPort = process.env.SMTP_PORT || "587";
+        const smtpFromName = process.env.SMTP_FROM_NAME || "Die Seelenplanerin";
+        if (smtpHost && smtpUser && smtpPass) {
+          const nodemailer = await import("nodemailer");
+          const transporter = nodemailer.default.createTransport({
+            host: smtpHost,
+            port: parseInt(smtpPort),
+            secure: parseInt(smtpPort) === 465,
+            auth: { user: smtpUser, pass: smtpPass },
+          });
+          await transporter.sendMail({
+            from: `"${smtpFromName}" <${smtpUser}>`,
+            to: "laramwille@gmail.com",
+            subject: "\u2728 Neue Rauhn\u00e4chte-Warteliste Anmeldung",
+            html: `<div style="font-family: Georgia, serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #FFF8F0; border-radius: 12px;">
+              <h2 style="color: #8B6F47; margin-bottom: 16px;">Neue Warteliste-Anmeldung \u2728</h2>
+              <p style="color: #5C4A32; font-size: 16px;">Jemand hat sich f\u00fcr die <strong>Rauhn\u00e4chte-Begleitung</strong> auf die Warteliste eingetragen:</p>
+              <div style="background: white; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #C4956A;">
+                <p style="color: #5C4A32; font-size: 18px; margin: 0;"><strong>${email.toLowerCase().trim()}</strong></p>
+              </div>
+              <p style="color: #8B6F47; font-size: 14px;">Liebe Gr\u00fc\u00dfe, deine App \ud83c\udf19</p>
+            </div>`,
+          });
+          console.log(`[Waitlist] Benachrichtigung gesendet für: ${email}`);
+        }
+      } catch (mailErr: any) {
+        console.error("[Waitlist] E-Mail-Benachrichtigung fehlgeschlagen:", mailErr.message);
+      }
+
       res.json({ success: true });
     } catch (error: any) {
       // Duplicate email is fine
