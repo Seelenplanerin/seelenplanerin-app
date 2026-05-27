@@ -1,0 +1,87 @@
+{
+  "query": "SELECT * FROM community_users LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT * FROM community_users LIMIT 20;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "test@example.com",
+      "password": "test123",
+      "name": "Test User",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-04-16 19:22:59"
+    },
+    {
+      "id": "60001",
+      "email": "communitytest@example.com",
+      "password": "test1234",
+      "name": "Community Test",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-04-17 15:19:17"
+    },
+    {
+      "id": "60002",
+      "email": "laramwille@gmail.com",
+      "password": "Hallo123",
+      "name": "lara",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-04-17 15:24:30"
+    },
+    {
+      "id": "120001",
+      "email": "lionthesocialmediaagency@gmail.com",
+      "password": "wtb75m",
+      "name": "Lara",
+      "mustChangePassword": "1",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-04-18 10:24:51"
+    },
+    {
+      "id": "150001",
+      "email": "silja@lion-bielefeld.de",
+      "password": "Ilnutz76",
+      "name": "Silja",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-05-06 15:12:47"
+    },
+    {
+      "id": "150002",
+      "email": "aw59.wille@gmail.com",
+      "password": "DNiwaN1959g",
+      "name": "Annette",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-05-06 15:54:40"
+    },
+    {
+      "id": "180001",
+      "email": "missyschoko@googlemail.com",
+      "password": "Schoko811!",
+      "name": "conny reiter",
+      "mustChangePassword": "0",
+      "isActive": "1",
+      "emailConsent": "0",
+      "emailConsentDate": "NULL",
+      "createdAt": "2026-05-08 18:31:59"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tpassword\tname\tmustChangePassword\tisActive\temailConsent\temailConsentDate\tcreatedAt\n1\ttest@example.com\ttest123\tTest User\t0\t1\t0\tNULL\t2026-04-16 19:22:59\n60001\tcommunitytest@example.com\ttest1234\tCommunity Test\t0\t1\t0\tNULL\t2026-04-17 15:19:17\n60002\tlaramwille@gmail.com\tHallo123\tlara\t0\t1\t0\tNULL\t2026-04-17 15:24:30\n120001\tlionthesocialmediaagency@gmail.com\twtb75m\tLara\t1\t1\t0\tNULL\t2026-04-18 10:24:51\n150001\tsilja@lion-bielefeld.de\tIlnutz76\tSilja\t0\t1\t0\tNULL\t2026-05-06 15:12:47\n150002\taw59.wille@gmail.com\tDNiwaN1959g\tAnnette\t0\t1\t0\tNULL\t2026-05-06 15:54:40\n180001\tmissyschoko@googlemail.com\tSchoko811!\tconny reiter\t0\t1\t0\tNULL\t2026-05-08 18:31:59\n",
+  "stderr": "",
+  "execution_time_ms": 264
+}

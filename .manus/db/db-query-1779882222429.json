@@ -1,0 +1,15 @@
+{
+  "query": "SELECT * FROM academy_waitlist ORDER BY createdAt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT * FROM academy_waitlist ORDER BY createdAt DESC;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "laramwille@gmail.com",
+      "createdAt": "2026-04-18 10:25:50"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tcreatedAt\n1\tlaramwille@gmail.com\t2026-04-18 10:25:50\n",
+  "stderr": "",
+  "execution_time_ms": 496
+}

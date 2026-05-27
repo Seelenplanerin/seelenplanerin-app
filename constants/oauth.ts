@@ -24,6 +24,9 @@ export const OWNER_OPEN_ID = env.ownerId;
 export const OWNER_NAME = env.ownerName;
 export const API_BASE_URL = env.apiBaseUrl;
 
+// Production API URL for the deployed Render server
+const PRODUCTION_API_URL = "https://www.app.dieseelenplanerin.de";
+
 /**
  * Get the API base URL, deriving from current hostname if not set.
  * Metro runs on 8081, API server runs on 3000.
@@ -51,9 +54,10 @@ export function getApiBaseUrl(): string {
     }
   }
 
-  // Native: use API_BASE_URL if set
-  if (API_BASE_URL) {
-    return API_BASE_URL.replace(/\/$/, "");
+  // Native: ALWAYS use the production Render URL
+  // (The sandbox EXPO_PUBLIC_API_BASE_URL is not accessible from user devices)
+  if (ReactNative.Platform.OS !== "web") {
+    return PRODUCTION_API_URL;
   }
 
   // Fallback to empty (will use relative URL)

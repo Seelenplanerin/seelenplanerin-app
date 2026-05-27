@@ -477,6 +477,13 @@ export const appRouter = router({
       }),
   }),
 
+  // ── Rauhnächte Warteliste ──
+  raunaechteWaitlist: router({
+    list: publicProcedure.query(async () => {
+      return db.getRaunaechteWaitlist();
+    }),
+  }),
+
   storage: router({
     uploadAudio: publicProcedure
       .input(z.object({

@@ -160,6 +160,64 @@ async function saveQAFragen(fragen: QAFrage[]) {
 }
 
 
+// ═══════ Rauhnächte Warteliste Admin ═══════
+function RaunaechteWaitlistAdmin() {
+  const [entries, setEntries] = React.useState<{ id: number; email: string; createdAt: string }[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
+  const loadWaitlist = async () => {
+    setLoading(true);
+    try {
+      const baseUrl = getApiBaseUrl();
+      const res = await fetch(`${baseUrl}/api/trpc/raunaechteWaitlist.list`);
+      const result = await res.json();
+      setEntries(result?.result?.data?.json || result?.result?.data || []);
+    } catch (e) {
+      console.error("Fehler beim Laden der Rauhnächte-Warteliste:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => { loadWaitlist(); }, []);
+
+  return (
+    <View style={{ marginTop: 8 }}>
+      {loading ? (
+        <ActivityIndicator color={C.gold} />
+      ) : entries.length > 0 ? (
+        <View>
+          <Text style={{ fontSize: 14, fontWeight: "700", color: C.gold, marginBottom: 8 }}>
+            {entries.length} Einträg{entries.length === 1 ? "" : "e"}
+          </Text>
+          {entries.map((entry, idx) => (
+            <View key={entry.id || idx} style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, marginBottom: 6, borderWidth: 1, borderColor: C.border }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.rose, alignItems: "center", justifyContent: "center", marginRight: 10 }}>
+                <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>{idx + 1}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>{entry.email}</Text>
+                <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
+                  {new Date(entry.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 8 }}>Noch keine Einträge.</Text>
+      )}
+      <TouchableOpacity
+        style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, marginTop: 8, borderWidth: 1, borderColor: C.border }}
+        onPress={loadWaitlist}
+        activeOpacity={0.8}
+      >
+        <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>🔄 Aktualisieren</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // ═══════ Raunächte Admin Komponente ═══════
 function RaunaechteAdmin() {
   const [codes, setCodes] = React.useState<any[]>([]);
@@ -1944,10 +2002,16 @@ export default function AdminScreen() {
           {/* ═══════ RAUNÄCHTE TAB ═══════ */}
           {activeTab === "raunaechte" && (
             <>
+              {/* Rauhnächte Warteliste */}
               <View style={s.section}>
-                <Text style={s.sectionTitle}>🕯️ Raunächte-Codes verwalten</Text>
+                <Text style={s.sectionTitle}>🕯️ Rauhnächte-Warteliste</Text>
+                <Text style={s.sectionHint}>Alle Interessentinnen, die sich für die Rauhnächte auf die Warteliste eingetragen haben.</Text>
+                <RaunaechteWaitlistAdmin />
+              </View>
+              <View style={s.section}>
+                <Text style={s.sectionTitle}>🕯️ Rauhnächte-Codes verwalten</Text>
                 <Text style={s.sectionHint}>
-                  Generiere Zugangscodes für deine Raunächte-Begleitung. Jeder Code kann nur auf einem Gerät aktiviert werden.
+                  Generiere Zugangscodes für deine Rauhnächte-Begleitung. Jeder Code kann nur auf einem Gerät aktiviert werden.
                 </Text>
                 <RaunaechteAdmin />
               </View>

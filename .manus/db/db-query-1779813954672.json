@@ -1,0 +1,67 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "academy_waitlist"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "affiliate_clicks"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "affiliate_codes"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "affiliate_payouts"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "affiliate_sales"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "community_questions"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "community_users"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "meditations"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "push_messages"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "push_tokens"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "raunaechte_codes"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "raunaechte_waitlist"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "seelenjournal_attachments"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "seelenjournal_clients"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "seelenjournal_entries"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "seelenjournal_messages"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "users"
+    },
+    {
+      "Tables_in_6tNxx849MbaAPaCKuehjug": "web_push_subscriptions"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_6tNxx849MbaAPaCKuehjug\n__drizzle_migrations\nacademy_waitlist\naffiliate_clicks\naffiliate_codes\naffiliate_payouts\naffiliate_sales\ncommunity_questions\ncommunity_users\nmeditations\npush_messages\npush_tokens\nraunaechte_codes\nraunaechte_waitlist\nseelenjournal_attachments\nseelenjournal_clients\nseelenjournal_entries\nseelenjournal_messages\nusers\nweb_push_subscriptions\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

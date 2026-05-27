@@ -349,6 +349,13 @@ export async function addRaunaechteWaitlist(email: string) {
   });
 }
 
+export async function getRaunaechteWaitlist() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    return db.select().from(raunaechteWaitlist).orderBy(desc(raunaechteWaitlist.createdAt));
+  });
+}
+
 // ── Raunächte Zugangscodes ──
 import { raunaechteCode, InsertRaunaechteCode } from "../drizzle/schema";
 

@@ -1,0 +1,16 @@
+{
+  "query": "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE '%member%' OR table_name LIKE '%user%' OR table_name LIKE '%mitglied%';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE '%member%' OR table_name LIKE '%user%' OR table_name LIKE '%mitglied%';",
+  "rows": [
+    {
+      "table_name": "users"
+    },
+    {
+      "table_name": "community_users"
+    }
+  ],
+  "messages": [],
+  "stdout": "table_name\nusers\ncommunity_users\n",
+  "stderr": "",
+  "execution_time_ms": 699
+}

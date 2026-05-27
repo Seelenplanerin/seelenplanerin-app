@@ -368,7 +368,7 @@ export async function sendAcademyNotificationToOwner(params: {
   try {
     const config = getSmtpConfig();
     const transporter = createTransporter();
-    const ownerEmail = "hallo@seelenplanerin.de";
+    const ownerEmail = "laramwille@gmail.com";
     const now = new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
 
     const content = `
