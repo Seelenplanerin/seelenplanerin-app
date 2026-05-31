@@ -107,6 +107,37 @@ export default function NachrichtenScreen() {
     });
   }, []);
 
+  // Detail-Ansicht: Wenn eine Nachricht ausgewählt ist, zeige sie vollständig scrollbar
+  if (selectedMsg) {
+    return (
+      <ScreenContainer containerClassName="bg-background">
+        <ScrollView
+          style={{ flex: 1, backgroundColor: C.bg }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+          showsVerticalScrollIndicator={true}
+        >
+          {/* Header mit Zurück-Button */}
+          <View style={s.header}>
+            <TouchableOpacity style={s.backBtn} onPress={() => setSelectedMsg(null)}>
+              <Text style={s.backText}>← Alle Nachrichten</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Nachricht vollständig anzeigen */}
+          <View style={s.detailCard}>
+            <View style={s.detailHeader}>
+              <Text style={s.detailBadge}>Nachricht</Text>
+              <Text style={s.detailTime}>{formatTime(selectedMsg.timestamp)}</Text>
+            </View>
+            <Text style={s.detailTitle}>{selectedMsg.title}</Text>
+            <Text style={s.detailBody}>{selectedMsg.body}</Text>
+          </View>
+        </ScrollView>
+      </ScreenContainer>
+    );
+  }
+
+  // Listen-Ansicht: Alle Nachrichten
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView style={{ flex: 1, backgroundColor: C.bg }} showsVerticalScrollIndicator={false}>
@@ -119,47 +150,29 @@ export default function NachrichtenScreen() {
           <Text style={s.subtitle}>Deine Botschaften von der Seelenplanerin</Text>
         </View>
 
-        {/* Aktuelle Nachricht (wenn über Notification geöffnet) */}
-        {selectedMsg && (
-          <View style={s.highlightCard}>
-            <View style={s.highlightHeader}>
-              <Text style={s.highlightBadge}>Neue Nachricht</Text>
-              <Text style={s.highlightTime}>{formatTime(selectedMsg.timestamp)}</Text>
-            </View>
-            <Text style={s.highlightTitle}>{selectedMsg.title}</Text>
-            <Text style={s.highlightBody}>{selectedMsg.body}</Text>
+        {/* Nachrichten-Liste */}
+        {nachrichten.length > 0 && (
+          <View style={s.list}>
+            {nachrichten.map((msg, i) => (
+              <TouchableOpacity
+                key={msg.id}
+                style={[s.msgCard, !msg.read && s.msgUnread, i > 0 && { marginTop: 10 }]}
+                onPress={() => setSelectedMsg(msg)}
+              >
+                <View style={s.msgHeader}>
+                  {!msg.read && <View style={s.unreadDot} />}
+                  <Text style={s.msgTime}>{formatTime(msg.timestamp)}</Text>
+                </View>
+                <Text style={s.msgTitle} numberOfLines={2}>{msg.title}</Text>
+                <Text style={s.msgBody} numberOfLines={3}>{msg.body}</Text>
+                <Text style={s.readMore}>Tippen zum Lesen →</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
-        {/* Nachrichten-Liste */}
-        {nachrichten.length > 0 && (
-          <>
-            <Text style={s.sectionTitle}>
-              {selectedMsg ? "Frühere Nachrichten" : "Alle Nachrichten"}
-            </Text>
-            <View style={s.list}>
-              {nachrichten
-                .filter(m => !selectedMsg || m.id !== selectedMsg.id)
-                .map((msg, i) => (
-                <TouchableOpacity
-                  key={msg.id}
-                  style={[s.msgCard, !msg.read && s.msgUnread, i > 0 && { marginTop: 10 }]}
-                  onPress={() => setSelectedMsg(msg)}
-                >
-                  <View style={s.msgHeader}>
-                    {!msg.read && <View style={s.unreadDot} />}
-                    <Text style={s.msgTime}>{formatTime(msg.timestamp)}</Text>
-                  </View>
-                  <Text style={s.msgTitle} numberOfLines={2}>{msg.title}</Text>
-                  <Text style={s.msgBody}>{msg.body}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-
         {/* Leerer Zustand */}
-        {nachrichten.length === 0 && !selectedMsg && (
+        {nachrichten.length === 0 && (
           <View style={s.emptyCard}>
             <Text style={s.emptyIcon}>💌</Text>
             <Text style={s.emptyTitle}>Noch keine Nachrichten</Text>
@@ -182,21 +195,21 @@ const s = StyleSheet.create({
   title: { fontSize: 28, fontWeight: "700", color: C.brown, fontFamily: "DancingScript" },
   subtitle: { fontSize: 15, color: C.muted, marginTop: 4, fontStyle: "italic" },
 
-  // Highlight Card (aktuelle Nachricht)
-  highlightCard: {
+  // Detail-Ansicht (vollständige Nachricht)
+  detailCard: {
     marginHorizontal: 20, marginBottom: 20, backgroundColor: C.roseLight,
     borderRadius: 20, padding: 20, borderWidth: 1.5, borderColor: C.rose + "60",
   },
-  highlightHeader: {
+  detailHeader: {
     flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12,
   },
-  highlightBadge: {
+  detailBadge: {
     fontSize: 12, fontWeight: "700", color: "#FFFFFF", backgroundColor: C.rose,
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, overflow: "hidden",
   },
-  highlightTime: { fontSize: 12, color: C.muted },
-  highlightTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 8 },
-  highlightBody: { fontSize: 16, color: C.brownMid, lineHeight: 26 },
+  detailTime: { fontSize: 12, color: C.muted },
+  detailTitle: { fontSize: 22, fontWeight: "700", color: C.brown, marginBottom: 12 },
+  detailBody: { fontSize: 16, color: C.brownMid, lineHeight: 28 },
 
   // Section
   sectionTitle: {
@@ -218,6 +231,7 @@ const s = StyleSheet.create({
   msgTime: { fontSize: 12, color: C.muted },
   msgTitle: { fontSize: 16, fontWeight: "600", color: C.brown, marginBottom: 4 },
   msgBody: { fontSize: 14, color: C.brownMid, lineHeight: 22 },
+  readMore: { fontSize: 12, color: C.rose, marginTop: 8, fontWeight: "600" },
 
   // Empty State
   emptyCard: {
