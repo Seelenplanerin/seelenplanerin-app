@@ -802,3 +802,4 @@
 - [x] Bug: Mitglieder werden im Admin-Panel nicht angezeigt ("Noch keine Mitglieder") - Fix: Native App nutzte Sandbox-URL statt Render-URL
 - [x] E-Mail-Benachrichtigung an laramwille@gmail.com bei Academy-Warteliste-Anmeldung
 - [x] Academy-Warteliste im Admin-Panel sichtbar machen + Rauhnächte-Warteliste im Admin
+- [x] Bug: Längere Push-Nachrichten können in der Nachrichten-Ansicht nicht komplett gelesen werden

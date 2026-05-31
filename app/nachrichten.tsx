@@ -150,8 +150,8 @@ export default function NachrichtenScreen() {
                     {!msg.read && <View style={s.unreadDot} />}
                     <Text style={s.msgTime}>{formatTime(msg.timestamp)}</Text>
                   </View>
-                  <Text style={s.msgTitle} numberOfLines={1}>{msg.title}</Text>
-                  <Text style={s.msgBody} numberOfLines={2}>{msg.body}</Text>
+                  <Text style={s.msgTitle} numberOfLines={2}>{msg.title}</Text>
+                  <Text style={s.msgBody}>{msg.body}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -196,7 +196,7 @@ const s = StyleSheet.create({
   },
   highlightTime: { fontSize: 12, color: C.muted },
   highlightTitle: { fontSize: 20, fontWeight: "700", color: C.brown, marginBottom: 8 },
-  highlightBody: { fontSize: 16, color: C.brownMid, lineHeight: 24 },
+  highlightBody: { fontSize: 16, color: C.brownMid, lineHeight: 26 },
 
   // Section
   sectionTitle: {
@@ -217,7 +217,7 @@ const s = StyleSheet.create({
   },
   msgTime: { fontSize: 12, color: C.muted },
   msgTitle: { fontSize: 16, fontWeight: "600", color: C.brown, marginBottom: 4 },
-  msgBody: { fontSize: 14, color: C.brownMid, lineHeight: 20 },
+  msgBody: { fontSize: 14, color: C.brownMid, lineHeight: 22 },
 
   // Empty State
   emptyCard: {

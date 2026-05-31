@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE academy_waitlist SET email = 'beverungen_k@web.de' WHERE email = 'beverubgen_k@web.de';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute UPDATE academy_waitlist SET email = 'beverungen_k@web.de' WHERE email = 'beverubgen_k@web.de';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 71598
+}
