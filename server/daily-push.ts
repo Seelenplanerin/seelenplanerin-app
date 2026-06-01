@@ -4,9 +4,10 @@
  * an alle registrierten Geräte.
  */
 
-import { getAllActivePushTokens, createPushMessage, updatePushMessage, deactivatePushToken } from "./db";
+import { getAllActivePushTokens, createPushMessage, updatePushMessage, deactivatePushToken, checkIfPushSentToday } from "./db";
 import { sendPortaltagPush } from "./portaltage";
 import { sendWebPushToAll } from "./web-push";
+import { sendMoonRitualPush } from "./moon-rituals";
 
 // Die gleichen Impulse wie in der App (app/(tabs)/index.tsx)
 const IMPULSE = [
@@ -54,11 +55,19 @@ function getTagesimpuls(): string {
 
 /**
  * Sendet den Tagesimpuls als Push-Benachrichtigung an alle registrierten Geräte.
+ * Prüft vorher in der DB ob heute schon ein Tagesimpuls gesendet wurde (Duplikat-Schutz).
  */
 export async function sendDailyImpulsPush(): Promise<void> {
   console.log("[daily-push] Starte tägliche Tagesimpuls-Push...");
 
   try {
+    // Duplikat-Schutz: Prüfe ob heute schon ein Tagesimpuls gesendet wurde
+    const alreadySentToday = await checkIfPushSentToday("Tagesimpuls");
+    if (alreadySentToday) {
+      console.log("[daily-push] Tagesimpuls wurde heute bereits gesendet. Überspringe.");
+      return;
+    }
+
     const tokens = await getAllActivePushTokens();
     if (!tokens || tokens.length === 0) {
       console.log("[daily-push] Keine registrierten Push-Tokens gefunden. Überspringe.");
@@ -263,11 +272,15 @@ export function startDailyPushCron(): void {
       });
     }
 
-    // Um 19:00 Uhr: Portaltag-Push + Raunächte-Push senden
+    // Um 19:00 Uhr: Portaltag-Push + Mond-Ritual-Push senden
     if (hour === 19 && minute === 0 && lastPortaltagDate !== dateStr) {
       lastPortaltagDate = dateStr;
       sendPortaltagPush().catch(err => {
         console.error("[portaltage] Fehler beim Senden:", err);
+      });
+      // Mond-Ritual senden (nur an Voll-/Neumond-Tagen)
+      sendMoonRitualPush().catch(err => {
+        console.error("[moon-ritual] Fehler beim Senden:", err);
       });
     }
 
@@ -280,5 +293,5 @@ export function startDailyPushCron(): void {
     }
   }, 60_000); // Jede Minute prüfen
 
-  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage 19:00 + Raunächte 18:00 (Europe/Berlin)");
+  console.log("[daily-push] Cron-Job gestartet: Tagesimpuls 7:00 + Portaltage/Mond-Rituale 19:00 + Raunächte 18:00 (Europe/Berlin)");
 }

@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, title, body, sentSuccess, sentFailed, createdAt FROM push_messages WHERE title LIKE '%Tagesimpuls%' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT id, title, body, sentSuccess, sentFailed, createdAt FROM push_messages WHERE title LIKE '%Tagesimpuls%' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "id": "1350002",
+      "title": "✨ Dein Tagesimpuls",
+      "body": "Deine Intuition ist dein stärkster Kompass. Höre auf sie.",
+      "sentSuccess": "42",
+      "sentFailed": "0",
+      "createdAt": "2026-06-01 05:00:16"
+    },
+    {
+      "id": "1350001",
+      "title": "✨ Dein Tagesimpuls",
+      "body": "Deine Intuition ist dein stärkster Kompass. Höre auf sie.",
+      "sentSuccess": "42",
+      "sentFailed": "0",
+      "createdAt": "2026-06-01 05:00:10"
+    },
+    {
+      "id": "1260001",
+      "title": "✨ Dein Tagesimpuls",
+      "body": "Vertraue dem Prozess. Alles entfaltet sich im richtigen Tempo.",
+      "sentSuccess": "40",
+      "sentFailed": "0",
+      "createdAt": "2026-05-31 05:01:05"
+    },
+    {
+      "id": "1230001",
+      "title": "✨ Dein Tagesimpuls",
+      "body": "Was du aussendest, kehrt zu dir zurück. Wähle Liebe.",
+      "sentSuccess": "38",
+      "sentFailed": "0",
+      "createdAt": "2026-05-30 05:00:59"
+    },
+    {
+      "id": "1200002",
+      "title": "✨ Dein Tagesimpuls",
+      "body": "Jeder Atemzug ist ein Neuanfang. Atme tief und beginne.",
+      "sentSuccess": "38",
+      "sentFailed": "0",
+      "createdAt": "2026-05-29 05:01:03"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttitle\tbody\tsentSuccess\tsentFailed\tcreatedAt\n1350002\t✨ Dein Tagesimpuls\tDeine Intuition ist dein stärkster Kompass. Höre auf sie.\t42\t0\t2026-06-01 05:00:16\n1350001\t✨ Dein Tagesimpuls\tDeine Intuition ist dein stärkster Kompass. Höre auf sie.\t42\t0\t2026-06-01 05:00:10\n1260001\t✨ Dein Tagesimpuls\tVertraue dem Prozess. Alles entfaltet sich im richtigen Tempo.\t40\t0\t2026-05-31 05:01:05\n1230001\t✨ Dein Tagesimpuls\tWas du aussendest, kehrt zu dir zurück. Wähle Liebe.\t38\t0\t2026-05-30 05:00:59\n1200002\t✨ Dein Tagesimpuls\tJeder Atemzug ist ein Neuanfang. Atme tief und beginne.\t38\t0\t2026-05-29 05:01:03\n",
+  "stderr": "",
+  "execution_time_ms": 1282
+}

@@ -1,0 +1,33 @@
+{
+  "query": "SELECT title, body FROM push_messages WHERE title LIKE '%Vollmond%' OR title LIKE '%Neumond%' ORDER BY createdAt DESC LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT title, body FROM push_messages WHERE title LIKE '%Vollmond%' OR title LIKE '%Neumond%' ORDER BY createdAt DESC LIMIT 5;",
+  "rows": [
+    {
+      "title": "Vollmond Ritual",
+      "body": "Hey du 🌕"
+    }
+  ],
+  "messages": [
+    "Schön, dass du da bist.",
+    "Hier kommt dein Vollmond-Ritual für heute Abend:",
+    "Du brauchst:",
+    "Kerze, Papier, Stift, feuerfeste Schale",
+    "1. Ankommen",
+    "Kerze anzünden. 3x tief atmen.",
+    "Sprich: „Ich bin bereit für die Wahrheit, die heute kommen will.”",
+    "2. Wahrheits-Frage",
+    "Schreib auf: „Wo lebe ich gerade zu klein für mich selbst?”",
+    "Lass den Stift schreiben. Mindestens 3 Sätze.",
+    "3. Verbrennen",
+    "Lies laut vor. Verbrenne das Papier in der Schale.",
+    "Sprich: „Ich lasse los, was mich klein hält. Ich rufe ein, was mich nährt.”",
+    "4. Einladen",
+    "Neues Blatt. Schreib: „Was darf heute Nacht in mein Leben kommen?”",
+    "3 mutige Antworten. Falten. Ans Fenster legen. 3 Tage liegen lassen.",
+    "Heute Nacht denk ich an dich. 🔥🌕",
+    "Lara 🤍"
+  ],
+  "stdout": "title\tbody\nVollmond Ritual\tHey du 🌕\n\nSchön, dass du da bist.\n\nHier kommt dein Vollmond-Ritual für heute Abend:\n\nDu brauchst:\nKerze, Papier, Stift, feuerfeste Schale\n\n1. Ankommen\nKerze anzünden. 3x tief atmen.\nSprich: „Ich bin bereit für die Wahrheit, die heute kommen will.”\n\n2. Wahrheits-Frage\nSchreib auf: „Wo lebe ich gerade zu klein für mich selbst?”\nLass den Stift schreiben. Mindestens 3 Sätze.\n\n3. Verbrennen\nLies laut vor. Verbrenne das Papier in der Schale.\nSprich: „Ich lasse los, was mich klein hält. Ich rufe ein, was mich nährt.”\n\n4. Einladen\nNeues Blatt. Schreib: „Was darf heute Nacht in mein Leben kommen?”\n3 mutige Antworten. Falten. Ans Fenster legen. 3 Tage liegen lassen.\n\nHeute Nacht denk ich an dich. 🔥🌕\n\nLara 🤍\n",
+  "stderr": "",
+  "execution_time_ms": 282
+}

@@ -283,6 +283,24 @@ export async function getPushMessageHistory() {
   });
 }
 
+/**
+ * Prüft ob heute bereits eine Push-Nachricht mit dem gegebenen Titel-Keyword gesendet wurde.
+ * Verwendet UTC-Datum für den Vergleich.
+ */
+export async function checkIfPushSentToday(titleKeyword: string): Promise<boolean> {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const results = await db.select().from(pushMessages)
+      .where(and(
+        sql`${pushMessages.title} LIKE ${'%' + titleKeyword + '%'}`,
+        sql`${pushMessages.createdAt} >= ${today}`
+      ));
+    return results.length > 0;
+  });
+}
+
 // ── Community Q&A ──
 
 export async function getAllCommunityQuestions() {

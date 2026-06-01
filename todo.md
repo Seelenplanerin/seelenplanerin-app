@@ -803,3 +803,6 @@
 - [x] E-Mail-Benachrichtigung an laramwille@gmail.com bei Academy-Warteliste-Anmeldung
 - [x] Academy-Warteliste im Admin-Panel sichtbar machen + Rauhnächte-Warteliste im Admin
 - [x] Bug: Längere Push-Nachrichten können in der Nachrichten-Ansicht nicht komplett gelesen werden
+- [x] Bug: Tagesimpuls wird doppelt gesendet (soll nur 1x pro Tag) - Fix: DB-Duplikat-Prüfung
+- [x] Vollmond-Ritual als automatische Push-Nachricht bei Vollmond (7 einzigartige Rituale mit Tierkreiszeichen)
+- [x] Neumond-Ritual als automatische Push-Nachricht bei Neumond (7 einzigartige Rituale mit Tierkreiszeichen)

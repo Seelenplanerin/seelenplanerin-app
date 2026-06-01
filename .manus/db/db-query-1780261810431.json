@@ -1,0 +1,100 @@
+{
+  "query": "SELECT * FROM push_tokens ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user EAbAuyLkfPx4kNa.43508c8f8c45 --database 6tNxx849MbaAPaCKuehjug --execute SELECT * FROM push_tokens ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "1140001",
+      "token": "ExponentPushToken[3wp5XCJgmCg4oc0v056zTX]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-31 20:07:52",
+      "updatedAt": "2026-05-31 20:07:52"
+    },
+    {
+      "id": "1110001",
+      "token": "ExponentPushToken[epXeRjPdwCb7fk01wfQgiX]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-30 21:43:11",
+      "updatedAt": "2026-05-30 21:43:11"
+    },
+    {
+      "id": "1080001",
+      "token": "ExponentPushToken[iDE1u5Cyv2rrWpICX9V0GF]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-30 16:41:01",
+      "updatedAt": "2026-05-30 16:41:01"
+    },
+    {
+      "id": "1050001",
+      "token": "ExponentPushToken[O1lHZxLam-uPPSpri8G0bu]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-29 04:30:44",
+      "updatedAt": "2026-05-29 04:30:44"
+    },
+    {
+      "id": "1020001",
+      "token": "ExponentPushToken[2tPNL5DRQBfoZCEJxUTbl4]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-26 10:55:39",
+      "updatedAt": "2026-05-26 10:55:39"
+    },
+    {
+      "id": "990001",
+      "token": "ExponentPushToken[VtLyuDDkixhdW3LtlBwyVA]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-26 10:52:06",
+      "updatedAt": "2026-05-26 10:52:06"
+    },
+    {
+      "id": "960001",
+      "token": "ExponentPushToken[8xaKf2MzLaZ05CzNbOLmj3]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-24 17:30:17",
+      "updatedAt": "2026-05-24 17:30:17"
+    },
+    {
+      "id": "930001",
+      "token": "ExponentPushToken[9pYdVoJp-sdF94z4vVRbTn]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-24 02:25:48",
+      "updatedAt": "2026-05-24 02:25:48"
+    },
+    {
+      "id": "900001",
+      "token": "ExponentPushToken[YOFSFqB61KzanjTVVv6pEw]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-23 15:50:29",
+      "updatedAt": "2026-05-23 15:50:29"
+    },
+    {
+      "id": "870001",
+      "token": "ExponentPushToken[Vgd9N7JpeaupB3BKf3BQye]",
+      "platform": "ios",
+      "communityEmail": "NULL",
+      "isActive": "1",
+      "createdAt": "2026-05-23 07:21:07",
+      "updatedAt": "2026-05-23 07:21:07"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttoken\tplatform\tcommunityEmail\tisActive\tcreatedAt\tupdatedAt\n1140001\tExponentPushToken[3wp5XCJgmCg4oc0v056zTX]\tios\tNULL\t1\t2026-05-31 20:07:52\t2026-05-31 20:07:52\n1110001\tExponentPushToken[epXeRjPdwCb7fk01wfQgiX]\tios\tNULL\t1\t2026-05-30 21:43:11\t2026-05-30 21:43:11\n1080001\tExponentPushToken[iDE1u5Cyv2rrWpICX9V0GF]\tios\tNULL\t1\t2026-05-30 16:41:01\t2026-05-30 16:41:01\n1050001\tExponentPushToken[O1lHZxLam-uPPSpri8G0bu]\tios\tNULL\t1\t2026-05-29 04:30:44\t2026-05-29 04:30:44\n1020001\tExponentPushToken[2tPNL5DRQBfoZCEJxUTbl4]\tios\tNULL\t1\t2026-05-26 10:55:39\t2026-05-26 10:55:39\n990001\tExponentPushToken[VtLyuDDkixhdW3LtlBwyVA]\tios\tNULL\t1\t2026-05-26 10:52:06\t2026-05-26 10:52:06\n960001\tExponentPushToken[8xaKf2MzLaZ05CzNbOLmj3]\tios\tNULL\t1\t2026-05-24 17:30:17\t2026-05-24 17:30:17\n930001\tExponentPushToken[9pYdVoJp-sdF94z4vVRbTn]\tios\tNULL\t1\t2026-05-24 02:25:48\t2026-05-24 02:25:48\n900001\tExponentPushToken[YOFSFqB61KzanjTVVv6pEw]\tios\tNULL\t1\t2026-05-23 15:50:29\t2026-05-23 15:50:29\n870001\tExponentPushToken[Vgd9N7JpeaupB3BKf3BQye]\tios\tNULL\t1\t2026-05-23 07:21:07\t2026-05-23 07:21:07\n",
+  "stderr": "",
+  "execution_time_ms": 316
+}
