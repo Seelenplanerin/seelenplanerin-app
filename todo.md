@@ -808,3 +808,4 @@
 - [x] Neumond-Ritual als automatische Push-Nachricht bei Neumond (7 einzigartige Rituale mit Tierkreiszeichen)
 - [x] Seelenlegung (Lenormand-Legung) als neues Angebot in die App einbinden
 - [x] Links in Push-Nachrichten klickbar machen (in der Nachrichten-Ansicht)
+- [x] Bug: Links in Push-Nachrichten öffnen sich nicht beim Tippen auf die Notification - Fix: URL aus Body extrahieren und direkt mit Linking.openURL() öffnen

@@ -10,7 +10,7 @@
  * - scheduleAllNotifications, cancelAllNotifications, getScheduledCount
  * - getUpcomingEvents, formatDateDE
  */
-import { Platform } from "react-native";
+import { Platform, Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiBaseUrl } from "@/constants/oauth";
 
@@ -45,11 +45,22 @@ export function initNotificationHandler() {
     });
     // Response-Listener: Wenn Nutzerin auf die Notification tippt
     N.addNotificationResponseReceivedListener((response) => {
-      // Nachricht-Inhalt extrahieren und zum Nachrichten-Screen navigieren
+      // Nachricht-Inhalt extrahieren
       const notification = response.notification;
       const title = notification.request.content.title || "Die Seelenplanerin";
       const body = notification.request.content.body || "";
-      // Dynamischer Import von router um Circular Dependencies zu vermeiden
+
+      // URL aus dem Body extrahieren und direkt im Browser öffnen
+      const urlMatch = body.match(/https?:\/\/[^\s]+/);
+      if (urlMatch) {
+        try {
+          Linking.openURL(urlMatch[0]);
+        } catch (e) {
+          console.log("[Notifications] URL konnte nicht geöffnet werden:", e);
+        }
+      }
+
+      // Auch zur Nachrichten-Detail-Ansicht navigieren
       try {
         const { router } = require("expo-router");
         router.push({
