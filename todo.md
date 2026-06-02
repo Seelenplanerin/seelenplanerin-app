@@ -806,3 +806,4 @@
 - [x] Bug: Tagesimpuls wird doppelt gesendet (soll nur 1x pro Tag) - Fix: DB-Duplikat-Prüfung
 - [x] Vollmond-Ritual als automatische Push-Nachricht bei Vollmond (7 einzigartige Rituale mit Tierkreiszeichen)
 - [x] Neumond-Ritual als automatische Push-Nachricht bei Neumond (7 einzigartige Rituale mit Tierkreiszeichen)
+- [x] Seelenlegung (Lenormand-Legung) als neues Angebot in die App einbinden
