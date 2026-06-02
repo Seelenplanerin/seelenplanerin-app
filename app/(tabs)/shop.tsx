@@ -175,22 +175,7 @@ export default function ShopScreen() {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={s.serviceCard}
-            onPress={() => router.push("/seelenlegung" as any)}
-            activeOpacity={0.8}
-          >
-            <View style={s.serviceLeft}>
-              <Text style={s.serviceEmoji}>🃏</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={s.serviceName}>Seelenlegung</Text>
-                <Text style={s.serviceDesc}>Lenormand-Legung: Deine Frage beantwortet</Text>
-              </View>
-            </View>
-            <View style={s.servicePrice}>
-              <Text style={s.servicePriceText}>ab 33 €</Text>
-            </View>
-          </TouchableOpacity>
+
         </View>
 
         {/* Runen-Quiz Banner */}

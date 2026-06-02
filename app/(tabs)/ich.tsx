@@ -345,18 +345,7 @@ export default function IchScreen() {
             </View>
             <Text style={s.menuArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => router.push("/seelenlegung" as any)}
-            activeOpacity={0.8}
-          >
-            <Text style={s.menuEmoji}>🃏</Text>
-            <View style={s.menuTextWrap}>
-              <Text style={s.menuLabel}>Seelenlegung</Text>
-              <Text style={s.menuDesc}>Lenormand-Legung: Deine Frage beantwortet</Text>
-            </View>
-            <Text style={s.menuArrow}>›</Text>
-          </TouchableOpacity>
+
           <TouchableOpacity
             style={[s.menuItem, s.menuItemBorder]}
             onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}

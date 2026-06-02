@@ -89,6 +89,7 @@ const KATEGORIEN = [
   { id: "runen", label: "Runen", emoji: "ᚱ", desc: "Schutzrune & Runen-Quiz", route: "/(tabs)/runen" },
   { id: "aura", label: "Aura", emoji: "🌈", desc: "Deine heutige Aura-Farbe", route: "/aura" },
   { id: "journal", label: "Journal", emoji: "📖", desc: "Dein persönliches Seelentagebuch", route: "/(tabs)/journal" },
+  { id: "seelenlegung", label: "Seelenlegung", emoji: "🃏", desc: "Lenormand-Legung für dich", route: "/seelenlegung" },
   { id: "shop", label: "Shop", emoji: "✨", desc: "Handgravierte Runen-Armbänder", route: "/shop" },
 ];
 

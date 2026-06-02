@@ -127,7 +127,7 @@ const DEFAULT_POSTS: CommunityPost[] = [
 const ANGEBOTE = [
   { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
   { emoji: "🔮", titel: "Aura Reading", preis: "111 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
-  { emoji: "🃏", titel: "Seelenlegung", preis: "ab 33 €", beschreibung: "Lenormand-Legung: Deine Frage beantwortet", url: "https://dieseelenplanerin.de/seelenarbeit/seelenlegung" },
+
 ];
 
 const POSTS_KEY = "community_posts";

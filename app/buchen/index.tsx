@@ -72,23 +72,7 @@ const SESSIONS: Session[] = [
     badge: "Premium",
     bookingUrl: "https://www.instagram.com/die.seelenplanerin/",
   },
-  {
-    id: "seelenlegung",
-    name: "Seelenlegung",
-    dauer: "48 Stunden",
-    preis: "ab 33 \u20ac",
-    beschreibung: "Lenormand-Legung f\u00fcr dich. Ich lege die gro\u00dfe Tafel und h\u00f6re, was sich f\u00fcr dich zeigt. Du bekommst eine pers\u00f6nliche Sprachnachricht plus PDF.",
-    details: [
-      "Pers\u00f6nliche Lenormand-Legung",
-      "Sprachnachricht mit Deutung",
-      "PDF mit Legung & Reflexionsfragen",
-      "Lieferung innerhalb 48 Stunden",
-      "Eine Frage (33 \u20ac) oder Rundum-Blick (77 \u20ac)",
-    ],
-    emoji: "\ud83c\udccf",
-    badge: "Neu",
-    bookingUrl: "https://dieseelenplanerin.de/seelenarbeit/seelenlegung",
-  },
+
 ];
 
 // Einfacher Kalender für die nächsten 14 Tage
