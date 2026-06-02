@@ -1,10 +1,38 @@
 import React, { useState, useEffect } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Linking,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+/** Macht URLs im Text klickbar */
+function LinkifiedText({ text, style }: { text: string; style?: any }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+
+  if (parts.length === 1) {
+    return <Text style={style}>{text}</Text>;
+  }
+
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => {
+        if (/^https?:\/\//.test(part)) {
+          return (
+            <Text
+              key={i}
+              style={{ color: "#C4826A", textDecorationLine: "underline" }}
+              onPress={() => Linking.openURL(part)}
+            >
+              {part}
+            </Text>
+          );
+        }
+        return <Text key={i}>{part}</Text>;
+      })}
+    </Text>
+  );
+}
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -130,7 +158,7 @@ export default function NachrichtenScreen() {
               <Text style={s.detailTime}>{formatTime(selectedMsg.timestamp)}</Text>
             </View>
             <Text style={s.detailTitle}>{selectedMsg.title}</Text>
-            <Text style={s.detailBody}>{selectedMsg.body}</Text>
+            <LinkifiedText text={selectedMsg.body} style={s.detailBody} />
           </View>
         </ScrollView>
       </ScreenContainer>
