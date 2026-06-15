@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Linking,
+  ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getApiBaseUrl } from "@/constants/oauth";
 
 /** Macht URLs im Text klickbar */
 function LinkifiedText({ text, style }: { text: string; style?: any }) {
@@ -71,8 +73,36 @@ export async function saveNachricht(title: string, body: string): Promise<void> 
   }
 }
 
-/** Alle Nachrichten laden */
-async function loadNachrichten(): Promise<Nachricht[]> {
+/** Nachrichten vom Server laden (push.history) – enthält IMMER den vollständigen Text */
+async function loadNachrichtenFromServer(): Promise<Nachricht[]> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const url = `${baseUrl}/api/trpc/push.history`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) return [];
+    const json = await response.json();
+    // tRPC response format: { result: { data: { json: [...] } } }
+    const data = json?.result?.data?.json || json?.result?.data || [];
+    if (!Array.isArray(data)) return [];
+    
+    return data.map((msg: any) => ({
+      id: String(msg.id),
+      title: msg.title || "Die Seelenplanerin",
+      body: msg.body || "",
+      timestamp: msg.createdAt ? new Date(msg.createdAt).getTime() : Date.now(),
+      read: true, // Server-Nachrichten als gelesen markieren
+    }));
+  } catch (e) {
+    console.log("[Nachrichten] Server-Abruf fehlgeschlagen:", e);
+    return [];
+  }
+}
+
+/** Lokale Nachrichten laden (Fallback) */
+async function loadNachrichtenLocal(): Promise<Nachricht[]> {
   try {
     const data = await AsyncStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
@@ -105,16 +135,54 @@ function formatTime(ts: number): string {
   if (diffH < 24) return `Vor ${diffH} Std.`;
   if (diffD === 1) return "Gestern";
   if (diffD < 7) return `Vor ${diffD} Tagen`;
-  return d.toLocaleDateString("de-DE", { day: "numeric", month: "short" });
+  return d.toLocaleDateString("de-DE", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function NachrichtenScreen() {
   const params = useLocalSearchParams<{ title?: string; body?: string }>();
   const [nachrichten, setNachrichten] = useState<Nachricht[]>([]);
   const [selectedMsg, setSelectedMsg] = useState<Nachricht | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Wenn über Notification geöffnet: Nachricht speichern und anzeigen
+    async function loadMessages() {
+      setLoading(true);
+      
+      // 1. Versuche Nachrichten vom Server zu laden (vollständige Texte)
+      let serverMessages = await loadNachrichtenFromServer();
+      
+      // 2. Lokale Nachrichten als Fallback
+      const localMessages = await loadNachrichtenLocal();
+      
+      // 3. Server-Nachrichten haben Priorität (vollständiger Text!)
+      // Merge: Server-Nachrichten + lokale die nicht auf dem Server sind
+      let allMessages: Nachricht[] = [];
+      
+      if (serverMessages.length > 0) {
+        allMessages = serverMessages;
+        // Lokale Nachrichten die nicht vom Server kommen (z.B. lokale Notifications)
+        // hinzufügen wenn sie nicht schon existieren (nach Titel+Body prüfen)
+        for (const local of localMessages) {
+          const exists = serverMessages.some(
+            s => s.title === local.title && s.body.substring(0, 50) === local.body.substring(0, 50)
+          );
+          if (!exists) {
+            allMessages.push(local);
+          }
+        }
+        // Nach Zeitstempel sortieren (neueste zuerst)
+        allMessages.sort((a, b) => b.timestamp - a.timestamp);
+      } else {
+        // Kein Server erreichbar → nur lokale Nachrichten
+        allMessages = localMessages;
+      }
+      
+      setNachrichten(allMessages);
+      setLoading(false);
+      markAllRead();
+    }
+
+    // Wenn über Notification geöffnet: direkt Detail-Ansicht zeigen
     if (params.title && params.body) {
       const msg: Nachricht = {
         id: Date.now().toString(),
@@ -124,15 +192,11 @@ export default function NachrichtenScreen() {
         read: true,
       };
       setSelectedMsg(msg);
-      // Auch speichern
+      // Auch lokal speichern
       saveNachricht(params.title, params.body);
     }
 
-    // Alle Nachrichten laden
-    loadNachrichten().then((msgs) => {
-      setNachrichten(msgs);
-      markAllRead();
-    });
+    loadMessages();
   }, []);
 
   // Detail-Ansicht: Wenn eine Nachricht ausgewählt ist, zeige sie vollständig scrollbar
@@ -178,12 +242,20 @@ export default function NachrichtenScreen() {
           <Text style={s.subtitle}>Deine Botschaften von der Seelenplanerin</Text>
         </View>
 
+        {/* Ladeindikator */}
+        {loading && (
+          <View style={{ padding: 40, alignItems: "center" }}>
+            <ActivityIndicator size="large" color={C.rose} />
+            <Text style={{ marginTop: 12, color: C.muted, fontSize: 14 }}>Nachrichten werden geladen...</Text>
+          </View>
+        )}
+
         {/* Nachrichten-Liste */}
-        {nachrichten.length > 0 && (
+        {!loading && nachrichten.length > 0 && (
           <View style={s.list}>
             {nachrichten.map((msg, i) => (
               <TouchableOpacity
-                key={msg.id}
+                key={msg.id + "-" + i}
                 style={[s.msgCard, !msg.read && s.msgUnread, i > 0 && { marginTop: 10 }]}
                 onPress={() => setSelectedMsg(msg)}
               >
@@ -200,7 +272,7 @@ export default function NachrichtenScreen() {
         )}
 
         {/* Leerer Zustand */}
-        {nachrichten.length === 0 && (
+        {!loading && nachrichten.length === 0 && (
           <View style={s.emptyCard}>
             <Text style={s.emptyIcon}>💌</Text>
             <Text style={s.emptyTitle}>Noch keine Nachrichten</Text>

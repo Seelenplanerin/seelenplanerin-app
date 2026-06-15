@@ -809,3 +809,4 @@
 - [x] Seelenlegung (Lenormand-Legung) als neues Angebot in die App einbinden
 - [x] Links in Push-Nachrichten klickbar machen (in der Nachrichten-Ansicht)
 - [x] Bug: Links in Push-Nachrichten öffnen sich nicht beim Tippen auf die Notification - Fix: URL aus Body extrahieren und direkt mit Linking.openURL() öffnen
+- [x] Bug: Push-Nachrichten (lange Rituale) können nicht im Nachhinein geöffnet/gelesen werden – Fix: Foreground-Listener speichert alle eingehenden Nachrichten automatisch + Nachrichten werden auch vom Server geladen (push.history)

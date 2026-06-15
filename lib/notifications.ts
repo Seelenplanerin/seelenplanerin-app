@@ -43,6 +43,18 @@ export function initNotificationHandler() {
         shouldShowList: true,
       }),
     });
+    // Foreground-Listener: Speichere JEDE eingehende Nachricht automatisch
+    N.addNotificationReceivedListener((notification) => {
+      const title = notification.request.content.title || "Die Seelenplanerin";
+      const body = notification.request.content.body || "";
+      if (body) {
+        // Dynamisch importieren um zirkuläre Abhängigkeiten zu vermeiden
+        import("@/app/nachrichten").then(({ saveNachricht }) => {
+          saveNachricht(title, body);
+        }).catch(() => {});
+      }
+    });
+
     // Response-Listener: Wenn Nutzerin auf die Notification tippt
     N.addNotificationResponseReceivedListener((response) => {
       // Nachricht-Inhalt extrahieren
