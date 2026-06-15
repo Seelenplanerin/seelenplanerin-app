@@ -202,29 +202,33 @@ export default function NachrichtenScreen() {
   // Detail-Ansicht: Wenn eine Nachricht ausgewählt ist, zeige sie vollständig scrollbar
   if (selectedMsg) {
     return (
-      <ScreenContainer containerClassName="bg-background">
-        <ScrollView
-          style={{ flex: 1, backgroundColor: C.bg }}
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
-          showsVerticalScrollIndicator={true}
-        >
-          {/* Header mit Zurück-Button */}
+      <ScreenContainer edges={["top", "bottom", "left", "right"]} containerClassName="bg-background">
+        <View style={{ flex: 1, backgroundColor: C.bg }}>
+          {/* Header mit Zurück-Button – AUSSERHALB der ScrollView */}
           <View style={s.header}>
             <TouchableOpacity style={s.backBtn} onPress={() => setSelectedMsg(null)}>
               <Text style={s.backText}>← Alle Nachrichten</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Nachricht vollständig anzeigen */}
-          <View style={s.detailCard}>
-            <View style={s.detailHeader}>
-              <Text style={s.detailBadge}>Nachricht</Text>
-              <Text style={s.detailTime}>{formatTime(selectedMsg.timestamp)}</Text>
+          {/* Scrollbarer Nachrichteninhalt */}
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            showsVerticalScrollIndicator={true}
+            bounces={true}
+          >
+            {/* Nachricht vollständig anzeigen */}
+            <View style={s.detailCard}>
+              <View style={s.detailHeader}>
+                <Text style={s.detailBadge}>Nachricht</Text>
+                <Text style={s.detailTime}>{formatTime(selectedMsg.timestamp)}</Text>
+              </View>
+              <Text style={s.detailTitle}>{selectedMsg.title}</Text>
+              <LinkifiedText text={selectedMsg.body} style={s.detailBody} />
             </View>
-            <Text style={s.detailTitle}>{selectedMsg.title}</Text>
-            <LinkifiedText text={selectedMsg.body} style={s.detailBody} />
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
       </ScreenContainer>
     );
   }
