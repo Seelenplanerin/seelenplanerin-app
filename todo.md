@@ -826,3 +826,9 @@
 - [x] Admin darf bei Datenbankfehler weder falsche Nullwerte noch einen scheinbar erfolgreichen Push-Versand anzeigen
 - [ ] Nachlauf: Veraltete DATABASE_URL des bisherigen Render-Dienstes rotieren und auf den aktuellen TiDB-Zugang umstellen
 - [x] Entwicklungsserver nach Ausfall neu starten und Vorschau-Erreichbarkeit verifizieren
+- [x] Checkpoint 3c92aa34 vollständig auf GitHub main übertragen und Remote-Commit verifizieren
+- [ ] Automatischen Render-Deploy dieses GitHub-Commits prüfen und Produktionsstatus bestätigen
+- [x] Sicheren Git-Archiv-Export von Checkpoint 3c92aa34 für die einmalige GitHub-Synchronisierung bereitstellen
+- [x] Einmaligen GitHub-Actions-Workflow zur vollständigen Snapshot-Synchronisierung vorbereiten und ausführen
+- [x] Render-Serverstart darf bei abgelehnter Datenbankmigration nicht mehr abstürzen oder die Web-App mit 502 offline nehmen
+- [ ] Render-Fallbackbetrieb mit funktionierendem externen Produktions-API-Ziel lokal und auf der Domain verifizieren
