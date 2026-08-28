@@ -691,7 +691,7 @@ export default function CommunityPremiumScreen() {
           <TouchableOpacity onPress={() => router.back()} style={s.backBtn} activeOpacity={0.7}>
             <Text style={s.backIcon}>←</Text>
           </TouchableOpacity>
-          <Text style={s.headerTitle}>Premium Inhalte</Text>
+          <Text style={s.headerTitle}>Inner Circle</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -699,7 +699,7 @@ export default function CommunityPremiumScreen() {
         <View style={s.premiumBadge}>
           <Text style={{ fontSize: 22 }}>👑</Text>
           <View style={{ flex: 1 }}>
-            <Text style={s.premiumTitle}>Seelenimpuls Premium</Text>
+            <Text style={s.premiumTitle}>Inner Circle Inhalte</Text>
             <Text style={s.premiumSub}>Mondkalender · Meditationen · Mantra · Zyklus</Text>
           </View>
         </View>

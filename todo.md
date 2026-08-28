@@ -811,3 +811,18 @@
 - [x] Bug: Links in Push-Nachrichten öffnen sich nicht beim Tippen auf die Notification - Fix: URL aus Body extrahieren und direkt mit Linking.openURL() öffnen
 - [x] Bug: Push-Nachrichten (lange Rituale) können nicht im Nachhinein geöffnet/gelesen werden – Fix: Foreground-Listener speichert alle eingehenden Nachrichten automatisch + Nachrichten werden auch vom Server geladen (push.history)
 - [x] Seelen Academy: Nur noch "Aura Reading Ausbildung" anzeigen, Theta Healing und Kakaozeremonie entfernt
+- [x] Rituale-Screen: Nur Rituale ab heute anzeigen, vergangene automatisch ausblenden
+- [x] Push-Nachrichten bei Ritualen: Nur kurzer Hinweis ("Heute ist Vollmond – schau in den Ritualen nach!") statt volles Ritual senden
+- [x] Mitgliederanzeige und Anzahl registrierter Community-Mitglieder vollständig prüfen
+- [x] Push-Registrierungen und Anzahl erreichbarer Push-Empfängerinnen vollständig prüfen
+- [x] Push-Geräte beim App-Start und Community-Login mit der gespeicherten Mitglieder-E-Mail verknüpfen
+- [x] Admin-Push-Statistik in native Geräte, Web-Abos, Gesamtempfänger und verknüpfte Mitglieder aufteilen
+- [x] Seelenakademie nach neuer Zielseite und neuen Angaben aktualisieren
+- [x] Geplante Ausbildungen sowie Aura Reading, Theta Healing und Kakaozeremonie aus dem Seelenakademie-Bereich entfernen
+- [x] Bewerbungsweg der neuen Seelenakademie-Seite https://dieseelenplanerin.de/seelenakademie#bewerbung in die App integrieren
+- [x] Seelenimpuls vollständig aus sichtbarer App-Navigation, Kacheln, Verlinkungen und zugehörigen Abläufen entfernen
+- [x] Akut: App auf funktionierenden datenbankverbundenen Produktionsserver umstellen und Produktionsabfragen wiederherstellen
+- [x] Akut: Push-Versand ohne Nachricht an alle Nutzerinnen technisch prüfen und reaktivieren
+- [x] Admin darf bei Datenbankfehler weder falsche Nullwerte noch einen scheinbar erfolgreichen Push-Versand anzeigen
+- [ ] Nachlauf: Veraltete DATABASE_URL des bisherigen Render-Dienstes rotieren und auf den aktuellen TiDB-Zugang umstellen
+- [x] Entwicklungsserver nach Ausfall neu starten und Vorschau-Erreichbarkeit verifizieren

@@ -216,15 +216,6 @@ export default function MondtypQuizScreen() {
             <Text style={[s.affirmation, { color: typ.farbe }]}>"{typ.affirmation}"</Text>
           </View>
 
-          {/* Seelenimpuls CTA */}
-          <View style={s.ctaCard}>
-            <Text style={s.ctaTitel}>Tiefer eintauchen?</Text>
-            <Text style={s.ctaText}>Im Seelenimpuls bekommst du jeden Monat tiefe Mondenergie-Impulse, persönliche Rituale und die Begleitung der Seelenplanerin – passend zu deinem Mondtyp.</Text>
-            <TouchableOpacity style={s.ctaBtn} onPress={() => router.push("/seelenimpuls")} activeOpacity={0.85}>
-              <Text style={s.ctaBtnText}>Zum Seelenimpuls →</Text>
-            </TouchableOpacity>
-          </View>
-
           {/* Neu starten */}
           <TouchableOpacity style={s.neuStartenBtn} onPress={neuStarten} activeOpacity={0.8}>
             <Text style={s.neuStartenText}>Quiz wiederholen</Text>

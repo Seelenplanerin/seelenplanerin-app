@@ -24,8 +24,9 @@ export const OWNER_OPEN_ID = env.ownerId;
 export const OWNER_NAME = env.ownerName;
 export const API_BASE_URL = env.apiBaseUrl;
 
-// Production API URL for the deployed Render server
-const PRODUCTION_API_URL = "https://www.app.dieseelenplanerin.de";
+// Stabiler Produktions-API-Server. Der bisherige Render-Dienst kann die
+// TiDB-Datenbank derzeit wegen veralteter Zugangsdaten nicht erreichen.
+const PRODUCTION_API_URL = "https://seelenapp-6tnxx849.manus.space";
 
 /**
  * Get the API base URL, deriving from current hostname if not set.
@@ -38,8 +39,13 @@ export function getApiBaseUrl(): string {
   if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     const { protocol, hostname } = window.location;
 
-    // If hostname does NOT contain 'manus.computer', we're on a deployed host
-    // (e.g. onrender.com) where API is on the same origin
+    // Die bisherige Render-Webdomain nutzt ebenfalls den stabilen
+    // Produktions-API-Server, bis ihre Datenbankverbindung repariert ist.
+    if (hostname === "www.app.dieseelenplanerin.de" || hostname.endsWith("onrender.com")) {
+      return PRODUCTION_API_URL;
+    }
+
+    // Andere veröffentlichte Hosts bedienen die API am selben Ursprung.
     if (!hostname.includes("manus.computer")) {
       return "";
     }
@@ -54,7 +60,7 @@ export function getApiBaseUrl(): string {
     }
   }
 
-  // Native: ALWAYS use the production Render URL
+  // Native: Immer den stabilen Produktions-API-Server verwenden.
   // (The sandbox EXPO_PUBLIC_API_BASE_URL is not accessible from user devices)
   if (ReactNative.Platform.OS !== "web") {
     return PRODUCTION_API_URL;

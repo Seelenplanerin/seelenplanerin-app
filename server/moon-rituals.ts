@@ -514,19 +514,24 @@ export async function sendMoonRitualPush(): Promise<void> {
       return;
     }
 
-    // Web-Push senden
-    sendWebPushToAll({ title: ritual.title, body: ritual.body, data: { type: `moon-${type}`, zodiac: ritual.zodiac } })
+    // Kurzer Hinweis statt volles Ritual in der Push-Nachricht
+    const pushHint = type === "vollmond"
+      ? `Heute ist Vollmond im ${ritual.zodiac} \u{1F315} \u2013 Dein Ritual wartet in der App auf dich. Schau unter Rituale nach!`
+      : `Heute ist Neumond im ${ritual.zodiac} \u{1F311} \u2013 Dein Ritual wartet in der App auf dich. Schau unter Rituale nach!`;
+
+    // Web-Push senden (kurzer Hinweis)
+    sendWebPushToAll({ title: ritual.title, body: pushHint, data: { type: `moon-${type}`, zodiac: ritual.zodiac } })
       .then(r => console.log(`[moon-ritual] Web-Push: ${r.sent} gesendet, ${r.failed} fehlgeschlagen`))
       .catch(e => console.error("[moon-ritual] Web-Push Fehler:", e));
 
-    // Push-Nachricht in DB speichern
+    // Push-Nachricht in DB speichern (volles Ritual für die Nachrichten-Ansicht in der App)
     const messageId = await createPushMessage({
       title: ritual.title,
       body: ritual.body,
       data: JSON.stringify({ type: `moon-${type}`, zodiac: ritual.zodiac }),
     });
 
-    // Expo Push API senden
+    // Expo Push API senden (nur kurzer Hinweis)
     const tokenStrings = tokens.map((t: any) => t.token);
     const chunks: string[][] = [];
     for (let i = 0; i < tokenStrings.length; i += 100) {
@@ -542,7 +547,7 @@ export async function sendMoonRitualPush(): Promise<void> {
           to: token,
           sound: "default" as const,
           title: ritual.title,
-          body: ritual.body,
+          body: pushHint,
           data: { type: `moon-${type}`, zodiac: ritual.zodiac },
         }));
 

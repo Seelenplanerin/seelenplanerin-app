@@ -9,6 +9,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { registerPushTokenWithServer } from "@/lib/notifications";
 
 // ── Song-Interface (gleich wie in musik.tsx) ──
 interface Song {
@@ -109,7 +110,7 @@ const DEFAULT_POSTS: CommunityPost[] = [
   },
   {
     id: "default-2", emoji: "✨", titel: "Nächster Community-Call",
-    text: "Unser monatlicher Community-Call findet bald statt! Ich freue mich so sehr auf euch. Wir sprechen über die aktuelle Mondenergie, eure Fragen und ich führe euch durch eine kurze Meditation. Alle Seelenimpuls-Mitglieder sind dabei.",
+    text: "Unser monatlicher Community-Call findet bald statt! Ich freue mich so sehr auf euch. Wir sprechen über die aktuelle Mondenergie, eure Fragen und ich führe euch durch eine kurze Meditation. Alle Inner-Circle-Mitglieder sind dabei.",
     datum: new Date(Date.now() - 86400000).toISOString(), von: "Die Seelenplanerin", istLara: true,
   },
   {
@@ -635,6 +636,7 @@ export default function CommunityScreen() {
         setCurrentUser(found);
         setFehler("");
         await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        registerPushTokenWithServer().catch(() => {});
         if (found.mustChangePassword) {
           setShowChangePw(true);
         }
@@ -656,6 +658,7 @@ export default function CommunityScreen() {
         setCurrentUser(found);
         setFehler("");
         await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(found));
+        registerPushTokenWithServer().catch(() => {});
         if (found.mustChangePassword) setShowChangePw(true);
       } catch {
         setFehler("Verbindungsfehler. Bitte versuche es erneut.");
@@ -707,6 +710,7 @@ export default function CommunityScreen() {
     }
 
     await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
+    registerPushTokenWithServer().catch(() => {});
     setIsLoggedIn(true);
     setUserName(newUser.name);
     setCurrentUser(newUser);
@@ -1002,13 +1006,6 @@ export default function CommunityScreen() {
                 )}
             </View>
 
-            <TouchableOpacity
-              style={s.seelenimpulsBtn}
-              onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
-              activeOpacity={0.85}
-            >
-              <Text style={s.seelenimpulsBtnText}>👑 Seelenimpuls buchen – exklusive Community-Inhalte</Text>
-            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       </ScreenContainer>
@@ -1047,7 +1044,7 @@ export default function CommunityScreen() {
           >
             <View style={s.premiumHeroInner}>
               <Text style={{ fontSize: 40, marginBottom: 8 }}>👑</Text>
-              <Text style={s.premiumHeroTitle}>Premium Bereich</Text>
+              <Text style={s.premiumHeroTitle}>Inner Circle</Text>
               <Text style={s.premiumHeroSub}>
                 Dein exklusiver Zugang zu Zyklustracker, Mondkalender & geführten Meditationen
               </Text>
@@ -1396,8 +1393,6 @@ const s = StyleSheet.create({
   forgotBtn: { alignItems: "center", marginTop: 12 },
   forgotText: { fontSize: 13, color: C.rose, fontWeight: "600" },
   loginBtnText: { color: "#FFF", fontWeight: "700", fontSize: 15 },
-  seelenimpulsBtn: { backgroundColor: C.goldLight, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20, borderWidth: 1, borderColor: "#E8D5B0", width: "100%" },
-  seelenimpulsBtnText: { fontSize: 14, color: C.brown, fontWeight: "700", textAlign: "center" },
   header: { backgroundColor: C.roseLight, padding: 20, paddingTop: 24 },
   headerTitle: { fontSize: 30, fontWeight: "700", color: C.brown, fontFamily: "DancingScript" },
   headerSub: { fontSize: 14, color: C.muted, marginTop: 4 },

@@ -347,18 +347,6 @@ export default function IchScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
-            activeOpacity={0.8}
-          >
-            <Text style={s.menuEmoji}>👑</Text>
-            <View style={s.menuTextWrap}>
-              <Text style={s.menuLabel}>Seelenimpuls Premium</Text>
-              <Text style={s.menuDesc}>Exklusive Inhalte</Text>
-            </View>
-            <Text style={s.menuArrow}>›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
             style={s.menuItem}
             onPress={() => Linking.openURL("https://www.instagram.com/die.seelenplanerin/")}
             activeOpacity={0.8}

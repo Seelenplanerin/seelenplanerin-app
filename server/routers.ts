@@ -230,6 +230,11 @@ export const appRouter = router({
       return db.getPushTokenCount();
     }),
 
+    // Getrennte Statistik für Admin: native Geräte, Web-Abos und Mitgliederzuordnung
+    stats: publicProcedure.query(async () => {
+      return db.getPushRegistrationStats();
+    }),
+
     // Push-Nachricht an alle senden (Admin)
     sendToAll: publicProcedure
       .input(z.object({

@@ -45,9 +45,17 @@ export default function RitualeScreen() {
     }
   }, [router]);
 
-  // Filtern + Suchen
+  // Filtern + Suchen – nur Rituale ab heute anzeigen
   const gefiltert = useMemo(() => {
-    let list = RITUALE_2026;
+    const heute = new Date();
+    heute.setHours(0, 0, 0, 0);
+    
+    let list = RITUALE_2026.filter(r => {
+      const [tag, monat, jahr] = r.datum.split(".").map(Number);
+      const ritualDatum = new Date(jahr, monat - 1, tag);
+      return ritualDatum >= heute;
+    });
+    
     if (aktiveKat !== "Alle") {
       list = list.filter(r => r.kategorie === aktiveKat);
     }
@@ -282,22 +290,6 @@ function RitualDetail({ ritual, onClose }: { ritual: Ritual; onClose: () => void
             <Text style={s.ctaBtnText}>Ritual-Set bestellen →</Text>
           </TouchableOpacity>
 
-        </View>
-
-        {/* Seelenimpuls CTA */}
-        <View style={s.premiumCta}>
-          <Text style={{ fontSize: 18, marginBottom: 6 }}>👑</Text>
-          <Text style={s.premiumCtaTitle}>Seelenimpuls Premium</Text>
-          <Text style={s.premiumCtaText}>
-            Exklusive Meditationen, tiefe Rituale und persönliche Impulse von der Seelenplanerin – nur für dich.
-          </Text>
-          <TouchableOpacity
-            style={s.premiumCtaBtn}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
-            activeOpacity={0.85}
-          >
-            <Text style={s.premiumCtaBtnText}>Exklusive Inhalte · Jetzt entdecken →</Text>
-          </TouchableOpacity>
         </View>
 
         <View style={{ height: 60 }} />

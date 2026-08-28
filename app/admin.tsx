@@ -25,12 +25,22 @@ const USERS_KEY = "community_users";
 const SONGS_KEY = "lara_songs";
 const MEDITATIONEN_KEY = "lara_meditationen";
 const IMPULSE_KEY = "admin_tagesimpulse_liste";
+const PUSH_STATS_CACHE_KEY = "admin_push_stats_cache";
 
 interface CommunityUser {
   email: string;
   password: string;
   name: string;
   mustChangePassword?: boolean;
+}
+
+interface PushRegistrationStats {
+  nativeDevices: number;
+  webSubscriptions: number;
+  totalSubscriptions: number;
+  linkedDevices: number;
+  linkedMembers: number;
+  activeCommunityMembers: number;
 }
 
 interface Song {
@@ -430,7 +440,16 @@ export default function AdminScreen() {
   const [pushFehler, setPushFehler] = useState("");
   const [pushSending, setPushSending] = useState(false);
   const [pushErfolg, setPushErfolg] = useState("");
-  const [pushTokenCount, setPushTokenCount] = useState(0);
+  const [pushStats, setPushStats] = useState<PushRegistrationStats>({
+    nativeDevices: 0,
+    webSubscriptions: 0,
+    totalSubscriptions: 0,
+    linkedDevices: 0,
+    linkedMembers: 0,
+    activeCommunityMembers: 0,
+  });
+  const [pushStatsStatus, setPushStatsStatus] = useState<"loading" | "ready" | "stale" | "error">("loading");
+  const [pushStatsLastUpdated, setPushStatsLastUpdated] = useState<string | null>(null);
   const [pushHistory, setPushHistory] = useState<Array<{ id: number; title: string; body: string; sentTo: number; sentSuccess: number; sentFailed: number; createdAt: string }>>([]);
   const [pushHistoryLoading, setPushHistoryLoading] = useState(false);
 
@@ -450,6 +469,53 @@ export default function AdminScreen() {
   const sendBroadcastMutation = trpc.email.sendBroadcast.useMutation();
   const uploadAudioMutation = trpc.storage.uploadAudio.useMutation();
 
+  const loadPushStats = async () => {
+    setPushStatsStatus("loading");
+    try {
+      const API_URL = getApiBaseUrl();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${API_URL}/api/trpc/push.stats`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`Statistik-Endpunkt antwortet mit HTTP ${res.status}`);
+      const data = await res.json();
+      const stats = data?.result?.data?.json ?? data?.result?.data;
+      if (!stats || typeof stats.nativeDevices === "undefined" || typeof stats.webSubscriptions === "undefined") {
+        throw new Error("Statistik-Antwort ist unvollständig");
+      }
+      const normalized: PushRegistrationStats = {
+        nativeDevices: Number(stats.nativeDevices),
+        webSubscriptions: Number(stats.webSubscriptions),
+        totalSubscriptions: Number(stats.totalSubscriptions),
+        linkedDevices: Number(stats.linkedDevices),
+        linkedMembers: Number(stats.linkedMembers),
+        activeCommunityMembers: Number(stats.activeCommunityMembers),
+      };
+      const updatedAt = new Date().toISOString();
+      setPushStats(normalized);
+      setPushStatsLastUpdated(updatedAt);
+      setPushStatsStatus("ready");
+      await AsyncStorage.setItem(PUSH_STATS_CACHE_KEY, JSON.stringify({ stats: normalized, updatedAt }));
+    } catch (e) {
+      console.error("[Admin] Push-Statistik konnte nicht geladen werden:", e);
+      try {
+        const cached = await AsyncStorage.getItem(PUSH_STATS_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.stats && typeof parsed.stats.nativeDevices === "number") {
+            setPushStats(parsed.stats);
+            setPushStatsLastUpdated(parsed.updatedAt || null);
+            setPushStatsStatus("stale");
+            return;
+          }
+        }
+      } catch (cacheError) {
+        console.error("[Admin] Gespeicherte Push-Statistik konnte nicht gelesen werden:", cacheError);
+      }
+      setPushStatsStatus("error");
+    }
+  };
+
   useEffect(() => {
     AsyncStorage.getItem("admin_auth").then(val => {
       if (val === "true") setIsLoggedIn(true);
@@ -466,6 +532,7 @@ export default function AdminScreen() {
       getMeditationen().then(setMeditationen);
       getImpulse().then(setImpulse);
       getQAFragen().then(setQaFragen);
+      loadPushStats();
     }
   }, [isLoggedIn]);
 
@@ -1474,7 +1541,7 @@ export default function AdminScreen() {
               <View style={s.formBox}>
                 <Text style={s.formLabel}>Betreff *</Text>
                 <TextInput style={s.formInput}
-                  placeholder="z.B. Neuer Seelenimpuls für dich \u{1F338}"
+                  placeholder="z.B. Eine neue Nachricht für dich \u{1F338}"
                   placeholderTextColor={C.muted}
                   value={nachrichtBetreff}
                   onChangeText={t => { setNachrichtBetreff(t); setNachrichtFehler(""); setNachrichtErfolg(""); }}
@@ -1566,33 +1633,49 @@ export default function AdminScreen() {
           {activeTab === "push" && (
             <View style={s.section}>
               <Text style={s.sectionTitle}>📲 Push-Benachrichtigung senden</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                <View style={{ backgroundColor: pushTokenCount > 0 ? "#E8F5E9" : "#FFF3E0", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: pushTokenCount > 0 ? "#C8E6C9" : "#FFE0B2" }}>
-                  <Text style={{ fontSize: 13, fontWeight: "700", color: pushTokenCount > 0 ? "#2E7D32" : "#E65100" }}>
-                    {pushTokenCount > 0 ? `✅ ${pushTokenCount} Gerät${pushTokenCount !== 1 ? "e" : ""} registriert` : "⏳ Lade Geräte..."}
+              {pushStatsStatus === "error" && (
+                <View style={[s.formBox, { backgroundColor: "#FFF4E5", borderColor: "#E7B45A", marginBottom: 10 }]}> 
+                  <Text style={{ fontSize: 13, fontWeight: "800", color: C.brown }}>Empfängerzahlen gerade nicht abrufbar</Text>
+                  <Text style={{ fontSize: 12, color: C.brownMid, lineHeight: 18, marginTop: 4 }}>
+                    Die Verbindung ist vorübergehend gestört. Deine registrierten Geräte und Abos sind nicht gelöscht. Es werden bewusst keine falschen Nullwerte angezeigt.
                   </Text>
                 </View>
+              )}
+              {pushStatsStatus === "stale" && (
+                <View style={[s.formBox, { backgroundColor: C.goldLight, borderColor: C.gold, marginBottom: 10 }]}> 
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: C.brown }}>
+                    Zuletzt erfolgreich geladene Werte{pushStatsLastUpdated ? ` vom ${new Date(pushStatsLastUpdated).toLocaleString("de-DE")}` : ""}
+                  </Text>
+                </View>
+              )}
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                {[
+                  { label: "Erreichbar", value: pushStats.totalSubscriptions, color: "#2E7D32", bg: "#E8F5E9" },
+                  { label: "Native Geräte", value: pushStats.nativeDevices, color: C.brown, bg: C.goldLight },
+                  { label: "Web-Abos", value: pushStats.webSubscriptions, color: C.brown, bg: C.roseLight },
+                  { label: "Mit E-Mail verknüpft", value: pushStats.linkedMembers, color: C.brownMid, bg: C.surface },
+                ].map((item) => (
+                  <View key={item.label} style={{ backgroundColor: item.bg, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: C.border }}>
+                    <Text style={{ fontSize: 16, fontWeight: "800", color: item.color }}>
+                      {pushStatsStatus === "error" || pushStatsStatus === "loading" ? "—" : item.value}
+                    </Text>
+                    <Text style={{ fontSize: 10, fontWeight: "600", color: C.muted }}>{item.label}</Text>
+                  </View>
+                ))}
               </View>
               <Text style={s.sectionHint}>
-                Sende eine Push-Nachricht direkt auf die Handys deiner Nutzerinnen.
+                Sende eine Push-Nachricht an alle aktiven Abos. Die Zahl beschreibt Geräte bzw. Browser-Abos; eine Person kann mehrere Geräte verwenden.{pushStatsStatus === "ready" || pushStatsStatus === "stale" ? ` Aktive Community-Mitglieder: ${pushStats.activeCommunityMembers}.` : ""}
               </Text>
 
               {/* Token-Count laden */}
               <TouchableOpacity
                 style={[s.actionBtn, { borderColor: C.gold, marginBottom: 12 }]}
-                onPress={async () => {
-                  try {
-                    const API_URL = getApiBaseUrl();
-                    const res = await fetch(`${API_URL}/api/trpc/push.tokenCount`);
-                    const data = await res.json();
-                    const count = data?.result?.data?.json ?? data?.result?.data ?? 0;
-                    setPushTokenCount(Number(count));
-                  } catch (e) {
-                    setPushTokenCount(0);
-                  }
-                }}
+                onPress={loadPushStats}
+                disabled={pushStatsStatus === "loading"}
                 activeOpacity={0.8}>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>🔄 Geräte-Anzahl aktualisieren</Text>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>
+                  {pushStatsStatus === "loading" ? "Empfängerzahlen werden geladen …" : "🔄 Empfängerzahlen aktualisieren"}
+                </Text>
               </TouchableOpacity>
 
               <View style={s.formBox}>
@@ -1621,10 +1704,14 @@ export default function AdminScreen() {
                 )}
 
                 <TouchableOpacity
-                  style={[s.submitBtn, pushSending && { opacity: 0.6 }]}
+                  style={[s.submitBtn, (pushSending || pushStatsStatus !== "ready") && { opacity: 0.6 }]}
                   onPress={async () => {
                     if (!pushTitle.trim()) { setPushFehler("Bitte gib einen Titel ein."); return; }
                     if (!pushBody.trim()) { setPushFehler("Bitte gib eine Nachricht ein."); return; }
+                    if (pushStatsStatus !== "ready" || pushStats.totalSubscriptions < 1) {
+                      setPushFehler("Empfängerinnen konnten nicht sicher geladen werden. Bitte zuerst die Empfängerzahlen aktualisieren.");
+                      return;
+                    }
 
                     // Web-kompatible Bestätigung
                     const confirmed = Platform.OS === "web"
@@ -1647,6 +1734,7 @@ export default function AdminScreen() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ json: { title: pushTitle.trim(), body: pushBody.trim() } }),
                       });
+                      if (!res.ok) throw new Error(`Push-Server antwortet mit HTTP ${res.status}`);
                       const data = await res.json();
                       const result = data?.result?.data?.json;
                       if (result?.success && result?.sent > 0) {
@@ -1665,7 +1753,7 @@ export default function AdminScreen() {
                     }
                   }}
                   activeOpacity={0.85}
-                  disabled={pushSending}>
+                  disabled={pushSending || pushStatsStatus !== "ready"}>
                   {pushSending ? (
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                       <ActivityIndicator size="small" color="#FFF" />
@@ -1683,7 +1771,7 @@ export default function AdminScreen() {
                 {[
                   { title: "\u{1F315} Vollmond-Ritual", body: "Heute Abend ist Vollmond – dein Ritual wartet auf dich. Öffne die App und lass dich führen." },
                   { title: "\u{1F311} Neumond-Intention", body: "Heute ist Neumond – die perfekte Zeit, neue Intentionen zu setzen. Was möchtest du manifestieren?" },
-                  { title: "\u2728 Neuer Seelenimpuls", body: "Ein neuer Seelenimpuls wartet auf dich. Öffne die App und lass dich inspirieren." },
+                  { title: "\u2728 Neuer Tagesimpuls", body: "Ein neuer Tagesimpuls wartet auf dich. Öffne die App und lass dich inspirieren." },
                   { title: "\u{1F9D8}\u200d\u2640\ufe0f Neue Meditation", body: "Eine neue Meditation ist verfügbar. Nimm dir einen Moment der Stille." },
                   { title: "\u{1F338} Community-Update", body: "Es gibt Neuigkeiten in der Seelenplanerin-Community. Schau vorbei!" },
                 ].map((vorlage, i) => (
@@ -1760,8 +1848,8 @@ export default function AdminScreen() {
           {activeTab === "academy" && (
             <>
               <View style={s.section}>
-                <Text style={s.sectionTitle}>🎓 Seelen Academy – Warteliste</Text>
-                <Text style={s.sectionHint}>Alle Interessentinnen, die sich für die Academy-Ausbildungen auf die Warteliste eingetragen haben.</Text>
+                <Text style={s.sectionTitle}>🎓 Bisherige Akademie-Warteliste</Text>
+                <Text style={s.sectionHint}>Historische Einträge aus der früheren Warteliste. Neue Interessentinnen bewerben sich über die Seelenakademie-Seite.</Text>
                 <TouchableOpacity style={[s.actionBtn, { borderColor: C.gold }]} onPress={async () => {
                   setAcademyLoading(true);
                   try {
@@ -1804,47 +1892,6 @@ export default function AdminScreen() {
                 {academyWaitlist.length === 0 && !academyLoading && (
                   <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 12 }}>Noch keine Einträge auf der Warteliste.</Text>
                 )}
-              </View>
-
-              {/* Geplante Ausbildungen */}
-              <View style={s.section}>
-                <Text style={s.sectionTitle}>📚 Geplante Ausbildungen</Text>
-                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
-                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
-                    <Text style={{ color: "#FFF", fontSize: 16 }}>👁️</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.memberName}>Aura Reading Ausbildung</Text>
-                    <Text style={s.memberEmail}>Coming Soon</Text>
-                  </View>
-                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
-                  </View>
-                </View>
-                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
-                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
-                    <Text style={{ color: "#FFF", fontSize: 16 }}>🌀</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.memberName}>Theta Healing Ausbildung</Text>
-                    <Text style={s.memberEmail}>Coming Soon</Text>
-                  </View>
-                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
-                  </View>
-                </View>
-                <View style={[s.memberRow, { flexDirection: "row", alignItems: "center" }]}>
-                  <View style={[s.memberAvatar, { backgroundColor: "#8B5E3C" }]}>
-                    <Text style={{ color: "#FFF", fontSize: 16 }}>🍫</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.memberName}>Kakaozeremonie Ausbildung</Text>
-                    <Text style={s.memberEmail}>Coming Soon</Text>
-                  </View>
-                  <View style={{ backgroundColor: C.goldLight, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ fontSize: 11, fontWeight: "700", color: C.gold }}>Geplant</Text>
-                  </View>
-                </View>
               </View>
             </>
           )}

@@ -7,7 +7,6 @@ import { ScreenContainer } from "@/components/screen-container";
 import * as Haptics from "expo-haptics";
 
 const INSTAGRAM_URL = "https://www.instagram.com/die.seelenplanerin/";
-const TENTARY_URL = "https://dieseelenplanerin.tentary.com/p/E6FP1U";
 
 export default function LaraScreen() {
   const tap = () => {
@@ -144,7 +143,7 @@ export default function LaraScreen() {
               { emoji: "🌙", title: "Mondrituale", sub: "Im Rhythmus der Natur" },
 
               { emoji: "🔮", title: "Seelenreset", sub: "Neu beginnen" },
-              { emoji: "✨", title: "Seelenimpulse", sub: "Tägliche Weisheit" },
+              { emoji: "✦", title: "Seelenakademie", sub: "Seele trifft Strategie" },
             ].map((item) => (
               <View key={item.title} style={[s.offerCard, { backgroundColor: "#FFF0EB" }]}>
                 <Text style={s.offerEmoji}>{item.emoji}</Text>

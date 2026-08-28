@@ -153,6 +153,20 @@ export async function registerPushTokenWithServer(): Promise<void> {
     if (!token) return;
     console.log("[Push] Token erhalten:", token.substring(0, 20) + "...");
 
+    // Wenn ein Community-Mitglied angemeldet ist, das Gerät eindeutig zuordnen.
+    let communityEmail: string | undefined;
+    try {
+      const storedUser = await AsyncStorage.getItem("community_current_user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser) as { email?: unknown };
+        if (typeof parsedUser.email === "string" && parsedUser.email.includes("@")) {
+          communityEmail = parsedUser.email.trim().toLowerCase();
+        }
+      }
+    } catch {
+      communityEmail = undefined;
+    }
+
     // Token beim Server registrieren via tRPC
     const baseUrl = getApiBaseUrl();
     const url = `${baseUrl}/api/trpc/push.registerToken`;
@@ -164,6 +178,7 @@ export async function registerPushTokenWithServer(): Promise<void> {
         json: {
           token,
           platform: Platform.OS,
+          communityEmail,
         },
       }),
     });
@@ -382,7 +397,7 @@ export async function scheduleAllNotifications(): Promise<number> {
       await N.scheduleNotificationAsync({
         content: {
           title: "Guten Morgen, Seelenkind ✨",
-          body: "Dein täglicher Seelenimpuls wartet auf dich.",
+          body: "Dein täglicher Tagesimpuls wartet auf dich.",
           data: { type: "morgenimpuls" },
         },
         trigger: {

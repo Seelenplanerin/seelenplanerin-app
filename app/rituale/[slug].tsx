@@ -167,22 +167,6 @@ export default function RitualDetailScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Seelenimpuls CTA */}
-          <View style={s.premiumCta}>
-            <Text style={{ fontSize: 18, marginBottom: 6 }}>👑</Text>
-            <Text style={s.premiumCtaTitle}>Seelenimpuls Premium</Text>
-            <Text style={s.premiumCtaText}>
-              Exklusive Meditationen, tiefe Rituale und persönliche Impulse von der Seelenplanerin – nur für dich.
-            </Text>
-            <TouchableOpacity
-              style={s.premiumCtaBtn}
-              onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/E6FP1U")}
-              activeOpacity={0.85}
-            >
-              <Text style={s.premiumCtaBtnText}>Exklusive Inhalte · Jetzt entdecken →</Text>
-            </TouchableOpacity>
-          </View>
-
           <View style={{ height: 60 }} />
         </ScrollView>
       </View>

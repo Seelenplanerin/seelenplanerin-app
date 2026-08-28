@@ -1,10 +1,8 @@
 import React, { useMemo } from "react";
-import { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Image, Dimensions, Linking, TextInput, Alert, Platform,
+  StyleSheet, Image, Dimensions, Linking,
 } from "react-native";
-import { getApiBaseUrl } from "@/constants/oauth";
 import { LinearGradient } from "expo-linear-gradient";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
@@ -99,34 +97,6 @@ export default function AktuellesScreen() {
     const day = new Date().getDay() + new Date().getDate();
     return IMPULSE[day % IMPULSE.length];
   }, []);
-
-  // Academy Warteliste
-  const [academyEmail, setAcademyEmail] = useState("");
-  const [academyDone, setAcademyDone] = useState(false);
-  const [academyLoading, setAcademyLoading] = useState(false);
-
-  const handleAcademySignup = async () => {
-    if (!academyEmail.trim() || !academyEmail.includes("@")) {
-      if (Platform.OS === "web") { window.alert("Bitte gib eine gültige E-Mail-Adresse ein."); }
-      else { Alert.alert("Fehler", "Bitte gib eine gültige E-Mail-Adresse ein."); }
-      return;
-    }
-    setAcademyLoading(true);
-    try {
-      const base = getApiBaseUrl();
-      await fetch(`${base}/api/trpc/academy.joinWaitlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { email: academyEmail.trim().toLowerCase() } }),
-      });
-      setAcademyDone(true);
-      setAcademyEmail("");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setAcademyLoading(false);
-    }
-  };
 
   return (
     <ScreenContainer containerClassName="bg-background" edges={["top", "left", "right"]}>
@@ -303,98 +273,30 @@ export default function AktuellesScreen() {
           ))}
         </View>
 
-        {/* ── SEELENIMPULS PREMIUM ── */}
-        <TouchableOpacity
-          onPress={() => router.push("/seelenimpuls" as any)}
-          activeOpacity={0.85}
-        >
+        {/* ══ DIE SEELENAKADEMIE ══ */}
+        <TouchableOpacity style={s.academyCard} onPress={() => router.push("/seelenakademie" as any)} activeOpacity={0.85}>
           <LinearGradient
-            colors={["#F9EDE8", "#F5E0D6", "#F0D4C6"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={s.premiumCard}
-          >
-            <Text style={s.premiumCrown}>👑</Text>
-            <Text style={s.premiumTitle}>Seelenimpuls</Text>
-            <Text style={s.premiumDesc}>
-              Exklusive Meditationen, tiefe Rituale, persönliche Impulse von der Seelenplanerin – nur für dich.
-            </Text>
-            <View style={s.premiumBadge}>
-              <Text style={s.premiumBadgeText}>Exklusive Inhalte · Jetzt entdecken →</Text>
-            </View>
-          </LinearGradient>
-        </TouchableOpacity>
-
-
-        {/* ══════════════════════════════════════════════════════════
-            SEELEN ACADEMY – COMING SOON
-            ══════════════════════════════════════════════════════════ */}
-        <View style={s.academyCard}>
-          <LinearGradient
-            colors={["#FAF3E7", "#F5E6D0", "#EDD9C0"]}
+            colors={["#F9EAF0", "#FFF8E4", "#F8F1D0"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={s.academyGradient}
           >
-            <Text style={s.academyEmoji}>🎓</Text>
-            <Text style={s.academyTitle}>Seelen Academy</Text>
-            <Text style={s.academySubtitle}>Ich möchte ausbilden</Text>
-            <Text style={s.academyDesc}>
-              Lerne von der Seelenplanerin und werde selbst zur spirituellen Begleiterin. Tiefes Wissen, das dein Leben und das anderer transformiert.
-            </Text>
-
-            {/* Ausbildungen */}
-            <View style={s.academyCourses}>
-              <View style={s.academyCourseRow}>
-                <Text style={s.academyCourseEmoji}>👁️</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.academyCourseName}>Aura Reading Ausbildung</Text>
-                  <Text style={s.academyCourseStatus}>Coming Soon</Text>
-                </View>
-              </View>
+            <View style={s.academyBadge}>
+              <Text style={s.academyBadgeText}>SA · VON DER SEELENPLANERIN</Text>
             </View>
-
-            {/* Warteliste */}
-            {academyDone ? (
-              <View style={s.academySuccessBox}>
-                <Text style={s.academySuccessEmoji}>💌</Text>
-                <Text style={s.academySuccessText}>
-                  Du bist auf der Warteliste! Ich melde mich bei dir, sobald es losgeht.
-                </Text>
-              </View>
-            ) : (
-              <View style={s.academyWaitlist}>
-                <Text style={s.academyWaitlistTitle}>
-                  Trag dich auf die Warteliste ein
-                </Text>
-                <Text style={s.academyWaitlistDesc}>
-                  Sei die Erste, die erfährt, wenn die Ausbildungen starten.
-                </Text>
-                <TextInput
-                  style={s.academyInput}
-                  placeholder="Deine E-Mail-Adresse"
-                  placeholderTextColor={C.muted}
-                  value={academyEmail}
-                  onChangeText={setAcademyEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  returnKeyType="done"
-                  onSubmitEditing={handleAcademySignup}
-                />
-                <TouchableOpacity
-                  style={[s.academyBtn, academyLoading && { opacity: 0.6 }]}
-                  onPress={handleAcademySignup}
-                  disabled={academyLoading}
-                  activeOpacity={0.8}
-                >
-                  <Text style={s.academyBtnText}>
-                    {academyLoading ? "Wird eingetragen..." : "✨ Auf die Warteliste"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            <Text style={s.academyTitle}>Die Seelenakademie</Text>
+            <Text style={s.academySubtitle}>Business darf sich nach dir anfühlen.</Text>
+            <Text style={s.academyDesc}>
+              Für Frauen, die etwas Eigenes aufbauen möchten – und für Frauen, deren Business nicht läuft oder nicht mehr zu ihnen passt.
+            </Text>
+            <View style={s.academyAreas}>
+              <Text style={s.academyAreasText}>Seele · Positionierung · Angebot · Content · Strategie</Text>
+            </View>
+            <View style={s.academyBtn}>
+              <Text style={s.academyBtnText}>Business-Kompass & Bewerbung →</Text>
+            </View>
           </LinearGradient>
-        </View>
+        </TouchableOpacity>
 
         {/* ── INSTAGRAM ── */}
         <TouchableOpacity
@@ -538,19 +440,6 @@ const s = StyleSheet.create({
   katLabel: { fontSize: 12, fontWeight: "700" as any, color: C.brown, marginBottom: 2 },
   katDesc: { fontSize: 9, color: C.muted, textAlign: "center" as const, lineHeight: 13 },
 
-  // Premium
-  premiumCard: {
-    marginHorizontal: 16, marginBottom: 16,
-    borderRadius: 20, padding: 20,
-    alignItems: "center" as const,
-    overflow: "hidden" as const,
-  },
-  premiumCrown: { fontSize: 32, marginBottom: 8 },
-  premiumTitle: { fontSize: 26, fontWeight: "700" as any, color: C.brown, marginBottom: 8, fontFamily: "DancingScript" },
-  premiumDesc: { fontSize: 14, color: C.brownMid, textAlign: "center" as const, lineHeight: 20, marginBottom: 14 },
-  premiumBadge: { backgroundColor: C.gold, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20 },
-  premiumBadgeText: { color: "#FFF", fontSize: 14, fontWeight: "700" as any },
-
   // Seelen Academy
   academyCard: {
     marginHorizontal: 16, marginTop: 16, marginBottom: 8,
@@ -558,77 +447,32 @@ const s = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(201,169,110,0.3)",
   },
   academyGradient: {
-    padding: 24, alignItems: "center" as const,
+    padding: 22, alignItems: "flex-start" as const,
   },
-  academyEmoji: { fontSize: 36, marginBottom: 10 },
+  academyBadge: { backgroundColor: "rgba(255,255,255,0.8)", borderRadius: 12, paddingVertical: 6, paddingHorizontal: 10, marginBottom: 14 },
+  academyBadgeText: { fontSize: 9, color: C.rose, fontWeight: "800" as any, letterSpacing: 0.8 },
   academyTitle: {
-    fontSize: 26, fontWeight: "700" as any, color: C.brown,
-    marginBottom: 4, fontFamily: "DancingScript",
+    fontSize: 25, fontWeight: "700" as any, color: C.brown,
+    marginBottom: 5, fontFamily: "DancingScript-Bold",
   },
   academySubtitle: {
-    fontSize: 15, fontWeight: "600" as any, color: C.brownMid,
-    marginBottom: 12, fontStyle: "italic" as const,
+    fontSize: 18, fontWeight: "700" as any, color: C.brownMid,
+    marginBottom: 10,
   },
   academyDesc: {
-    fontSize: 14, color: C.muted, textAlign: "center" as const,
-    lineHeight: 22, marginBottom: 16, paddingHorizontal: 8,
+    fontSize: 13, color: C.brownMid,
+    lineHeight: 20, marginBottom: 14,
   },
-  // Academy Kurse
-  academyCourses: {
-    width: "100%" as any, marginBottom: 20,
-    backgroundColor: "#FFFFFF", borderRadius: 16,
-    padding: 16, borderWidth: 1, borderColor: C.border,
-  },
-  academyCourseRow: {
-    flexDirection: "row" as const, alignItems: "center" as const, gap: 12,
-    paddingVertical: 8,
-  },
-  academyCourseEmoji: { fontSize: 28 },
-  academyCourseName: {
-    fontSize: 15, fontWeight: "700" as any, color: C.brown, marginBottom: 2,
-  },
-  academyCourseStatus: {
-    fontSize: 12, fontWeight: "600" as any, color: C.rose, fontStyle: "italic" as const,
-  },
-  academyCourseDivider: {
-    height: 1, backgroundColor: C.border, marginVertical: 4,
-  },
-  // Academy Warteliste
-  academyWaitlist: {
-    width: "100%" as any, alignItems: "center" as const,
-  },
-  academyWaitlistTitle: {
-    fontSize: 16, fontWeight: "700" as any, color: C.brown, marginBottom: 6,
-  },
-  academyWaitlistDesc: {
-    fontSize: 13, color: C.muted, textAlign: "center" as const,
-    lineHeight: 19, marginBottom: 14,
-  },
-  academyInput: {
-    width: "100%" as any, backgroundColor: "#FFFFFF",
-    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
-    fontSize: 15, color: C.brown, borderWidth: 1,
-    borderColor: C.border, marginBottom: 12,
-  },
+  academyAreas: { backgroundColor: "rgba(255,255,255,0.65)", borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 14, width: "100%" as any },
+  academyAreasText: { fontSize: 11, color: C.brownMid, fontWeight: "600" as any, lineHeight: 17 },
   academyBtn: {
-    backgroundColor: C.gold, borderRadius: 14,
-    paddingVertical: 14, paddingHorizontal: 28, width: "100%" as any,
+    backgroundColor: C.brown, borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 18, width: "100%" as any,
     alignItems: "center" as const,
   },
   academyBtnText: {
     color: "#FFF", fontSize: 15, fontWeight: "700" as any,
   },
-  // Academy Erfolg
-  academySuccessBox: {
-    width: "100%" as any, alignItems: "center" as const,
-    backgroundColor: "#F0F7F0", borderRadius: 16,
-    padding: 20, borderWidth: 1, borderColor: "#C8E6C9",
-  },
-  academySuccessEmoji: { fontSize: 32, marginBottom: 8 },
-  academySuccessText: {
-    fontSize: 14, color: C.brown, textAlign: "center" as const, lineHeight: 22,
-  },
-
   // Instagram
   instaCard: {
     marginHorizontal: 16, marginBottom: 8,

@@ -1,7 +1,7 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, pushTokens, pushMessages, InsertPushToken, InsertPushMessage, communityQuestions, InsertCommunityQuestion } from "../drizzle/schema";
+import { InsertUser, users, meditations, InsertMeditation, communityUsers, InsertCommunityUser, pushTokens, pushMessages, InsertPushToken, InsertPushMessage, communityQuestions, InsertCommunityQuestion, webPushSubscriptions } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: any = null;
@@ -226,11 +226,21 @@ export async function getCommunityUsersWithEmailConsent() {
 export async function registerPushToken(data: { token: string; platform?: string; communityEmail?: string }) {
   return withRetry(async () => {
     const db = getDbSync();
+    const communityEmail = data.communityEmail?.trim().toLowerCase() || null;
     const existing = await db.select().from(pushTokens).where(eq(pushTokens.token, data.token)).limit(1);
     if (existing.length > 0) {
-      await db.update(pushTokens).set({ isActive: 1, platform: data.platform || null }).where(eq(pushTokens.token, data.token));
+      await db.update(pushTokens).set({
+        isActive: 1,
+        platform: data.platform || null,
+        ...(communityEmail ? { communityEmail } : {}),
+      }).where(eq(pushTokens.token, data.token));
     } else {
-      await db.insert(pushTokens).values({ token: data.token, platform: data.platform || null, isActive: 1 });
+      await db.insert(pushTokens).values({
+        token: data.token,
+        platform: data.platform || null,
+        communityEmail,
+        isActive: 1,
+      });
     }
   });
 }
@@ -242,6 +252,36 @@ export async function getPushTokenCount() {
     const db = getDbSync();
     const result = await db.select({ count: sql<number>`COUNT(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1));
     return result[0]?.count || 0;
+  });
+}
+
+export async function getPushRegistrationStats() {
+  return withRetry(async () => {
+    const db = getDbSync();
+    const [nativeRows, linkedDeviceRows, linkedMemberRows, webRows, communityRows] = await Promise.all([
+      db.select({ count: sql<number>`COUNT(*)` }).from(pushTokens).where(eq(pushTokens.isActive, 1)),
+      db.select({ count: sql<number>`COUNT(*)` }).from(pushTokens).where(and(
+        eq(pushTokens.isActive, 1),
+        sql`${pushTokens.communityEmail} IS NOT NULL AND ${pushTokens.communityEmail} <> ''`,
+      )),
+      db.select({ count: sql<number>`COUNT(DISTINCT ${pushTokens.communityEmail})` }).from(pushTokens).where(and(
+        eq(pushTokens.isActive, 1),
+        sql`${pushTokens.communityEmail} IS NOT NULL AND ${pushTokens.communityEmail} <> ''`,
+      )),
+      db.select({ count: sql<number>`COUNT(*)` }).from(webPushSubscriptions).where(eq(webPushSubscriptions.isActive, 1)),
+      db.select({ count: sql<number>`COUNT(*)` }).from(communityUsers).where(eq(communityUsers.isActive, 1)),
+    ]);
+
+    const nativeDevices = Number(nativeRows[0]?.count || 0);
+    const webSubscriptions = Number(webRows[0]?.count || 0);
+    return {
+      nativeDevices,
+      webSubscriptions,
+      totalSubscriptions: nativeDevices + webSubscriptions,
+      linkedDevices: Number(linkedDeviceRows[0]?.count || 0),
+      linkedMembers: Number(linkedMemberRows[0]?.count || 0),
+      activeCommunityMembers: Number(communityRows[0]?.count || 0),
+    };
   });
 }
 
@@ -444,8 +484,6 @@ export async function getRaunaechteCodeStats(year: number) {
 }
 
 // ── Web Push Subscriptions ──
-
-import { webPushSubscriptions } from "../drizzle/schema";
 
 export async function getAllWebPushSubscriptions() {
   const conn = await getDb();

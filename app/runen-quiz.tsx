@@ -314,19 +314,6 @@ export default function RunenQuizScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Seelenimpuls CTA */}
-          <View style={[s.ctaCard, { backgroundColor: C.goldLight }]}>
-            <Text style={s.ctaTitel}>Tiefer in die Runen eintauchen?</Text>
-            <Text style={s.ctaText}>Im Seelenimpuls bekommst du monatlich tiefe Runen-Readings, persönliche Deutungen und die Begleitung der Seelenplanerin.</Text>
-            <TouchableOpacity
-              style={[s.ctaBtn, { backgroundColor: C.gold }]}
-              onPress={() => router.push("/seelenimpuls")}
-              activeOpacity={0.85}
-            >
-              <Text style={s.ctaBtnText}>Zum Seelenimpuls →</Text>
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity style={s.neuStartenBtn} onPress={neuStarten} activeOpacity={0.8}>
             <Text style={s.neuStartenText}>Quiz wiederholen</Text>
           </TouchableOpacity>
