@@ -123,11 +123,11 @@ Atme tief und spüre die Leichtigkeit, die entsteht.`,
     id: "r4",
     category: "ritual",
     title: "Rauhnächte-Ritual",
-    subtitle: "Die magischen 12 Nächte",
+    subtitle: "Mit Sperrnächten vom 8. Dezember bis 6. Januar",
     emoji: "❄️",
     color: "#4A3580",
     tags: ["Rauhnächte", "Jahreswechsel", "Prophezeiung"],
-    content: `Die Rauhnächte – die 12 Nächte zwischen dem 25. Dezember und dem 6. Januar – gelten als magische Zeit, in der der Schleier zwischen den Welten besonders dünn ist.
+    content: `Meine Begleitung „Rauhnächte mit Sperrnächten“ beginnt am 8. Dezember und endet am 6. Januar. In den Sperrnächten blicken wir zurück und lassen los; in den Rauhnächten halten wir inne und richten uns auf das neue Jahr aus. Die traditionellen Rauhnächte rund um den Jahreswechsel gelten als besondere Zeit der Einkehr.
 
 **Das Ritual für jede Rauhnacht:**
 

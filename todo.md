@@ -832,3 +832,48 @@
 - [x] Einmaligen GitHub-Actions-Workflow zur vollständigen Snapshot-Synchronisierung vorbereiten und ausführen
 - [x] Render-Serverstart darf bei abgelehnter Datenbankmigration nicht mehr abstürzen oder die Web-App mit 502 offline nehmen
 - [ ] Render-Fallbackbetrieb mit funktionierendem externen Produktions-API-Ziel lokal und auf der Domain verifizieren
+- [x] Alle sichtbaren Preise und zugehörigen Angebotslinks in der App gegen die aktuelle Website prüfen
+- [x] Aura Reading projektweit auf 147 € aktualisieren
+- [x] ThetaHealing Intensiv als aktuelle 1:1-Session für 197 € in Buchung, Shop und Community ergänzen
+- [x] Seelenlegung auf 47 € / 97 € und Runen-Angebote auf 24 € + 22 € + 11 € (57 € gesamt, versandkostenfrei) korrigieren
+- [x] Fünf aktuelle Ritual-Sets zentral mit offiziellen Preisen, Produktbildern und direkten Shoplinks hinterlegen
+- [x] Alle 51 Rituale nachvollziehbar einem passenden aktuellen Ritual-Set zuordnen
+- [x] Native und Web-Ritualdetails mit Set-Bild, Name, Preis, Bestandteilen und Direktlink aktualisieren
+- [x] Beide Shop-Routen auf dieselbe aktuelle Darstellung aller fünf Ritual-Sets umstellen
+- [x] Preis- und Ritual-Set-Regressionstests ergänzen; alte Tentary-Links aus diesen Bereichen entfernen
+- [x] Aktualisierten Web-Export, Checkpoint und native iOS-/Android-OTA-Veröffentlichung abschließen
+- [ ] Checkpoint 4490d871 per GitHub-Snapshot-Sync auf main übertragen und Render-Deploy verifizieren
+
+## Link-Sicherheitsprüfung (29.09.2026)
+
+- [x] Aktuellen Quellcode, Webexport und Live-Web-App auf Seelenschmuck-Links prüfen
+- [x] Alle 461 erreichbaren Git-Stände inklusive des am 14.09.2026 aktiven OTA-Commits prüfen
+- [x] Push-Nachrichtenhistorie beider Produktionsendpunkte auf fremde Links prüfen
+- [x] Alle 92 kauf- und buchungsbezogenen URL-Felder auf Eigendomain prüfen
+- [x] Werbung, Affiliate-Redirects, Fremdshop-WebViews und automatische Redirects ausschließen
+- [x] Zentrale HTTPS-Domain-Sperre für Shop, Buchung, Angebote und Push-Links einbauen
+- [x] Fremde oder täuschende Domains mit Regressionstests blockieren
+- [x] Vollständige Testsuite: 201 bestanden, 1 bewusst übersprungen
+- [x] Sicherheitsupdate per OTA für iOS und Android veröffentlichen
+- [ ] Sicherheitsupdate per GitHub/Render für die Web-App veröffentlichen
+
+## Shop-Korrektur (30.09.2026)
+
+- [x] Frequenz-Armbänder samt Kategorielink aus der gemeinsamen Shopansicht beider App-Routen entfernen
+- [x] Energiearmbänder, Runen-Armbänder und die fünf Ritual-Sets unverändert lassen
+- [x] Regressionstest, TypeScript, Lint und Webexport ohne Frequenz-Armbänder prüfen
+- [ ] App-Änderung auf iOS und Android per OTA veröffentlichen
+- [ ] Neu erzeugte Webansicht auf GitHub/Render synchronisieren
+
+## Rauhnächte mit Sperrnächten (09.10.2026)
+
+- [x] Zeitraum auf Nutzerwunsch 08.12.2026–06.01.2027 umstellen
+- [x] Anmeldung statt Warteliste aktivieren: https://dieseelenplanerin.de/rauhnaechte
+- [x] Gesamtzeitraum 30 Kalendertage, aber nur die ausdrücklich bestätigten 25 Inhaltstage / 75 Telegram-Inhalte anzeigen; keine Zusatzinhalte an Nachspürtagen versprechen
+- [x] 12 Inhaltstage 08.–19.12. und 13 Inhaltstage 24.12.–05.01. korrekt zuordnen; 20.–23.12. Nachspüren, 06.01. Abschluss
+- [x] Bestehenden Abendhinweis mit demselben Kalender und denselben Themen verknüpfen; kein Testpush versendet
+- [x] TypeScript, gezieltes Linting, 206 Tests und mobile Anmeldeansicht prüfen
+- [x] App-Warteliste aus beiden Produktionsendpunkten read-only abrufen: 6 identische Einträge, darunter test@example.com
+- [ ] Geprüften Stand zuerst auf GitHub synchronisieren, dann Render veröffentlichen; erst danach native OTA aktualisieren
+- [x] Website inzwischen in bestehender Shop-Aufgabe korrigiert; gerenderte Live-Seite am 09.10.2026 auf 08.12.–06.01. mit 25 Inhaltstagen / 75 Inhalten geprüft
+- [x] Wartelisten-Mailentwurf auf identischen Zeitraum und 25 Inhaltstage / 75 Inhalte aktualisieren; kein Versand

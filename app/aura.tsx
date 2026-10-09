@@ -1,9 +1,11 @@
 import React, { useMemo } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Linking, Image, Dimensions,
+  Image, Dimensions,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
+import { OFFICIAL_OFFERS } from "@/data/angebote";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import { router } from "expo-router";
 
 const { width } = Dimensions.get("window");
@@ -144,7 +146,7 @@ export default function AuraScreen() {
         {/* ── BOTSCHAFT DER SEELENPLANERIN ── */}
         <View style={s.botschaftCard}>
           <Text style={s.botschaftLabel}>🌸 Botschaft der Seelenplanerin für dich heute</Text>
-          <Text style={s.botschaftText}>"{aura.botschaft}"</Text>
+          <Text style={s.botschaftText}>„{aura.botschaft}“</Text>
           <Text style={s.botschaftCredit}>— Die Seelenplanerin</Text>
         </View>
 
@@ -156,12 +158,12 @@ export default function AuraScreen() {
             Die Seelenplanerin liest deine Aura live und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Gaben.
           </Text>
           <View style={s.bookingPreisRow}>
-            <Text style={[s.bookingPreis, { color: C.brown }]}>111 €</Text>
+            <Text style={[s.bookingPreis, { color: C.brown }]}>{OFFICIAL_OFFERS.auraReading.priceLabel}</Text>
             <Text style={s.bookingUnit}>· online</Text>
           </View>
           <TouchableOpacity
             style={[s.bookingBtn, { backgroundColor: aura.hex }]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.tentary.com/p/TuOzYS")}
+            onPress={() => void openSeelenplanerinUrl(OFFICIAL_OFFERS.auraReading.url)}
             activeOpacity={0.85}
           >
             <Text style={s.bookingBtnText}>Jetzt buchen →</Text>

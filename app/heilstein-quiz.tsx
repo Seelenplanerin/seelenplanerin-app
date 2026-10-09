@@ -1,14 +1,12 @@
 import { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Dimensions, Platform, Linking, Image,
+  Platform, Image,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import * as Haptics from "expo-haptics";
-
-const { width } = Dimensions.get("window");
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -367,16 +365,8 @@ export default function HeilsteinQuizScreen() {
                   key={i}
                   style={st.armbandItem}
                   onPress={() => {
-                    if (Platform.OS !== "web") {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      WebBrowser.openBrowserAsync(ab.url, {
-                        presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-                        controlsColor: "#C4897B",
-                        toolbarColor: "#FFF8F5",
-                      });
-                    } else {
-                      Linking.openURL(ab.url);
-                    }
+                    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    void openSeelenplanerinUrl(ab.url);
                   }}
                   activeOpacity={0.8}
                 >
@@ -401,7 +391,7 @@ export default function HeilsteinQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.de/kategorie/energiearmbaender");
+                void openSeelenplanerinUrl("https://dieseelenplanerin.de/kategorie/energiearmbaender");
               }}
               activeOpacity={0.85}
             >

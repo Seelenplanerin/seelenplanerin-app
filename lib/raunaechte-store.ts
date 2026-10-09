@@ -3,7 +3,7 @@
  * Verwaltet Zugangscode, Fortschritt und Journal-Einträge
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import { getProgramDate, getProgramDay, getProgramYear, isProgramDayUnlocked } from "./raunaechte-program";
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
 
@@ -106,32 +106,19 @@ export async function getJournalEntry(year: number, day: number): Promise<string
 
 // ─── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
-/** Berechnet den aktuellen Raunächte-Tag (1-28) basierend auf dem Datum */
+/** Berechnet den aktuellen Begleittag (1–30), inklusive Sperrnächten. */
 export function getCurrentRaunaechteDay(year: number): number {
-  const now = new Date();
-  const start = new Date(year, 11, 10); // 10. Dezember
-  const end = new Date(year + 1, 0, 7); // 7. Januar (Tag nach dem letzten Raunächte-Tag)
-
-  if (now < start) return 0; // Noch nicht gestartet
-  if (now >= end) return 29; // Bereits vorbei (alle offen)
-
-  const diffMs = now.getTime() - start.getTime();
-  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-  return Math.min(diffDays + 1, 28);
+  return getProgramDay(year);
 }
 
 /** Gibt das Datum für einen bestimmten Raunächte-Tag zurück */
 export function getRaunaechteDate(year: number, day: number): Date {
-  const start = new Date(year, 11, 10); // 10. Dezember
-  const date = new Date(start);
-  date.setDate(start.getDate() + day - 1);
-  return date;
+  return getProgramDate(year, day);
 }
 
 /** Prüft ob ein Tag freigeschaltet ist */
 export function isDayUnlocked(day: number, currentDay: number): boolean {
-  if (currentDay >= 29) return true; // Nach Ende: alle offen
-  return day <= currentDay;
+  return isProgramDayUnlocked(day, currentDay);
 }
 
 /** Formatiert ein Datum auf Deutsch */
@@ -142,10 +129,5 @@ export function formatDateDE(date: Date): string {
 
 /** Aktuelles Raunächte-Jahr bestimmen */
 export function getCurrentRaunaechteYear(): number {
-  const now = new Date();
-  const month = now.getMonth(); // 0-11
-  // Ab Oktober zeigen wir das aktuelle Jahr (Vorbereitung)
-  // Jan-Sep: vorheriges Jahr (falls Nachhol-Modus)
-  if (month >= 9) return now.getFullYear(); // Okt-Dez
-  return now.getFullYear() - 1; // Jan-Sep (letztes Jahr)
+  return getProgramYear();
 }

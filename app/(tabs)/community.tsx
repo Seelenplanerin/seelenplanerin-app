@@ -9,7 +9,9 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { OFFICIAL_OFFERS } from "@/data/angebote";
 import { registerPushTokenWithServer } from "@/lib/notifications";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 // ── Song-Interface (gleich wie in musik.tsx) ──
 interface Song {
@@ -126,9 +128,9 @@ const DEFAULT_POSTS: CommunityPost[] = [
 ];
 
 const ANGEBOTE = [
-  { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://calendly.com/hallo-seelenplanerin/30min" },
-  { emoji: "🔮", titel: "Aura Reading", preis: "111 €", beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: "https://dieseelenplanerin.tentary.com/p/TuOzYS" },
-
+  { emoji: "☕", titel: "Soul Talk", preis: "Kostenlos", beschreibung: "30 Min. kostenloses Kennenlerngespräch", url: "https://dieseelenplanerin.de/kontakt" },
+  { emoji: "🔮", titel: OFFICIAL_OFFERS.auraReading.name, preis: OFFICIAL_OFFERS.auraReading.priceLabel, beschreibung: "Tiefes Aura-Reading mit persönlicher Botschaft", url: OFFICIAL_OFFERS.auraReading.url },
+  { emoji: "✨", titel: OFFICIAL_OFFERS.thetaHealing.name, preis: OFFICIAL_OFFERS.thetaHealing.priceLabel, beschreibung: "Intensive 1:1-Begleitung für dein persönliches Thema", url: OFFICIAL_OFFERS.thetaHealing.url },
 ];
 
 const POSTS_KEY = "community_posts";
@@ -1230,7 +1232,7 @@ export default function CommunityScreen() {
           <Text style={s.sec}>📅 Buche Zeit mit der Seelenplanerin</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12, paddingBottom: 4 }}>
             {ANGEBOTE.map((a, i) => (
-              <TouchableOpacity key={i} style={s.angebotCard} onPress={() => Linking.openURL(a.url)} activeOpacity={0.85}>
+              <TouchableOpacity key={i} style={s.angebotCard} onPress={() => void openSeelenplanerinUrl(a.url)} activeOpacity={0.85}>
                 <Text style={{ fontSize: 32, marginBottom: 8 }}>{a.emoji}</Text>
                 <Text style={s.angebotTitel}>{a.titel}</Text>
                 <Text style={s.angebotBeschreibung}>{a.beschreibung}</Text>

@@ -1,13 +1,14 @@
 
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, TextInput,
-  Alert, Platform,
+  Alert,
 } from "react-native";
 import { useState, useRef, useCallback } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -212,7 +213,7 @@ export default function IchScreen() {
         {!isEditing && profile.intention ? (
           <View style={s.intentionCard}>
             <Text style={s.intentionLabel}>✨ Deine Intention</Text>
-            <Text style={s.intentionText}>"{profile.intention}"</Text>
+            <Text style={s.intentionText}>„{profile.intention}“</Text>
           </View>
         ) : null}
 
@@ -220,7 +221,7 @@ export default function IchScreen() {
         {!isEditing && profile.lieblingszitat ? (
           <View style={s.zitatCard}>
             <Text style={s.zitatLabel}>💫 Dein Lieblingszitat</Text>
-            <Text style={s.zitatText}>"{profile.lieblingszitat}"</Text>
+            <Text style={s.zitatText}>„{profile.lieblingszitat}“</Text>
           </View>
         ) : null}
 
@@ -323,7 +324,7 @@ export default function IchScreen() {
         <View style={s.menuSection}>
           <TouchableOpacity
             style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.de")}
+            onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de")}
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>✨</Text>
@@ -335,7 +336,7 @@ export default function IchScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[s.menuItem, s.menuItemBorder]}
-            onPress={() => Linking.openURL("https://calendly.com/hallo-seelenplanerin/30min")}
+            onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de/kontakt")}
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>📅</Text>
@@ -378,7 +379,7 @@ export default function IchScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={s.menuItem}
-            onPress={() => Linking.openURL("https://dieseelenplanerin.de/datenschutz")}
+            onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de/datenschutz")}
             activeOpacity={0.8}
           >
             <Text style={s.menuEmoji}>🔒</Text>

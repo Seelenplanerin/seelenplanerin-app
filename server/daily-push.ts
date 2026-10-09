@@ -8,6 +8,8 @@ import { getAllActivePushTokens, createPushMessage, updatePushMessage, deactivat
 import { sendPortaltagPush } from "./portaltage";
 import { sendWebPushToAll } from "./web-push";
 import { sendMoonRitualPush } from "./moon-rituals";
+import { RAUHNAECHTE_PROGRAM, getProgramDay, getProgramYear } from "../lib/raunaechte-program";
+import { getRaunaechteDay } from "../lib/raunaechte-data";
 
 // Die gleichen Impulse wie in der App (app/(tabs)/index.tsx)
 const IMPULSE = [
@@ -162,43 +164,26 @@ export async function sendDailyImpulsPush(): Promise<void> {
  *   → Passt zur Abend-Meditation / Journaling-Routine
  */
 /**
- * Sendet Raunächte-Push-Benachrichtigung (10. Dez – 6. Jan)
- * Jeden Abend um 19:00 während der Raunächte-Zeit
+ * Bestehender Abendhinweis: Rauhnächte mit Sperrnächten (8. Dez – 6. Jan).
+ * Jeden Abend um 18:00 während der Begleitung.
  */
 async function sendRaunaechteAbendPush(): Promise<void> {
   const now = new Date();
   const berlinTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Berlin" }));
-  const month = berlinTime.getMonth(); // 0-11
-  const day = berlinTime.getDate();
-
-  // Nur während der Raunächte-Zeit senden (10. Dez – 6. Jan)
-  const isRaunaechteZeit = (month === 11 && day >= 10) || (month === 0 && day <= 6);
-  if (!isRaunaechteZeit) return;
+  const programYear = getProgramYear(berlinTime);
+  const raunaechteTag = getProgramDay(programYear, berlinTime);
+  if (raunaechteTag < 1 || raunaechteTag > RAUHNAECHTE_PROGRAM.totalDays) return;
+  const content = getRaunaechteDay(programYear, raunaechteTag);
+  if (!content) return; // Kein neuer Inhalt an Nachspür- oder Abschlusstag.
 
   console.log("[raunaechte-push] Sende Raunächte-Abend-Push...");
   try {
     const tokens = await getAllActivePushTokens();
     if (!tokens || tokens.length === 0) return;
 
-    // Berechne welcher Raunächte-Tag es ist
-    let raunaechteTag = 0;
-    if (month === 11) raunaechteTag = day - 9; // 10. Dez = Tag 1
-    else raunaechteTag = 22 + day; // 1. Jan = Tag 23
-
-    const themen = [
-      "Ankunft & Einkehr", "Stille & Innenschau", "Loslassen", "Dankbarkeit",
-      "Ahnen & Wurzeln", "Träume & Visionen", "Reinigung", "Selbstliebe",
-      "Intuition", "Vergebung", "Inneres Kind", "Transformation",
-      "Wintersonnenwende", "Wiedergeburt des Lichts", "Heilung",
-      "Fülle & Manifestation", "Verbindung", "Weibliche Kraft",
-      "Mut & Stärke", "Kreativität", "Freiheit", "Vertrauen",
-      "Klarheit", "Schutz", "Neuanfang", "Lebensfreude",
-      "Seelenplan", "Integration & Abschluss",
-    ];
-
-    const thema = themen[raunaechteTag - 1] || "Raunächte";
-    const title = `🕯️ Raunacht ${raunaechteTag}: ${thema}`;
-    const body = "Deine heutige Raunacht-Begleitung wartet auf dich. Nimm dir Zeit für dein Ritual.";
+    const thema = content.theme;
+    const title = `🕯️ Inhaltstag ${content.contentDay}: ${thema}`;
+    const body = "Rauhnächte mit Sperrnächten: Nimm dir heute Zeit zum Innehalten. Deine Begleitung findest du in deiner Telegram-Gruppe; alle Infos in der App.";
 
     // Auch an Web-Push-Subscriber senden
     sendWebPushToAll({ title, body, data: { type: "raunaechte", day: raunaechteTag } })

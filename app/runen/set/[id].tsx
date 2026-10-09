@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { RUNEN_PRICES } from "@/data/angebote";
 import { useColors } from "@/hooks/use-colors";
 import { getSetById } from "@/lib/runen-sets";
 import { KATEGORIE_TO_SETS } from "@/lib/quiz-data";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 export default function RunenSetDetailScreen() {
   const colors = useColors();
@@ -38,6 +40,8 @@ export default function RunenSetDetailScreen() {
     priceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     priceLabel: { fontSize: 14, color: colors.muted },
     price: { fontSize: 28, fontWeight: "700", color: colors.primary },
+    priceDetails: { fontSize: 12, color: colors.muted, lineHeight: 19, marginTop: 12 },
+    shipping: { fontSize: 12, color: colors.primary, fontWeight: "600", marginTop: 6 },
     shopBtn: {
       backgroundColor: colors.primary, borderRadius: 16, paddingVertical: 16,
       alignItems: "center", marginTop: 8, marginBottom: 8,
@@ -120,12 +124,16 @@ export default function RunenSetDetailScreen() {
         {/* Preis & Kauf */}
         <View style={s.card}>
           <View style={s.priceRow}>
-            <Text style={s.priceLabel}>Preis</Text>
-            <Text style={s.price}>{set.preis.toFixed(2)} €</Text>
+            <Text style={s.priceLabel}>Gesamtpreis</Text>
+            <Text style={s.price}>{RUNEN_PRICES.gesamtLabel}</Text>
           </View>
+          <Text style={s.priceDetails}>
+            Armband {RUNEN_PRICES.armbandLabel} · zwei Themenrunen {RUNEN_PRICES.zweiThemenrunenLabel} · persönliche Schutzrune {RUNEN_PRICES.schutzruneLabel}
+          </Text>
+          <Text style={s.shipping}>{RUNEN_PRICES.versandLabel}</Text>
         </View>
 
-        <TouchableOpacity style={s.shopBtn} onPress={() => Linking.openURL(set.tentaryUrl)}>
+        <TouchableOpacity style={s.shopBtn} onPress={() => void openSeelenplanerinUrl(set.shopUrl)}>
           <Text style={s.shopBtnText}>Jetzt bestellen ✨</Text>
         </TouchableOpacity>
 

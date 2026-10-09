@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Image, Linking, Dimensions, Platform,
+  Image, Dimensions, Platform,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import * as Haptics from "expo-haptics";
 
 // Echte Armbänder von dieseelenplanerin.de, nach Heilstein zugeordnet
@@ -51,16 +51,8 @@ const ARMBAND_MAP: Record<string, { name: string; steine: string; image: string;
 };
 
 const openProduct = (url: string) => {
-  if (Platform.OS !== "web") {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    WebBrowser.openBrowserAsync(url, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-      controlsColor: "#C4897B",
-      toolbarColor: "#FFF8F5",
-    });
-  } else {
-    Linking.openURL(url);
-  }
+  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  void openSeelenplanerinUrl(url);
 };
 
 const { width } = Dimensions.get("window");
@@ -480,7 +472,7 @@ export default function KerzenQuizScreen() {
           {/* Affirmation */}
           <View style={[st.ergebnisCard, { backgroundColor: C.goldLight, borderColor: "#E8D5B0" }]}>
             <Text style={st.affirmationLabel}>🙏 Deine Affirmation</Text>
-            <Text style={st.affirmationText}>"{ergebnis.affirmation}"</Text>
+            <Text style={st.affirmationText}>„{ergebnis.affirmation}“</Text>
           </View>
 
           {/* Weitere Empfehlungen */}
@@ -539,7 +531,7 @@ export default function KerzenQuizScreen() {
               style={st.ctaBtn}
               onPress={() => {
                 if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                Linking.openURL("https://dieseelenplanerin.de/kategorie/meditationskerzen");
+                void openSeelenplanerinUrl("https://dieseelenplanerin.de/kategorie/meditationskerzen");
               }}
               activeOpacity={0.85}
             >

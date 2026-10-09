@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Dimensions, Platform, ActivityIndicator,
+  StyleSheet, Platform, ActivityIndicator,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -12,8 +12,7 @@ import {
   getRaunaechteDate, formatDateDE,
 } from "@/lib/raunaechte-store";
 import { getRaunaechteDay, type RaunaechteTag } from "@/lib/raunaechte-data";
-
-const { width } = Dimensions.get("window");
+import { getContentDayNumber } from "@/lib/raunaechte-program";
 
 // Raunächte Farbschema
 const RN = {
@@ -68,6 +67,19 @@ export default function RaunaechteTagScreen() {
   };
 
   if (!content) {
+    if (getContentDayNumber(dayNum) === null) {
+      return (
+        <ScreenContainer>
+          <View style={styles.contentCard}>
+            <Text style={styles.contentTitle}>Zeit zum Nachspüren</Text>
+            <Text style={styles.contentText}>Heute gibt es keinen neuen Inhaltstag. Wiederhole gerne die bisherigen Inhalte; unsere Begleitung endet am 6. Januar.</Text>
+            <TouchableOpacity style={styles.saveButton} onPress={() => router.back()} activeOpacity={0.8}>
+              <Text style={styles.saveButtonText}>Zurück zur Übersicht</Text>
+            </TouchableOpacity>
+          </View>
+        </ScreenContainer>
+      );
+    }
     return (
       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={RN.gold} />
@@ -102,7 +114,7 @@ export default function RaunaechteTagScreen() {
             </TouchableOpacity>
             <View style={styles.headerCenter}>
               <Text style={styles.headerEmoji}>{content.themeEmoji}</Text>
-              <Text style={styles.headerTitle}>Tag {dayNum}</Text>
+              <Text style={styles.headerTitle}>Inhaltstag {content.contentDay} von 25</Text>
               <Text style={styles.headerDate}>{formatDateDE(date)}</Text>
               <Text style={styles.headerTheme}>{content.theme}</Text>
             </View>
@@ -241,7 +253,7 @@ export default function RaunaechteTagScreen() {
                 <Text style={styles.runeBedeutung}>{content.rune.bedeutung}</Text>
                 <View style={styles.runeAffirmationBox}>
                   <Text style={styles.runeAffirmationLabel}>Affirmation</Text>
-                  <Text style={styles.runeAffirmation}>"{content.rune.affirmation}"</Text>
+                  <Text style={styles.runeAffirmation}>„{content.rune.affirmation}“</Text>
                 </View>
               </View>
             )}
@@ -249,7 +261,7 @@ export default function RaunaechteTagScreen() {
             {activeSection === "affirmation" && (
               <View style={styles.affirmationContent}>
                 <Text style={styles.affirmationEmoji}>✨</Text>
-                <Text style={styles.affirmationText}>"{content.affirmation.text}"</Text>
+                <Text style={styles.affirmationText}>„{content.affirmation.text}“</Text>
                 <Text style={styles.affirmationHint}>
                   Wiederhole diese Affirmation dreimal laut oder in Gedanken.
                 </Text>

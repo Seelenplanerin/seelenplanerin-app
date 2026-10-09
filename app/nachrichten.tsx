@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { isOwnedSeelenplanerinUrl } from "@/lib/link-security";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 /** Macht URLs im Text klickbar */
 function LinkifiedText({ text, style }: { text: string; style?: any }) {
@@ -19,12 +21,12 @@ function LinkifiedText({ text, style }: { text: string; style?: any }) {
   return (
     <Text style={style}>
       {parts.map((part, i) => {
-        if (/^https?:\/\//.test(part)) {
+        if (/^https?:\/\//.test(part) && isOwnedSeelenplanerinUrl(part)) {
           return (
             <Text
               key={i}
               style={{ color: "#C4826A", textDecorationLine: "underline" }}
-              onPress={() => Linking.openURL(part)}
+              onPress={() => void openSeelenplanerinUrl(part)}
             >
               {part}
             </Text>

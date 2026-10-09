@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { RitualSetCard } from "@/components/ritual-set-card";
 import { ScreenContainer } from "@/components/screen-container";
-import { RITUALE_2026, type Ritual } from "@/data/rituale-kalender";
+import { getRitualSetForRitual } from "@/data/ritual-sets";
+import { RITUALE_2026 } from "@/data/rituale-kalender";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -152,20 +153,7 @@ export default function RitualDetailScreen() {
             </View>
           )}
 
-          {/* Produkt-CTA */}
-          <View style={s.ctaCard}>
-            <Text style={s.ctaTitle}>✨ Dein Ritual-Set bestellen</Text>
-            <Text style={s.ctaText}>
-              Alle Materialien für dieses Ritual bekommst du als fertiges Set von der Seelenplanerin – Heilsteine, Räucherwerk und Kerze, mit Liebe zusammengestellt. Ein Klick, alles dabei.
-            </Text>
-            <TouchableOpacity
-              style={s.ctaBtn}
-              onPress={() => Linking.openURL(ritual.shopUrl)}
-              activeOpacity={0.85}
-            >
-              <Text style={s.ctaBtnText}>Ritual-Set bestellen →</Text>
-            </TouchableOpacity>
-          </View>
+          <RitualSetCard set={getRitualSetForRitual(ritual)} />
 
           <View style={{ height: 60 }} />
         </ScrollView>
@@ -232,18 +220,6 @@ const s = StyleSheet.create({
     borderColor: "#E8D5B0",
   },
   materialText: { fontSize: 12, color: "#8B5E3C", fontWeight: "500" },
-  ctaCard: {
-    margin: 16,
-    backgroundColor: "#FAF3E7",
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#E8D5B0",
-  },
-  ctaTitle: { fontSize: 16, fontWeight: "700", color: "#5C3317", marginBottom: 8 },
-  ctaText: { fontSize: 13, color: "#A08070", lineHeight: 19, marginBottom: 14 },
-  ctaBtn: { backgroundColor: "#C4826A", borderRadius: 12, paddingVertical: 13, alignItems: "center" },
-  ctaBtnText: { color: "#FFF", fontWeight: "700", fontSize: 14 },
   premiumCta: {
     marginHorizontal: 16,
     backgroundColor: "#5C3317",

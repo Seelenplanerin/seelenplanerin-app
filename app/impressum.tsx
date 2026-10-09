@@ -1,6 +1,7 @@
-import { ScrollView, Text, View, TouchableOpacity, StyleSheet, Linking, Platform } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, StyleSheet, Linking } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -40,7 +41,7 @@ export default function ImpressumScreen() {
             </TouchableOpacity>
 
             <Text style={s.subTitle}>Website</Text>
-            <TouchableOpacity onPress={() => Linking.openURL("https://dieseelenplanerin.de")}>
+            <TouchableOpacity onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de")}>
               <Text style={[s.text, s.link]}>www.dieseelenplanerin.de</Text>
             </TouchableOpacity>
 
@@ -70,7 +71,7 @@ export default function ImpressumScreen() {
             </Text>
 
             <Text style={s.subTitle}>Vollständige Datenschutzerklärung</Text>
-            <TouchableOpacity onPress={() => Linking.openURL("https://dieseelenplanerin.de/datenschutz")}>
+            <TouchableOpacity onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de/datenschutz")}>
               <Text style={[s.text, s.link]}>Datenschutzerklärung auf dieseelenplanerin.de →</Text>
             </TouchableOpacity>
           </View>

@@ -61,7 +61,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="raunaechte"
         options={{
-          title: "Raunacht",
+          title: "Rauhnächte",
           tabBarIcon: ({ color }) => <IconSymbol size={20} name="heart.fill" color={color} />,
         }}
       />

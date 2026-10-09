@@ -1,9 +1,9 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import * as Linking from "expo-linking";
 import { router } from "expo-router";
 
 import { ScreenContainer } from "@/components/screen-container";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 const C = {
   bg: "#FDF8F4",
@@ -30,11 +30,7 @@ const BEREICHE = [
 ];
 
 async function openExternalUrl(url: string) {
-  try {
-    await Linking.openURL(url);
-  } catch (error) {
-    console.error("[Seelenakademie] Link konnte nicht geöffnet werden:", error);
-  }
+  await openSeelenplanerinUrl(url);
 }
 
 export default function SeelenakademieScreen() {

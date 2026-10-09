@@ -1,6 +1,6 @@
 // ============================================================
 // RUNEN QUIZ – 9 Fragen, 8 Kategorien (A–H)
-// Ergebnis = meistgewählte Kategorie → Runen-Set aus shop-data
+// Ergebnis = meistgewählte Kategorie → Runen-Set aus runen-sets
 // ============================================================
 
 export type RunenCategory =

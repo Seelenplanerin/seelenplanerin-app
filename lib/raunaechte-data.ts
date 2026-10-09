@@ -1,11 +1,13 @@
 /**
  * Raunächte Content-Daten 2026
- * 28 Tage: 10. Dezember 2026 – 6. Januar 2027
+ * 25 Inhaltstage innerhalb 8. Dezember 2026 – 6. Januar 2027, inklusive Sperrnächten
  * Inkl. Portaltage-Markierung
  */
+import { RAUHNAECHTE_CONTENT_CALENDAR_DAYS, getProgramDate, formatProgramISODate, getContentDayNumber } from "./raunaechte-program";
 
 export interface RaunaechteTag {
   day: number;
+  contentDay: number;
   date: string; // ISO format
   theme: string;
   themeEmoji: string;
@@ -25,7 +27,7 @@ const PORTALTAGE_2026_DEC = [10, 11, 14, 23, 24, 25];
 const PORTALTAGE_2027_JAN = [1, 2, 5, 6];
 
 function isPortaltag(date: string): boolean {
-  const d = new Date(date);
+  const d = new Date(`${date}T12:00:00`);
   const month = d.getMonth();
   const day = d.getDate();
   if (month === 11) return PORTALTAGE_2026_DEC.includes(day);
@@ -33,7 +35,7 @@ function isPortaltag(date: string): boolean {
   return false;
 }
 
-// Die 24 Elder Futhark Runen (Rotation über 28 Tage)
+// Runen der bestehenden Begleitung; die zwei Einstiegstage erhalten eigene Runen.
 const RUNEN = [
   { name: "Fehu", symbol: "ᚠ", bedeutung: "Fülle, Reichtum, neue Anfänge", affirmation: "Ich bin offen für die Fülle des Lebens." },
   { name: "Uruz", symbol: "ᚢ", bedeutung: "Urkraft, Gesundheit, Vitalität", affirmation: "Meine innere Kraft trägt mich durch alles." },
@@ -66,8 +68,10 @@ const RUNEN = [
   { name: "Dagaz", symbol: "ᛞ", bedeutung: "Durchbruch, Erwachen, neuer Tag", affirmation: "Ein neues Kapitel beginnt – voller Möglichkeiten." },
 ];
 
-// Themen für die 28 Tage
+// Zwei Sperrnächte-Einstiege plus die bestehenden 28 Begleittage.
 const THEMEN = [
+  { theme: "Sperrnächte: Rückblick & Ankommen", emoji: "🕯️" },
+  { theme: "Sperrnächte: Loslassen & Raum schaffen", emoji: "🍂" },
   { theme: "Ankunft & Einkehr", emoji: "🕯️" },
   { theme: "Stille & Innenschau", emoji: "🤫" },
   { theme: "Loslassen", emoji: "🍂" },
@@ -102,22 +106,24 @@ const THEMEN = [
 export function generateRaunaechteContent(year: number): RaunaechteTag[] {
   const days: RaunaechteTag[] = [];
 
-  for (let i = 0; i < 28; i++) {
-    const dayNum = i + 1;
-    const date = new Date(year, 11, 10 + i); // Start: 10. Dezember
-    const dateStr = date.toISOString().split("T")[0];
+  for (const dayNum of RAUHNAECHTE_CONTENT_CALENDAR_DAYS) {
+    const i = dayNum - 1;
+    const contentDay = getContentDayNumber(dayNum)!;
+    const date = getProgramDate(year, dayNum);
+    const dateStr = formatProgramISODate(date);
     const portaltag = isPortaltag(dateStr);
-    const thema = THEMEN[i];
-    const rune = RUNEN[i];
+    const thema = contentDay === 25 ? THEMEN[29] : THEMEN[i];
+    const rune = i < 2 ? RUNEN[i === 0 ? 11 : 8] : RUNEN[i - 2];
 
     days.push({
       day: dayNum,
+      contentDay,
       date: dateStr,
       theme: thema.theme,
       themeEmoji: thema.emoji,
       isPortaltag: portaltag,
       impuls: {
-        title: `Tag ${dayNum}: ${thema.theme}`,
+        title: `Inhaltstag ${contentDay}: ${thema.theme}`,
         text: `Heute widmen wir uns dem Thema "${thema.theme}". Nimm dir einen Moment der Stille und spüre in dich hinein. Was bedeutet ${thema.theme.toLowerCase()} für dich in diesem Moment deines Lebens? Lass die Antwort aus deinem Herzen kommen, nicht aus deinem Kopf.`,
       },
       meditation: {
@@ -137,7 +143,7 @@ export function generateRaunaechteContent(year: number): RaunaechteTag[] {
         materials: ["Kerze", "Räucherwerk", "Edelstein des Tages", "Ruhiger Raum"],
       },
       journal: {
-        question: getJournalQuestion(dayNum, thema.theme),
+        question: getJournalQuestion(contentDay === 25 ? 30 : dayNum, thema.theme),
       },
       klang: {
         title: `Klangwelt: ${thema.theme}`,
@@ -167,6 +173,8 @@ export function generateRaunaechteContent(year: number): RaunaechteTag[] {
 }
 
 function getJournalQuestion(day: number, theme: string): string {
+  if (day === 1) return "Blicke auf dein Jahr zurück: Was hat dich geprägt, was möchtest du würdigen und was darf gehen?";
+  if (day === 2) return "Welche Gedanken, Erwartungen oder Gewohnheiten möchtest du in den Sperrnächten loslassen? Wofür schaffst du Raum?";
   const questions: Record<number, string> = {
     1: "Was möchtest du in dieser besonderen Zeit loslassen? Schreibe alles auf, was du nicht mit ins neue Jahr nehmen willst.",
     2: "Wann hast du zuletzt echte Stille erlebt? Was hast du dabei gefühlt?",
@@ -195,9 +203,9 @@ function getJournalQuestion(day: number, theme: string): string {
     25: "Was beginnt gerade neu in deinem Leben? Welchen Samen pflanzt du?",
     26: "Was bringt dir pure Lebensfreude? Wie kannst du mehr davon in dein Leben bringen?",
     27: "Was ist dein Seelenplan für das kommende Jahr? Was ruft dich?",
-    28: "Blicke auf die letzten 28 Tage zurück. Was hast du über dich gelernt? Was nimmst du mit?",
+    28: "Blicke auf deine Zeit mit Sperrnächten und Rauhnächten zurück. Was hast du über dich gelernt? Was nimmst du mit?",
   };
-  return questions[day] || `Was bedeutet "${theme}" für dich in diesem Moment?`;
+  return questions[day - 2] || `Was bedeutet "${theme}" für dich in diesem Moment?`;
 }
 
 /** Gibt den Content für einen bestimmten Tag zurück */

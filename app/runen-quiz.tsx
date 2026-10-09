@@ -1,13 +1,14 @@
 import { useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Image, Platform,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Platform,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
 import * as Haptics from "expo-haptics";
 import { ScreenContainer } from "@/components/screen-container";
+import { RUNEN_PRICES } from "@/data/angebote";
 import { router } from "expo-router";
 import { RUNEN_QUESTIONS, type RunenCategory } from "@/lib/quiz-data";
-import { RUNEN_SETS, getSetsByKategorie } from "@/lib/runen-sets";
+import { getSetsByKategorie } from "@/lib/runen-sets";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
   gold: "#C9A96E", goldLight: "#FAF3E7", brown: "#5C3317", brownMid: "#8B5E3C",
@@ -60,16 +61,8 @@ const KATEGORIE_ARMBAENDER: Record<string, { name: string; steine: string; image
 };
 
 const openProduct = (url: string) => {
-  if (Platform.OS !== "web") {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    WebBrowser.openBrowserAsync(url, {
-      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN,
-      controlsColor: "#C4897B",
-      toolbarColor: "#FFF8F5",
-    });
-  } else {
-    Linking.openURL(url);
-  }
+  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  void openSeelenplanerinUrl(url);
 };
 
 const KATEGORIE_INFO: Record<RunenCategory, {
@@ -304,10 +297,11 @@ export default function RunenQuizScreen() {
             <Text style={s.ctaText}>
               3 handgravierte Runen-Charms auf {info.heilstein}-Plättchen, befüllt mit Heilstein-Pulver. Ein Unikat – nur für dich.
             </Text>
-            <Text style={s.ctaPreis}>57,00 € zzgl. 4,90 € Versand</Text>
+            <Text style={s.ctaPreis}>{RUNEN_PRICES.gesamtLabel} gesamt</Text>
+            <Text style={s.ctaShipping}>{RUNEN_PRICES.versandLabel}</Text>
             <TouchableOpacity
               style={[s.ctaBtn, { backgroundColor: info.farbe }]}
-              onPress={() => Linking.openURL("https://dieseelenplanerin.de/runenarmbander")}
+              onPress={() => void openSeelenplanerinUrl(RUNEN_PRICES.url)}
               activeOpacity={0.85}
             >
               <Text style={s.ctaBtnText}>Jetzt bestellen →</Text>
@@ -434,7 +428,8 @@ const s = StyleSheet.create({
   ctaCard: { margin: 16, marginTop: 12, backgroundColor: C.roseLight, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: C.border, alignItems: "center" },
   ctaTitel: { fontSize: 18, fontWeight: "700", color: C.brown, marginBottom: 8, textAlign: "center" },
   ctaText: { fontSize: 14, color: C.brownMid, lineHeight: 22, textAlign: "center", marginBottom: 12 },
-  ctaPreis: { fontSize: 20, fontWeight: "700", color: C.rose, marginBottom: 16 },
+  ctaPreis: { fontSize: 20, fontWeight: "700", color: C.rose, marginBottom: 3 },
+  ctaShipping: { fontSize: 12, fontWeight: "600", color: C.muted, marginBottom: 16 },
   ctaBtn: { backgroundColor: C.rose, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 24 },
   ctaBtnText: { color: "#FFF", fontSize: 15, fontWeight: "700" },
 

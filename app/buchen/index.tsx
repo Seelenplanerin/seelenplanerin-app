@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Platform,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { OFFICIAL_OFFERS } from "@/data/angebote";
 import { useColors } from "@/hooks/use-colors";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import * as Haptics from "expo-haptics";
 
 interface Session {
@@ -34,13 +36,13 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🎁",
     badge: "Gratis",
-    bookingUrl: "https://calendly.com/hallo-seelenplanerin/30min",
+    bookingUrl: "https://dieseelenplanerin.de/kontakt",
   },
   {
     id: "aura-reading",
-    name: "Aura Reading",
+    name: OFFICIAL_OFFERS.auraReading.name,
     dauer: "Online",
-    preis: "111,00 €",
+    preis: OFFICIAL_OFFERS.auraReading.priceLabel,
     beschreibung: "Die Seelenplanerin liest deine Aura und gibt dir tiefe Einblicke in deine Energiefelder, Blockaden und Potenziale.",
     details: [
       "Persönliches Aura-Reading",
@@ -51,7 +53,24 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🌈",
     badge: "Beliebt",
-    bookingUrl: "https://dieseelenplanerin.tentary.com/p/TuOzYS",
+    bookingUrl: OFFICIAL_OFFERS.auraReading.url,
+  },
+  {
+    id: "thetahealing-intensiv",
+    name: OFFICIAL_OFFERS.thetaHealing.name,
+    dauer: "Online",
+    preis: OFFICIAL_OFFERS.thetaHealing.priceLabel,
+    beschreibung: "Eine intensive persönliche 1:1-Session für dein aktuelles Thema und die dahinterliegenden Glaubenssätze.",
+    details: [
+      "Intensive persönliche 1:1-Begleitung",
+      "Arbeit an unbewussten Glaubenssätzen",
+      "Energetische Blockaden lösen",
+      "Individuell auf dein Thema abgestimmt",
+      "Alle Details auf der offiziellen Angebotsseite",
+    ],
+    emoji: "✨",
+    badge: "Intensiv",
+    bookingUrl: OFFICIAL_OFFERS.thetaHealing.url,
   },
 
   {
@@ -70,7 +89,7 @@ const SESSIONS: Session[] = [
     ],
     emoji: "🔮",
     badge: "Premium",
-    bookingUrl: "https://www.instagram.com/die.seelenplanerin/",
+    bookingUrl: "https://dieseelenplanerin.de/kontakt",
   },
 
 ];
@@ -165,7 +184,7 @@ export default function BuchenScreen() {
   const handleBook = () => {
     if (!session) return;
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Linking.openURL(session.bookingUrl);
+    void openSeelenplanerinUrl(session.bookingUrl);
   };
 
   return (
@@ -182,7 +201,7 @@ export default function BuchenScreen() {
         {/* Lara-Notiz */}
         <View style={s.laraNote}>
           <Text style={s.laraNoteText}>
-            "Ich freue mich darauf, dich auf deinem Weg zu begleiten. Jede Session ist einzigartig und wird von Herzen für dich gestaltet." – Die Seelenplanerin 🌙
+            „Ich freue mich darauf, dich auf deinem Weg zu begleiten. Jede Session ist einzigartig und wird von Herzen für dich gestaltet.“ – Die Seelenplanerin 🌙
           </Text>
         </View>
 

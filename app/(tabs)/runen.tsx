@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Linking,
+  StyleSheet,
 } from "react-native";
 import { ScreenContainer } from "@/components/screen-container";
+import { RUNEN_PRICES } from "@/data/angebote";
 import { router } from "expo-router";
-import { RUNEN_SETS, getSetsByKategorie, type RunenSet } from "@/lib/runen-sets";
+import { getSetsByKategorie, type RunenSet } from "@/lib/runen-sets";
 import { type RunenCategory } from "@/lib/quiz-data";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 // ─── Farben ───────────────────────────────────────────────────────────────────
 const C = {
@@ -119,8 +121,7 @@ export default function RunenScreen() {
   }
 
   function handleShopOeffnen() {
-    const url = "https://dieseelenplanerin.de/runenarmbander";
-    Linking.openURL(url);
+    void openSeelenplanerinUrl(RUNEN_PRICES.url);
   }
 
   return (
@@ -185,7 +186,7 @@ export default function RunenScreen() {
                 <Text style={st.runeEnergie}>{schutzrune.energie}</Text>
                 <View style={st.affirmationBox}>
                   <Text style={st.affirmationLabel}>Deine Affirmation</Text>
-                  <Text style={st.affirmationText}>"{schutzrune.affirmation}"</Text>
+                  <Text style={st.affirmationText}>„{schutzrune.affirmation}“</Text>
                 </View>
                 <Text style={st.shopHint}>
                   Deine Schutzrune {schutzrune.name} wird als erster Charm auf dein Armband graviert – mit Heilstein-Pulver veredelt.
@@ -301,7 +302,10 @@ export default function RunenScreen() {
                     💫 Ein Unikat – nur für dich
                   </Text>
                 </View>
-                <Text style={st.preisText}>57,00 € zzgl. 4,90 € Versand</Text>
+                <Text style={st.preisDetails}>
+                  Armband {RUNEN_PRICES.armbandLabel} · zwei Themenrunen {RUNEN_PRICES.zweiThemenrunenLabel} · persönliche Schutzrune {RUNEN_PRICES.schutzruneLabel}
+                </Text>
+                <Text style={st.preisText}>Gesamt {RUNEN_PRICES.gesamtLabel} · versandkostenfrei</Text>
                 <TouchableOpacity style={st.shopBtn} onPress={handleShopOeffnen} activeOpacity={0.85}>
                   <Text style={st.shopBtnText}>🛍️ Armband bestellen →</Text>
                 </TouchableOpacity>
@@ -399,6 +403,7 @@ const st = StyleSheet.create({
   charmThema: { fontSize: 10, color: C.muted, textAlign: "center" },
   armbandInfo: { backgroundColor: C.goldLight, borderRadius: 12, padding: 14, marginBottom: 16 },
   armbandInfoText: { fontSize: 13, color: C.brown, lineHeight: 22 },
+  preisDetails: { fontSize: 12, color: C.muted, textAlign: "center", lineHeight: 18, marginBottom: 6 },
   preisText: { fontSize: 20, fontWeight: "700", color: C.rose, textAlign: "center", marginBottom: 16 },
   runeRow: { flexDirection: "row", backgroundColor: C.card, borderRadius: 14, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: C.border, alignItems: "center" },
   runeSymbolSmall: { fontSize: 32, color: C.rose, width: 50, textAlign: "center" },

@@ -1,14 +1,16 @@
 import { useState } from "react";
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking, Platform,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Platform,
 } from "react-native";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
+import { OFFICIAL_OFFERS } from "@/data/angebote";
 import { useColors } from "@/hooks/use-colors";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import * as Haptics from "expo-haptics";
 
-const SEELENLEGUNG_URL = "https://dieseelenplanerin.de/seelenarbeit/seelenlegung";
+const SEELENLEGUNG_URL = OFFICIAL_OFFERS.seelenlegungEineFrage.url;
 
 interface LegungOption {
   id: string;
@@ -24,7 +26,7 @@ const OPTIONEN: LegungOption[] = [
     id: "eine-frage",
     emoji: "🌸",
     name: "Eine Frage",
-    preis: "33 €",
+    preis: OFFICIAL_OFFERS.seelenlegungEineFrage.priceLabel,
     badge: "Beliebt",
     features: [
       "Deine konkrete Frage beantwortet",
@@ -34,10 +36,10 @@ const OPTIONEN: LegungOption[] = [
     ],
   },
   {
-    id: "rundum-blick",
+    id: "grosse-seelenlegung",
     emoji: "🌿",
-    name: "Rundum-Blick",
-    preis: "77 €",
+    name: "Große Seelenlegung",
+    preis: OFFICIAL_OFFERS.seelenlegungGross.priceLabel,
     badge: "Umfassend",
     features: [
       "Rundum-Blick auf dein Lebensbild",
@@ -51,7 +53,7 @@ const OPTIONEN: LegungOption[] = [
 const FAQ = [
   {
     frage: "Was ist der Unterschied zwischen den beiden Optionen?",
-    antwort: "Bei 'Eine Frage' beantworte ich dir eine konkrete Frage, die dich gerade besch\u00e4ftigt. Beim 'Rundum-Blick' schaue ich mir alle Lebensbereiche an \u2013 Liebe, Beruf, Gesundheit, Spiritualit\u00e4t \u2013 und gebe dir einen umfassenden \u00dcberblick.",
+    antwort: "Bei 'Eine Frage' beantworte ich dir eine konkrete Frage, die dich gerade besch\u00e4ftigt. Bei der 'Großen Seelenlegung' schaue ich mir alle Lebensbereiche an \u2013 Liebe, Beruf, Gesundheit, Spiritualit\u00e4t \u2013 und gebe dir einen umfassenden \u00dcberblick.",
   },
   {
     frage: "Wie stelle ich meine Frage?",
@@ -62,7 +64,7 @@ const FAQ = [
     antwort: "Innerhalb von 48 Stunden erhältst du eine persönliche Sprachnachricht von mir plus ein PDF mit deiner Legung und Reflexionsfragen zum Mitnehmen.",
   },
   {
-    frage: "Muss ich beim Rundum-Blick etwas vorbereiten?",
+    frage: "Muss ich für die Große Seelenlegung etwas vorbereiten?",
     antwort: "Nein, du musst nichts vorbereiten. Ich lege die gro\u00dfe Tafel und h\u00f6re, was sich f\u00fcr dich zeigt. Du darfst einfach offen sein f\u00fcr das, was kommt.",
   },
 ];
@@ -74,7 +76,7 @@ export default function SeelenlegungScreen() {
 
   const handleBuchen = () => {
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Linking.openURL(SEELENLEGUNG_URL);
+    void openSeelenplanerinUrl(SEELENLEGUNG_URL);
   };
 
   const s = StyleSheet.create({
@@ -141,7 +143,7 @@ export default function SeelenlegungScreen() {
           <Text style={s.backText}>← Zurück</Text>
         </TouchableOpacity>
         <Text style={s.title}>Seelenlegung</Text>
-        <Text style={s.subtitle}>Lenormand-Legung für dich – ab 33 €</Text>
+        <Text style={s.subtitle}>Lenormand-Legung für dich – ab {OFFICIAL_OFFERS.seelenlegungEineFrage.priceLabel}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -227,7 +229,9 @@ export default function SeelenlegungScreen() {
           activeOpacity={0.8}
         >
           <Text style={s.bookBtnText}>
-            {selectedOption === "rundum-blick" ? "Jetzt für 77 € buchen" : "Jetzt für 33 € buchen"}
+            {selectedOption === "grosse-seelenlegung"
+              ? `Jetzt für ${OFFICIAL_OFFERS.seelenlegungGross.priceLabel} buchen`
+              : `Jetzt für ${OFFICIAL_OFFERS.seelenlegungEineFrage.priceLabel} buchen`}
           </Text>
         </TouchableOpacity>
         <Text style={s.bookHint}>Einmalzahlung – Lieferung innerhalb 48 Stunden</Text>

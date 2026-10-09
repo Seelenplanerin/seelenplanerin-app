@@ -1,11 +1,12 @@
 import { useState } from "react";
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform, Linking,
+  View, Text, TouchableOpacity, StyleSheet, ScrollView, Platform,
 } from "react-native";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
 import { requestNotificationPermissions, registerPushTokenWithServer } from "@/lib/notifications";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4897B", roseLight: "#F9EDE8",
@@ -94,7 +95,7 @@ export default function OnboardingScreen() {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => Linking.openURL("https://dieseelenplanerin.de/datenschutz")}
+            onPress={() => void openSeelenplanerinUrl("https://dieseelenplanerin.de/datenschutz")}
             activeOpacity={0.7}
           >
             <Text style={s.linkText}>Datenschutzerklärung lesen →</Text>

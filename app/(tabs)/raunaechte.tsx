@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, Dimensions, Platform, ActivityIndicator, Alert,
+  StyleSheet, Dimensions, Platform, ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
@@ -12,8 +12,10 @@ import {
   getCurrentRaunaechteDay, getRaunaechteDate, isDayUnlocked,
   formatDateDE, getCurrentRaunaechteYear,
 } from "@/lib/raunaechte-store";
-import { getAllRaunaechteContent, type RaunaechteTag } from "@/lib/raunaechte-data";
+import { getAllRaunaechteContent } from "@/lib/raunaechte-data";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { RAUHNAECHTE_PROGRAM, getContentDayNumber } from "@/lib/raunaechte-program";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 const { width } = Dimensions.get("window");
 
@@ -40,13 +42,11 @@ export default function RaunaechteScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgressState] = useState<{ completedDays: number[] }>({ completedDays: [] });
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [waitlistLoading, setWaitlistLoading] = useState(false);
-  const [waitlistDone, setWaitlistDone] = useState(false);
 
   const year = getCurrentRaunaechteYear();
   const currentDay = getCurrentRaunaechteDay(year);
   const content = getAllRaunaechteContent(year);
+  const currentContentDay = getContentDayNumber(currentDay);
 
   useEffect(() => {
     checkAccess();
@@ -100,31 +100,7 @@ export default function RaunaechteScreen() {
     router.push({ pathname: "/raunaechte-tag", params: { day: day.toString(), year: year.toString() } });
   };
 
-  const handleWaitlistSignup = async () => {
-    if (!waitlistEmail.trim() || !waitlistEmail.includes("@")) {
-      if (Platform.OS === "web") { window.alert("Bitte gib eine g\u00fcltige E-Mail-Adresse ein."); }
-      else { Alert.alert("Fehler", "Bitte gib eine g\u00fcltige E-Mail-Adresse ein."); }
-      return;
-    }
-    setWaitlistLoading(true);
-    try {
-      const base = getApiBaseUrl();
-      await fetch(`${base}/api/raunaechte-waitlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: waitlistEmail.trim().toLowerCase() }),
-      });
-      setWaitlistDone(true);
-      setWaitlistEmail("");
-      if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (e) {
-      console.error(e);
-      if (Platform.OS === "web") { window.alert("Fehler beim Eintragen. Bitte versuche es sp\u00e4ter erneut."); }
-      else { Alert.alert("Fehler", "Fehler beim Eintragen. Bitte versuche es sp\u00e4ter erneut."); }
-    } finally {
-      setWaitlistLoading(false);
-    }
-  };
+  const handleRegistration = () => openSeelenplanerinUrl(RAUHNAECHTE_PROGRAM.registrationUrl);
 
   // Loading state
   if (hasAccess === null) {
@@ -144,27 +120,46 @@ export default function RaunaechteScreen() {
             {/* Header */}
             <View style={styles.lockHeader}>
               <Text style={styles.lockEmoji}>✨</Text>
-              <Text style={styles.lockTitle}>Raunächte</Text>
-              <Text style={styles.lockSubtitle}>Deine persönliche Begleitung</Text>
+              <Text style={styles.lockTitle}>Rauhnächte</Text>
+              <Text style={styles.lockSubtitle}>Mit Sperrnächten · 8.12.{year}–6.1.{year + 1}</Text>
             </View>
 
             {/* Beschreibung */}
             <View style={styles.lockCard}>
-              <Text style={styles.lockCardTitle}>28 Tage Seelenreise</Text>
+              <Text style={styles.lockCardTitle}>{RAUHNAECHTE_PROGRAM.title}</Text>
               <Text style={styles.lockCardText}>
-                Vom 10. Dezember bis zum 6. Januar begleite ich dich durch die magische Zeit
-                der Raunächte und Portaltage. Jeden Tag erwartet dich:
+                Vom 8. Dezember {year} bis zum 6. Januar {year + 1} begleite ich dich durch
+                Sperrnächte und Rauhnächte: zurückblicken, loslassen und dich auf das neue Jahr ausrichten.
+                {"\n\n"}25 Inhaltstage mit insgesamt 75 Inhalten: je ein Song, eine Meditation und ein Impuls in der geschlossenen Telegram-Gruppe.
+                {"\n\n"}Sperrnächte: Inhaltstage vom 8. bis 19. Dezember. Vom 20. bis 23. Dezember ist Zeit zum Nachspüren. Rauhnächte: weitere Inhaltstage vom 24. Dezember bis 5. Januar; Abschluss am 6. Januar.
               </Text>
               <View style={styles.lockFeatures}>
-                {["🕯️ Tagesimpuls & Meditation", "🔮 Ritual & Klangwelt", "📝 Journal-Reflexion", "ᚠ Rune des Tages", "✨ Portaltag-Energie"].map((f, i) => (
+                {["Sperrnächte: Rückblick & Loslassen", "Rauhnächte: Innehalten & Ausrichten", "Song, Meditation & Impuls in der Telegram-Gruppe", "Ritual-Box, Begleitung oder beides – wähle auf meiner Website"].map((f, i) => (
                   <Text key={i} style={styles.lockFeature}>{f}</Text>
                 ))}
               </View>
             </View>
 
+            <View style={styles.shopSection}>
+              <Text style={styles.codeSectionTitle}>Die Anmeldung ist geöffnet</Text>
+              <Text style={styles.shopText}>
+                Alle Angebote und deine Anmeldung findest du direkt auf meiner Website.
+              </Text>
+              <TouchableOpacity
+                style={styles.shopButton}
+                onPress={handleRegistration}
+                activeOpacity={0.8}
+                accessibilityRole="link"
+                accessibilityLabel="Jetzt für Rauhnächte mit Sperrnächten anmelden"
+              >
+                <Text style={styles.shopButtonText}>Jetzt anmelden →</Text>
+              </TouchableOpacity>
+              <Text style={styles.shopHint}>dieseelenplanerin.de/rauhnaechte</Text>
+            </View>
+
             {/* Code-Eingabe */}
             <View style={styles.codeSection}>
-              <Text style={styles.codeSectionTitle}>Zugangscode eingeben</Text>
+              <Text style={styles.codeSectionTitle}>Du hast bereits einen App-Zugangscode?</Text>
               <TextInput
                 style={styles.codeInput}
                 value={code}
@@ -191,46 +186,6 @@ export default function RaunaechteScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Warteliste */}
-            <View style={styles.shopSection}>
-              <Text style={styles.shopText}>
-                Die Raunächte-Begleitung ist aktuell nicht verfügbar.{"\n"}Trage dich auf die Warteliste ein und erfahre als Erste, wenn es wieder losgeht:
-              </Text>
-              {waitlistDone ? (
-                <View style={styles.waitlistSuccess}>
-                  <Text style={styles.waitlistSuccessEmoji}>✨</Text>
-                  <Text style={styles.waitlistSuccessText}>Du bist auf der Warteliste! Wir benachrichtigen dich, sobald es losgeht.</Text>
-                </View>
-              ) : (
-                <View style={styles.waitlistForm}>
-                  <TextInput
-                    style={styles.waitlistInput}
-                    value={waitlistEmail}
-                    onChangeText={setWaitlistEmail}
-                    placeholder="Deine E-Mail-Adresse"
-                    placeholderTextColor={RN.locked}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="done"
-                    onSubmitEditing={handleWaitlistSignup}
-                  />
-                  <TouchableOpacity
-                    style={[styles.shopButton, waitlistLoading && { opacity: 0.6 }]}
-                    onPress={handleWaitlistSignup}
-                    disabled={waitlistLoading}
-                    activeOpacity={0.8}
-                  >
-                    {waitlistLoading ? (
-                      <ActivityIndicator color={RN.white} size="small" />
-                    ) : (
-                      <Text style={styles.shopButtonText}>Auf die Warteliste setzen</Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              )}
-              <Text style={styles.shopHint}>Unverbindlich · Du wirst benachrichtigt, sobald es startet</Text>
-            </View>
           </ScrollView>
         </ScreenContainer>
       </View>
@@ -238,8 +193,8 @@ export default function RaunaechteScreen() {
   }
 
   // Hauptansicht (nach Freischaltung)
-  const completedCount = progress.completedDays.length;
-  const progressPercent = Math.round((completedCount / 28) * 100);
+  const completedCount = content.filter(tag => progress.completedDays.includes(tag.day)).length;
+  const progressPercent = Math.round((completedCount / RAUHNAECHTE_PROGRAM.contentDays) * 100);
 
   return (
     <View style={styles.container}>
@@ -247,13 +202,18 @@ export default function RaunaechteScreen() {
         <ScrollView contentContainerStyle={styles.mainContent}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Raunächte {year}/{year + 1}</Text>
+            <Text style={styles.headerTitle}>{RAUHNAECHTE_PROGRAM.title} {year}/{year + 1}</Text>
+            <Text style={styles.headerSubtitle}>{RAUHNAECHTE_PROGRAM.dateLabel}</Text>
             <Text style={styles.headerSubtitle}>
               {currentDay === 0
-                ? "Beginnt am 10. Dezember"
-                : currentDay >= 29
+                ? "Beginnt am 8. Dezember"
+                : currentDay > RAUHNAECHTE_PROGRAM.totalDays
                   ? "Alle Tage freigeschaltet"
-                  : `Tag ${currentDay} von 28`}
+                  : currentContentDay
+                    ? `Inhaltstag ${currentContentDay} von ${RAUHNAECHTE_PROGRAM.contentDays}`
+                    : currentDay === 30
+                      ? "6. Januar: Abschluss & Nachspüren"
+                      : "Zeit zum Nachspüren · nächste Inhalte ab 24. Dezember"}
             </Text>
           </View>
 
@@ -266,12 +226,16 @@ export default function RaunaechteScreen() {
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
             </View>
-            <Text style={styles.progressDetail}>{completedCount} von 28 Tagen abgeschlossen</Text>
+            <Text style={styles.progressDetail}>{completedCount} von {RAUHNAECHTE_PROGRAM.contentDays} Inhaltstagen abgeschlossen</Text>
           </View>
 
           {/* Tage-Grid */}
           <View style={styles.gridContainer}>
-            <Text style={styles.gridTitle}>Deine Tage</Text>
+            <Text style={styles.gridTitle}>Deine 25 Inhaltstage</Text>
+            <Text style={styles.shopText}>8.–19. Dezember: Sperrnächte · 20.–23. Dezember: Nachspüren · 24. Dezember–5. Januar: Rauhnächte · 6. Januar: Abschluss. Die 75 Begleitungsinhalte erhältst du in deiner Telegram-Gruppe.</Text>
+            <TouchableOpacity style={styles.shopButton} onPress={handleRegistration} activeOpacity={0.8} accessibilityRole="link">
+              <Text style={styles.shopButtonText}>Anmeldung & Angebote →</Text>
+            </TouchableOpacity>
             <View style={styles.grid}>
               {content.map((tag) => {
                 const unlocked = isDayUnlocked(tag.day, currentDay);
@@ -298,7 +262,7 @@ export default function RaunaechteScreen() {
                     ) : completed ? (
                       <IconSymbol name="checkmark" size={14} color={RN.gold} />
                     ) : (
-                      <Text style={styles.dayNumber}>{tag.day}</Text>
+                      <Text style={styles.dayNumber}>{tag.contentDay}</Text>
                     )}
                     <Text style={[styles.dayDate, !unlocked && { color: RN.locked }]}>
                       {formatDateDE(date)}
@@ -446,6 +410,7 @@ const styles = StyleSheet.create({
   shopSection: {
     alignItems: "center",
     marginTop: 8,
+    marginBottom: 28,
     paddingTop: 24,
     borderTopWidth: 1,
     borderTopColor: RN.border,
@@ -479,37 +444,6 @@ const styles = StyleSheet.create({
     color: RN.muted,
     textAlign: "center",
     marginTop: 12,
-  },
-  waitlistForm: {
-    width: "100%",
-    alignItems: "center",
-  },
-  waitlistInput: {
-    backgroundColor: RN.white,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    color: RN.text,
-    textAlign: "center",
-    borderWidth: 1,
-    borderColor: RN.border,
-    width: "100%",
-    marginBottom: 12,
-  },
-  waitlistSuccess: {
-    alignItems: "center",
-    padding: 16,
-  },
-  waitlistSuccessEmoji: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  waitlistSuccessText: {
-    fontSize: 15,
-    color: RN.gold,
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 22,
   },
   // Main Content
   mainContent: {

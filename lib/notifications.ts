@@ -10,9 +10,11 @@
  * - scheduleAllNotifications, cancelAllNotifications, getScheduledCount
  * - getUpcomingEvents, formatDateDE
  */
-import { Platform, Linking } from "react-native";
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { findFirstOwnedSeelenplanerinUrl } from "@/lib/link-security";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 // Lazy-load expo-notifications to avoid crash on web
 let Notifications: typeof import("expo-notifications") | null = null;
@@ -62,14 +64,10 @@ export function initNotificationHandler() {
       const title = notification.request.content.title || "Die Seelenplanerin";
       const body = notification.request.content.body || "";
 
-      // URL aus dem Body extrahieren und direkt im Browser öffnen
-      const urlMatch = body.match(/https?:\/\/[^\s]+/);
-      if (urlMatch) {
-        try {
-          Linking.openURL(urlMatch[0]);
-        } catch (e) {
-          console.log("[Notifications] URL konnte nicht geöffnet werden:", e);
-        }
+      // Nur Links der verifizierten eigenen Domain direkt öffnen.
+      const ownedUrl = findFirstOwnedSeelenplanerinUrl(body);
+      if (ownedUrl) {
+        void openSeelenplanerinUrl(ownedUrl);
       }
 
       // Auch zur Nachrichten-Detail-Ansicht navigieren
