@@ -98,6 +98,7 @@ describe("Rauhnächte mit Sperrnächten: 8. Dezember bis 6. Januar", () => {
   it("öffnet die Anmeldung direkt zur angegebenen eigenen Website und entfernt die Warteliste", () => {
     expect(RAUHNAECHTE_PROGRAM.registrationUrl).toBe("https://dieseelenplanerin.de/rauhnaechte");
     expect(isOwnedSeelenplanerinUrl(RAUHNAECHTE_PROGRAM.registrationUrl)).toBe(true);
+    expect(RAUHNAECHTE_PROGRAM.journalUrl).toBe("https://seelenplanerin.github.io/rauhnaechte-journal/");
     const screen = read("app/(tabs)/raunaechte.tsx");
     expect(screen).toContain("openSeelenplanerinUrl(RAUHNAECHTE_PROGRAM.registrationUrl)");
     expect(screen).toContain("Jetzt anmelden →");

@@ -16,6 +16,7 @@ import { getAllRaunaechteContent } from "@/lib/raunaechte-data";
 import { getApiBaseUrl } from "@/constants/oauth";
 import { RAUHNAECHTE_PROGRAM, getContentDayNumber } from "@/lib/raunaechte-program";
 import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
+import { openRauhnaechteJournal } from "@/lib/open-journal-url";
 
 const { width } = Dimensions.get("window");
 
@@ -294,6 +295,17 @@ export default function RaunaechteScreen() {
             </View>
           </View>
 
+          {/* Eigenständiges Journal */}
+          <View style={styles.journalSection}>
+            <Text style={styles.codeSectionTitle}>Dein Rauhnächte-Journal</Text>
+            <Text style={styles.shopText}>
+              Impulsfragen für jede Nacht, dein Traumtagebuch und das Ritual der 13 Wünsche. Deine Einträge bleiben privat auf deinem Gerät. Das Journal öffnet sich in deinem Browser, schreib dort immer im selben Browser.
+            </Text>
+            <TouchableOpacity style={styles.shopButton} onPress={openRauhnaechteJournal} activeOpacity={0.8} accessibilityRole="link">
+              <Text style={styles.shopButtonText}>Journal öffnen →</Text>
+            </TouchableOpacity>
+          </View>
+
 
         </ScrollView>
       </ScreenContainer>
@@ -407,6 +419,14 @@ const styles = StyleSheet.create({
     color: RN.white,
   },
   // Shop Section (Lock Screen)
+  journalSection: {
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 28,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: RN.border,
+  },
   shopSection: {
     alignItems: "center",
     marginTop: 8,

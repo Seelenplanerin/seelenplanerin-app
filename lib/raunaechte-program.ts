@@ -7,6 +7,8 @@ export const RAUHNAECHTE_PROGRAM = {
   totalContents: 75,
   dateLabel: "8. Dezember bis 6. Januar",
   registrationUrl: "https://dieseelenplanerin.de/rauhnaechte",
+  /** Eigenständiges Journal; speichert nur im Browser der Teilnehmerin. */
+  journalUrl: "https://seelenplanerin.github.io/rauhnaechte-journal/",
 } as const;
 
 /** 12 Sperrnächte-Tage ab 8.12. und 13 Rauhnächte-Tage ab 24.12. bis 5.1. */
