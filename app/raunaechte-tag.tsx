@@ -13,6 +13,7 @@ import {
 } from "@/lib/raunaechte-store";
 import { getRaunaechteDay, type RaunaechteTag } from "@/lib/raunaechte-data";
 import { getContentDayNumber } from "@/lib/raunaechte-program";
+import { openRauhnaechteJournal } from "@/lib/open-journal-url";
 
 // Raunächte Farbschema
 const RN = {
@@ -223,6 +224,15 @@ export default function RaunaechteTagScreen() {
                   <Text style={styles.saveButtonText}>
                     {journalSaved ? "✓ Gespeichert" : "Speichern"}
                   </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.journalLink}
+                  onPress={openRauhnaechteJournal}
+                  activeOpacity={0.7}
+                  accessibilityRole="link"
+                >
+                  <Text style={styles.journalLinkText}>Im Rauhnächte-Journal weiterschreiben →</Text>
+                  <Text style={styles.journalLinkHint}>Impulsfragen, Traumtagebuch und 13 Wünsche · öffnet im Browser</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -496,6 +506,22 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   // Journal
+  journalLink: {
+    marginTop: 16,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  journalLinkText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: RN.primary,
+  },
+  journalLinkHint: {
+    fontSize: 12,
+    color: RN.muted,
+    marginTop: 4,
+    textAlign: "center",
+  },
   journalQuestion: {
     fontSize: 16,
     color: RN.gold,
