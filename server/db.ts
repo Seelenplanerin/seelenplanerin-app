@@ -449,9 +449,10 @@ export async function validateRaunaechteCode(code: string, deviceId: string) {
     if (!entry.deviceId) {
       await db.update(raunaechteCode)
         .set({ deviceId, activatedAt: new Date() })
-        .where(eq(raunaechteCode.id, entry.id));
+        .where(and(eq(raunaechteCode.id, entry.id), eq(raunaechteCode.isActive, 1), sql`${raunaechteCode.deviceId} IS NULL`));
     }
-    return { valid: true, year: entry.year };
+    const confirmed = await getActiveRaunaechteAccess(code, deviceId);
+    return confirmed ? { valid: true, year: confirmed.year } : { valid: false, error: "Code ist bereits vergeben oder nicht mehr gültig." };
   });
 }
 
@@ -504,4 +505,36 @@ export async function getWebPushSubscriptionCount(): Promise<number> {
   const conn = await getDb();
   const result = await conn.select({ count: sql<number>`COUNT(*)` }).from(webPushSubscriptions).where(eq(webPushSubscriptions.isActive, 1));
   return result[0]?.count ?? 0;
+}
+
+// Journalzugang: zusätzliche Browserbindung, bestehende App-Gerätebindung bleibt erhalten.
+async function ensureJournalAccessTable() {
+  await getPool().query(`CREATE TABLE IF NOT EXISTS raunaechte_journal_access (
+    codeId INT PRIMARY KEY, browserHash VARCHAR(64) NOT NULL, createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
+}
+export async function getActiveRaunaechteAccess(code: string, deviceId: string) {
+  return withRetry(async () => {
+    const [rows] = await getPool().execute<mysql.RowDataPacket[]>("SELECT id, year FROM raunaechte_codes WHERE code = ? AND deviceId = ? AND isActive = 1", [code, deviceId]);
+    return rows[0] ? { id: Number(rows[0].id), year: Number(rows[0].year) } : null;
+  });
+}
+export async function bindRaunaechteJournal(codeId: number, browserId: string) {
+  const { createHash } = await import("node:crypto");
+  const hash = createHash("sha256").update(browserId).digest("hex");
+  await ensureJournalAccessTable();
+  await getPool().execute("INSERT IGNORE INTO raunaechte_journal_access (codeId,browserHash) SELECT id, ? FROM raunaechte_codes WHERE id = ? AND isActive = 1", [hash, codeId]);
+  return getActiveRaunaechteJournal(codeId, browserId);
+}
+export async function bindRaunaechteJournalByCode(code: string, browserId: string) {
+  const [rows] = await getPool().execute<mysql.RowDataPacket[]>("SELECT id FROM raunaechte_codes WHERE code = ? AND isActive = 1", [code]);
+  if (!rows[0]) return null;
+  return bindRaunaechteJournal(rows[0].id, browserId);
+}
+export async function getActiveRaunaechteJournal(codeId: number, browserId: string) {
+  const { createHash } = await import("node:crypto");
+  const hash = createHash("sha256").update(browserId).digest("hex");
+  await ensureJournalAccessTable();
+  const [rows] = await getPool().execute<mysql.RowDataPacket[]>("SELECT c.id,c.year FROM raunaechte_codes c JOIN raunaechte_journal_access j ON j.codeId = c.id WHERE c.id = ? AND c.isActive = 1 AND j.browserHash = ?", [codeId, hash]);
+  return rows[0] ? { id: Number(rows[0].id), year: Number(rows[0].year) } : null;
 }

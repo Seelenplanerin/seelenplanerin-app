@@ -24,9 +24,8 @@ export const OWNER_OPEN_ID = env.ownerId;
 export const OWNER_NAME = env.ownerName;
 export const API_BASE_URL = env.apiBaseUrl;
 
-// Stabiler Produktions-API-Server. Der bisherige Render-Dienst kann die
-// TiDB-Datenbank derzeit wegen veralteter Zugangsdaten nicht erreichen.
-const PRODUCTION_API_URL = "https://seelenapp-6tnxx849.manus.space";
+// Eigene, direkt datenbankverbundene Produktions-API auf Render.
+const PRODUCTION_API_URL = "https://www.app.dieseelenplanerin.de";
 
 /**
  * Get the API base URL, deriving from current hostname if not set.
@@ -39,10 +38,9 @@ export function getApiBaseUrl(): string {
   if (ReactNative.Platform.OS === "web" && typeof window !== "undefined" && window.location) {
     const { protocol, hostname } = window.location;
 
-    // Die bisherige Render-Webdomain nutzt ebenfalls den stabilen
-    // Produktions-API-Server, bis ihre Datenbankverbindung repariert ist.
+    // Veröffentlichte Render-Webseiten nutzen die API am selben Ursprung.
     if (hostname === "www.app.dieseelenplanerin.de" || hostname.endsWith("onrender.com")) {
-      return PRODUCTION_API_URL;
+      return "";
     }
 
     // Andere veröffentlichte Hosts bedienen die API am selben Ursprung.
@@ -60,7 +58,7 @@ export function getApiBaseUrl(): string {
     }
   }
 
-  // Native: Immer den stabilen Produktions-API-Server verwenden.
+  // Native: Die eigene direkt angebundene Produktions-API verwenden.
   // (The sandbox EXPO_PUBLIC_API_BASE_URL is not accessible from user devices)
   if (ReactNative.Platform.OS !== "web") {
     return PRODUCTION_API_URL;

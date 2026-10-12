@@ -877,3 +877,47 @@
 - [ ] Geprüften Stand zuerst auf GitHub synchronisieren, dann Render veröffentlichen; erst danach native OTA aktualisieren
 - [x] Website inzwischen in bestehender Shop-Aufgabe korrigiert; gerenderte Live-Seite am 09.10.2026 auf 08.12.–06.01. mit 25 Inhaltstagen / 75 Inhalten geprüft
 - [x] Wartelisten-Mailentwurf auf identischen Zeitraum und 25 Inhaltstage / 75 Inhalte aktualisieren; kein Versand
+
+## Notfallreparatur Rauhnächte-Admin (11.10.2026)
+
+- [x] Ursache: bisherige Manus-Produktions-API liefert Cloudflare 1000 / HTTP 403; lokale API hat 6 Wartelisteneinträge und 1 Code
+- [x] Render-Zugang aktiviert; DATABASE_URL sicher auf funktionierenden identischen Datenbestand gesetzt, andere Geheimnisse unverändert
+- [x] Docker auf direkt datenbankverbundene API umgestellt; native API-Zieladresse eigene Render-Domain, Web gleicher Ursprung
+- [x] Admin mit Strichen statt falscher Nullen, eindeutigen Ladefehlern, Eingabevalidierung und bestätigter Codepersistenz abgesichert
+- [x] 215 Tests bestanden, 1 bewusst übersprungen; TypeScript, gezieltes Linting und finaler Webexport bestanden
+- [ ] GitHub-/Render-Release, Live-Codegenerierung und native OTA verifizieren
+- [ ] Bestehenden Push-Zeitplan nach Klärung des produktiven Prozessbesitzers auf Render aktivieren; Render-Cron vorübergehend deaktiviert gegen doppelte Sendungen
+
+## Eigenständiges Rauhnächte-Journal (12.10.2026)
+
+- [x] Die zwei geprüften Commits des GitHub-Branches claude/hopeful-edison-zaa8p2 übernehmen: fünf Dateien, 71 ergänzte Zeilen, keine Löschung
+- [x] Feste Journaladresse https://seelenplanerin.github.io/rauhnaechte-journal/ ausschließlich über Linking.openURL öffnen; kein In-App-Browser, WebView oder iframe
+- [x] Übersichtsbutton nur nach Code-Freischaltung, zweiter Link im Journalabschnitt jedes Inhaltstags unter Speichern
+- [x] Allgemeine Link-Sicherheitsregel unverändert; Freischaltung, Tagesinhalte, Kalender und Shop unverändert
+- [x] Zusätzliche Journalregressionen: 49 gezielte Tests bestanden; vollständige Release-Suite 211 bestanden, 1 bewusst übersprungen; TypeScript fehlerfrei, Lint ohne Fehler
+- [x] Release in separatem Arbeitsbaum nur auf aktuellem GitHub main plus Journal-Ergänzung vorbereiten; unveröffentlichte Adminreparatur 57b857fc separat erhalten und nicht ungeprüft mitveröffentlichen
+- [x] Beide Journal-Buttons im exportierten Browser-UI prüfen: auf Sperrbildschirm verborgen, nach lokal simulierter Freischaltung sichtbar; beide öffnen exakt die feste Journaladresse, alter Speicherbutton erhalten, keine produktiven Codes aktiviert
+- [x] Journal-Ergänzung auf GitHub main übertragen: 7e68c1b5d97da48b688f7263c549292ef40f567b; Dateibaum abdefc06dc74312150891542de874480b6b270b8 unabhängig bestätigt. Beide Journal-Commits in Historie erhalten, kein Force-Push.
+- [ ] Render-Journal-Release: AutoDeploy laut Dienst aktiv, aber trotz bestätigt erfolgreichem Push nach begrenzter Live-Prüfung kein neuer Deploy gestartet; Live-Dienst weiterhin 28aa509. Nutzerseitiger Manual Deploy / Deploy latest commit notwendig.
+- [x] iOS-/Android-Journal-OTA-Veröffentlichung bestätigt: production, Runtime 1.0.20, Commit 7e68c1b; iOS-Gruppe 7634668c-54dd-4d0c-a3da-4b4af28ea789, Android-Gruppe 470ba813-df87-4651-94ca-92698b600d80. EAS-Produktionsliste unabhängig geprüft; keine Pushnachricht gesendet.
+- [ ] Nach OTA auf echtem iPhone/Android die Öffnung in Safari/Chrome prüfen (hier kein echtes Mobilgerät verfügbar)
+
+Status GitHub-Freigabe vom 11.10.: Getrennter Gerätecode ist ohne erfolgreiche Autorisierung abgelaufen; kein Reparatur-Push durch diesen Vorgang. Die Codegenerierung wurde am 11.10. trotzdem wieder erfolgreich live geprüft (2 Codes, 6 Wartelisteneinträge); verbesserte Adminanzeige und direkter Render-API-Wechsel weiterhin separater unveröffentlichter Stand.
+
+## Echte Zugangssicherung Rauhnächte und Journal (12.10.2026, ab 22:12)
+
+- [x] Lücke festgestellt: GitHub-Pages-Journal bisher öffentlich, App-Tagesroute ohne eigene Code-/Datumsprüfung; Codeverwaltung bisher serverseitig öffentlich
+- [ ] Öffentlich ausschließlich Angebot/Buchung und Code-Eingabe anbieten
+- [ ] Journal-HTML ausschließlich nach serverseitiger Prüfung eines aktiven, von Lara vergebenen Codes ausliefern; GitHub-Seite als öffentliche Zugangshülle ohne Journal-Inhalte erhalten
+- [ ] Sichere kurzlebige Übergabe aus App an Systembrowser ohne Zugangscode in der URL; Aktivierung auf dem vorhandenen Appgerät erhalten
+- [ ] App-Tagesinhalte nur serverseitig nach Codeprüfung und Berliner Kalenderdatum ausliefern; direkte Tages-URLs ohne Zugang sperren
+- [ ] Öffentliche Code-Erzeugung/-Liste/-Statistiken/-Deaktivierung sperren; Zugriff nur nach serverseitigem Eigentümer-/Adminnachweis
+- [ ] Negative Zugangstests, Kalendergrenzen, Browserprüfung, GitHub, Render und native Veröffentlichung prüfen
+
+### Zugangssicherung – geprüfter Stand 12.10.2026, 22:42
+
+Die Nutzerin hat die zusätzliche serverseitige Admin-Anmeldung ausdrücklich bestätigt und ihr Passwort über das geschützte Eingabefeld festgelegt. Passwortprüfung und echter lokaler Login HTTP 200 bestanden; Passwort und dedizierter Journal-Entschlüsselungsschlüssel wurden ohne Ausgabe sicher in Render ergänzt. Codeverwaltung und Warteliste benötigen jetzt eine echte signierte Adminsitzung. Geräte-IDs werden in der Codeliste nicht mehr ausgegeben.
+
+Journal-HTML liegt verschlüsselt als serverseitiges Modul vor. Die GitHub-Pages-Seite enthält nur Buchung und Code-Eingabe; nach serverbestätigtem Codezugang wird das Journal im selben Browser-Origin geladen, sodass vorhandene private Einträge erhalten bleiben. App-Übergabe verwendet ein kurzlebiges Ticket statt Zugangscode in der URL. Tagesinhalte werden nur bei gültigem Code, passendem Jahr und erreichtem Berliner Kalenderdatum ausgeliefert. 12 Sperrnächte und 13 Rauhnächte-Inhaltstage plus separate Abschlussseite sind berücksichtigt.
+
+232 Tests bestanden, 1 bewusst übersprungen. TypeScript und gezieltes Linting ohne Fehler; Webexport erfolgreich. Tatsächlicher Browser-Negativtest: gefälschter lokaler Zugang und direkte Tages-URL gesperrt, Buchung öffentlich, Journal verlangt Code. Keine produktiven Teilnehmercodes aktiviert, keine Test-Pushnachrichten gesendet. GitHub-/Render-/OTA-Veröffentlichung und abschließende Liveprüfung folgen erst nach Checkpoint.

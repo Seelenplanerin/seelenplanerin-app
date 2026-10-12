@@ -3,10 +3,18 @@ import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
+import { TRPCError } from "@trpc/server";
+import { verifyRauhAdminToken } from "./rauhnaechte-admin-auth";
 import { sendWelcomeEmail, sendPasswordResetEmail, sendBroadcastEmail, sendAcademyWaitlistEmail, sendAcademyNotificationToOwner, verifySmtpConnection } from "./email";
 import { storagePut } from "./storage";
 import * as db from "./db";
-
+const rauhAdminProcedure = publicProcedure.use(async ({ ctx, next }) => {
+  const token = ctx.req.headers.authorization?.replace(/^Bearer /, "") || "";
+  if (ctx.user?.role !== "admin" && !verifyRauhAdminToken(token)) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Serverseitige Admin-Anmeldung erforderlich." });
+  }
+  return next();
+});
 export const appRouter = router({
   system: systemRouter,
   auth: router({
@@ -443,7 +451,7 @@ export const appRouter = router({
       }),
 
     // Codes generieren (Admin)
-    generateCodes: publicProcedure
+    generateCodes: rauhAdminProcedure
       .input(z.object({ count: z.number().min(1).max(100), year: z.number() }))
       .mutation(async ({ input }) => {
         const codes: string[] = [];
@@ -460,14 +468,15 @@ export const appRouter = router({
       }),
 
     // Alle Codes für ein Jahr (Admin)
-    listCodes: publicProcedure
+    listCodes: rauhAdminProcedure
       .input(z.object({ year: z.number() }))
       .query(async ({ input }) => {
-        return db.getAllRaunaechteCodesForYear(input.year);
+        const codes = await db.getAllRaunaechteCodesForYear(input.year);
+        return codes.map((code: { id: number; code: string; year: number; isActive: number; activatedAt: Date | null; createdAt: Date }) => ({ id: code.id, code: code.code, year: code.year, isActive: code.isActive, activatedAt: code.activatedAt, createdAt: code.createdAt }));
       }),
 
     // Code deaktivieren (Admin)
-    deactivateCode: publicProcedure
+    deactivateCode: rauhAdminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         await db.deactivateRaunaechteCode(input.id);
@@ -475,7 +484,7 @@ export const appRouter = router({
       }),
 
     // Statistiken (Admin)
-    stats: publicProcedure
+    stats: rauhAdminProcedure
       .input(z.object({ year: z.number() }))
       .query(async ({ input }) => {
         return db.getRaunaechteCodeStats(input.year);
@@ -484,7 +493,7 @@ export const appRouter = router({
 
   // ── Rauhnächte Warteliste ──
   raunaechteWaitlist: router({
-    list: publicProcedure.query(async () => {
+    list: rauhAdminProcedure.query(async () => {
       return db.getRaunaechteWaitlist();
     }),
   }),

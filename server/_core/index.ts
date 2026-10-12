@@ -18,6 +18,8 @@ import { runMigrations } from "../db-migrate";
 import seelenjournalRoutes from "../seelenjournal-routes";
 import { startDailyPushCron, sendDailyImpulsPush } from "../daily-push";
 import { sendPortaltagPush, isPortaltag } from "../portaltage";
+import { registerRauhnaechteAccessRoutes } from "../rauhnaechte-access";
+import { registerRauhAdminAuth } from "../rauhnaechte-admin-auth";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -77,6 +79,7 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
+  app.set("trust proxy", 1);
 
   // Enable CORS for all routes - reflect the request origin to support credentials
   app.use((req, res, next) => {
@@ -103,9 +106,25 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "250mb", extended: true }));
 
   registerOAuthRoutes(app);
+  registerRauhnaechteAccessRoutes(app);
+  registerRauhAdminAuth(app);
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  app.get("/healthz", (_req, res) => {
+    res.json({ ok: true, mode: "render-direct-api" });
+  });
+
+  app.get("/api/readiness", async (_req, res) => {
+    try {
+      const { getPushRegistrationStats } = await import("../db");
+      await getPushRegistrationStats();
+      res.json({ ok: true, database: "connected", mode: "render-direct-api" });
+    } catch {
+      res.status(503).json({ ok: false, database: "unavailable" });
+    }
   });
 
   // Redirect /api/ to /api/app/ so the published domain root works
@@ -663,8 +682,12 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`[api] server listening on port ${port}`);
-    // Starte den täglichen Push-Cron-Job
-    startDailyPushCron();
+    // Nur ein Produktionsprozess übernimmt den bestehenden Push-Zeitplan.
+    if (process.env.ENABLE_DAILY_PUSH_CRON !== "false") {
+      startDailyPushCron();
+    } else {
+      console.log("[daily-push] Cron in diesem Prozess deaktiviert (keine doppelten Sendungen).");
+    }
   });
 }
 

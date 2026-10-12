@@ -14,10 +14,9 @@ RUN pnpm install --frozen-lockfile
 # Copy all source files (includes pre-built web-dist from repo)
 COPY . .
 
-# Render arbeitet vorübergehend als stabiler Web- und API-Proxy zum
-# datenbankverbundenen Produktionsserver. Dadurch bleibt die Render-Domain
-# auch dann erreichbar, wenn ihre eigene DATABASE_URL veraltet ist.
-RUN pnpm exec esbuild server/render-proxy.ts --platform=node --packages=external --bundle --format=esm --outfile=server-dist/index.js
+# Direkt angebundene API: DATABASE_URL wird ausschließlich in Render verwaltet.
+# Kein externer Proxy-Upstream, dessen DNS die gesamte API blockieren kann.
+RUN pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outfile=server-dist/index.js
 
 EXPOSE 3000
 

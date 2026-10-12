@@ -11,9 +11,11 @@ import {
   getProgress, completeDay, saveJournalEntry, getJournalEntry,
   getRaunaechteDate, formatDateDE,
 } from "@/lib/raunaechte-store";
-import { getRaunaechteDay, type RaunaechteTag } from "@/lib/raunaechte-data";
-import { getContentDayNumber } from "@/lib/raunaechte-program";
+import type { RaunaechteTag } from "@/lib/raunaechte-data";
+import { getContentDayNumber, RAUHNAECHTE_PROGRAM } from "@/lib/raunaechte-program";
 import { openRauhnaechteJournal } from "@/lib/open-journal-url";
+import { loadRauhnaechteDay } from "@/lib/rauhnaechte-access-api";
+import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 
 // Raunächte Farbschema
 const RN = {
@@ -40,11 +42,18 @@ export default function RaunaechteTagScreen() {
   const [journalText, setJournalText] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
   const [journalSaved, setJournalSaved] = useState(false);
+  const [accessError, setAccessError] = useState("");
 
   useEffect(() => {
-    const data = getRaunaechteDay(yearNum, dayNum);
-    setContent(data);
-    loadProgress();
+    let active = true;
+    setContent(null);
+    setAccessError("");
+    loadRauhnaechteDay(yearNum, dayNum).then(data => {
+      if (active) { setContent(data); void loadProgress(); }
+    }).catch(error => {
+      if (active) setAccessError(error instanceof Error ? error.message : "Zugang konnte nicht geprüft werden.");
+    });
+    return () => { active = false; };
   }, [dayNum, yearNum]);
 
   const loadProgress = async () => {
@@ -55,17 +64,28 @@ export default function RaunaechteTagScreen() {
   };
 
   const handleComplete = async () => {
+    if (!content || accessError) return;
     await completeDay(yearNum, dayNum);
     setIsCompleted(true);
     if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   const handleSaveJournal = async () => {
+    if (!content || accessError) return;
     await saveJournalEntry(yearNum, dayNum, journalText);
     setJournalSaved(true);
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setTimeout(() => setJournalSaved(false), 2000);
   };
+
+  if (accessError) {
+    return <ScreenContainer><View style={styles.contentCard}>
+      <Text style={styles.contentTitle}>Geschützter Inhaltstag</Text>
+      <Text style={styles.contentText}>{accessError}</Text>
+      <TouchableOpacity style={styles.saveButton} onPress={() => openSeelenplanerinUrl(RAUHNAECHTE_PROGRAM.registrationUrl)}><Text style={styles.saveButtonText}>Angebot & Buchung →</Text></TouchableOpacity>
+      <TouchableOpacity style={styles.saveButton} onPress={() => router.replace("/raunaechte")}><Text style={styles.saveButtonText}>Zur Code-Eingabe</Text></TouchableOpacity>
+    </View></ScreenContainer>;
+  }
 
   if (!content) {
     if (getContentDayNumber(dayNum) === null) {

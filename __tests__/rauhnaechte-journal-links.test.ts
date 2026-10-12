@@ -13,7 +13,8 @@ describe("Eigenständiges Rauhnächte-Journal", () => {
     expect(RAUHNAECHTE_PROGRAM.journalUrl).toBe("https://seelenplanerin.github.io/rauhnaechte-journal/");
     const helper = read("lib/open-journal-url.ts");
     expect(helper).toContain("openRauhnaechteJournal(): Promise<boolean>");
-    expect(helper).toContain("await Linking.openURL(RAUHNAECHTE_PROGRAM.journalUrl)");
+    expect(helper).toContain('("journal/ticket")');
+    expect(helper).toContain("await Linking.openURL(`${RAUHNAECHTE_PROGRAM.journalUrl}#ticket=");
     expect(helper).not.toMatch(/openBrowserAsync|expo-web-browser|WebView|iframe/);
   });
 

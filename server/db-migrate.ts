@@ -234,6 +234,18 @@ export async function runMigrations(): Promise<void> {
       )
     `);
 
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS raunaechte_codes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        code VARCHAR(20) NOT NULL UNIQUE,
+        year INT NOT NULL,
+        isActive INT DEFAULT 1 NOT NULL,
+        activatedAt TIMESTAMP NULL,
+        deviceId VARCHAR(255),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+
     // seelenjournal_messages
     await conn.query(`
       CREATE TABLE IF NOT EXISTS seelenjournal_messages (

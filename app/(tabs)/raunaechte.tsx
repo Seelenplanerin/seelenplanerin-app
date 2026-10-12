@@ -12,11 +12,11 @@ import {
   getCurrentRaunaechteDay, getRaunaechteDate, isDayUnlocked,
   formatDateDE, getCurrentRaunaechteYear,
 } from "@/lib/raunaechte-store";
-import { getAllRaunaechteContent } from "@/lib/raunaechte-data";
 import { getApiBaseUrl } from "@/constants/oauth";
-import { RAUHNAECHTE_PROGRAM, getContentDayNumber } from "@/lib/raunaechte-program";
+import { RAUHNAECHTE_PROGRAM, RAUHNAECHTE_CONTENT_CALENDAR_DAYS, getContentDayNumber } from "@/lib/raunaechte-program";
 import { openSeelenplanerinUrl } from "@/lib/open-owned-url";
 import { openRauhnaechteJournal } from "@/lib/open-journal-url";
+import { checkRauhnaechteAccess } from "@/lib/rauhnaechte-access-api";
 
 const { width } = Dimensions.get("window");
 
@@ -45,8 +45,8 @@ export default function RaunaechteScreen() {
   const [progress, setProgressState] = useState<{ completedDays: number[] }>({ completedDays: [] });
 
   const year = getCurrentRaunaechteYear();
-  const currentDay = getCurrentRaunaechteDay(year);
-  const content = getAllRaunaechteContent(year);
+  const [currentDay, setCurrentDay] = useState(getCurrentRaunaechteDay(year));
+  const content = RAUHNAECHTE_CONTENT_CALENDAR_DAYS.map(day => ({ day, contentDay: getContentDayNumber(day), isPortaltag: false }));
   const currentContentDay = getContentDayNumber(currentDay);
 
   useEffect(() => {
@@ -56,9 +56,15 @@ export default function RaunaechteScreen() {
   const checkAccess = async () => {
     const access = await getAccess();
     if (access && access.verified && access.year === year) {
-      setHasAccess(true);
-      const prog = await getProgress(year);
-      setProgressState(prog);
+      try {
+        const verified = await checkRauhnaechteAccess(year);
+        setCurrentDay(verified.currentDay);
+        setHasAccess(true);
+        setProgressState(await getProgress(year));
+      } catch (e) {
+        setHasAccess(false);
+        setError(e instanceof Error ? e.message : "Zugang konnte nicht geprüft werden.");
+      }
     } else {
       setHasAccess(false);
     }
@@ -82,7 +88,7 @@ export default function RaunaechteScreen() {
 
       if (data?.valid) {
         await setAccess({ code: code.toUpperCase().trim(), verified: true, year: data.year, activatedAt: new Date().toISOString() });
-        setHasAccess(true);
+        await checkAccess();
         if (Platform.OS !== "web") Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
         setError(data?.error || "Ungültiger Code. Bitte versuche es erneut.");
@@ -144,7 +150,7 @@ export default function RaunaechteScreen() {
             <View style={styles.shopSection}>
               <Text style={styles.codeSectionTitle}>Die Anmeldung ist geöffnet</Text>
               <Text style={styles.shopText}>
-                Alle Angebote und deine Anmeldung findest du direkt auf meiner Website.
+                Buche zuerst deine Begleitung auf meiner Website. Deinen persönlichen Zugangscode für Journal und Inhaltstage erhältst du anschließend von mir. Inhaltstage öffnen erst ab dem jeweiligen Datum.
               </Text>
               <TouchableOpacity
                 style={styles.shopButton}
@@ -299,7 +305,7 @@ export default function RaunaechteScreen() {
           <View style={styles.journalSection}>
             <Text style={styles.codeSectionTitle}>Dein Rauhnächte-Journal</Text>
             <Text style={styles.shopText}>
-              Impulsfragen für jede Nacht, dein Traumtagebuch und das Ritual der 13 Wünsche. Deine Einträge bleiben privat auf deinem Gerät. Das Journal öffnet sich in deinem Browser, schreib dort immer im selben Browser.
+              Dein Journal ist nach Prüfung deines Zugangscodes freigeschaltet. Die täglichen Impulse öffnen erst am jeweiligen Datum. Deine Einträge bleiben privat in deinem Browser – nutze immer denselben Browser.
             </Text>
             <TouchableOpacity style={styles.shopButton} onPress={openRauhnaechteJournal} activeOpacity={0.8} accessibilityRole="link">
               <Text style={styles.shopButtonText}>Journal öffnen →</Text>

@@ -12,6 +12,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { getApiBaseUrl } from "@/constants/oauth";
+import { RaunaechteAdmin, RaunaechteWaitlistAdmin, RaunaechteAdminLogin } from "@/components/raunaechte-admin";
 
 const C = {
   bg: "#FDF8F4", card: "#FFFFFF", rose: "#C4826A", roseLight: "#F9EDE8",
@@ -169,196 +170,6 @@ async function saveQAFragen(fragen: QAFrage[]) {
   await AsyncStorage.setItem(QA_KEY, JSON.stringify(fragen));
 }
 
-
-// ═══════ Rauhnächte Warteliste Admin ═══════
-function RaunaechteWaitlistAdmin() {
-  const [entries, setEntries] = React.useState<{ id: number; email: string; createdAt: string }[]>([]);
-  const [loading, setLoading] = React.useState(false);
-
-  const loadWaitlist = async () => {
-    setLoading(true);
-    try {
-      const baseUrl = getApiBaseUrl();
-      const res = await fetch(`${baseUrl}/api/trpc/raunaechteWaitlist.list`);
-      const result = await res.json();
-      setEntries(result?.result?.data?.json || result?.result?.data || []);
-    } catch (e) {
-      console.error("Fehler beim Laden der Rauhnächte-Warteliste:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  React.useEffect(() => { loadWaitlist(); }, []);
-
-  return (
-    <View style={{ marginTop: 8 }}>
-      {loading ? (
-        <ActivityIndicator color={C.gold} />
-      ) : entries.length > 0 ? (
-        <View>
-          <Text style={{ fontSize: 14, fontWeight: "700", color: C.gold, marginBottom: 8 }}>
-            {entries.length} Einträg{entries.length === 1 ? "" : "e"}
-          </Text>
-          {entries.map((entry, idx) => (
-            <View key={entry.id || idx} style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, marginBottom: 6, borderWidth: 1, borderColor: C.border }}>
-              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.rose, alignItems: "center", justifyContent: "center", marginRight: 10 }}>
-                <Text style={{ color: "#FFF", fontWeight: "700", fontSize: 13 }}>{idx + 1}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown }}>{entry.email}</Text>
-                <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
-                  {new Date(entry.createdAt).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <Text style={{ fontSize: 13, color: C.muted, textAlign: "center", marginTop: 8 }}>Noch keine Einträge.</Text>
-      )}
-      <TouchableOpacity
-        style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, marginTop: 8, borderWidth: 1, borderColor: C.border }}
-        onPress={loadWaitlist}
-        activeOpacity={0.8}
-      >
-        <Text style={{ fontSize: 14, color: C.brown, fontWeight: "600" }}>🔄 Aktualisieren</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ═══════ Raunächte Admin Komponente ═══════
-function RaunaechteAdmin() {
-  const [codes, setCodes] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(false);
-  const [generating, setGenerating] = React.useState(false);
-  const [count, setCount] = React.useState("10");
-  const [newCodes, setNewCodes] = React.useState<string[]>([]);
-  const year = new Date().getMonth() >= 9 ? new Date().getFullYear() : new Date().getFullYear() - 1;
-
-  const loadCodes = async () => {
-    setLoading(true);
-    try {
-      const baseUrl = getApiBaseUrl();
-      const res = await fetch(`${baseUrl}/api/trpc/raunaechte.listCodes?input=${encodeURIComponent(JSON.stringify({ json: { year } }))}`);
-      const result = await res.json();
-      setCodes(result?.result?.data?.json || []);
-    } catch (e) {
-      console.error("Fehler beim Laden:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateCodes = async () => {
-    setGenerating(true);
-    try {
-      const baseUrl = getApiBaseUrl();
-      const res = await fetch(`${baseUrl}/api/trpc/raunaechte.generateCodes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ json: { count: parseInt(count) || 10, year } }),
-      });
-      const result = await res.json();
-      const generated = result?.result?.data?.json?.codes || [];
-      setNewCodes(generated);
-      loadCodes();
-    } catch (e) {
-      Alert.alert("Fehler", "Codes konnten nicht generiert werden.");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  React.useEffect(() => { loadCodes(); }, []);
-
-  const activeCount = codes.filter((c: any) => c.isActive && c.activatedAt).length;
-  const unusedCount = codes.filter((c: any) => c.isActive && !c.activatedAt).length;
-  const totalCount = codes.length;
-
-  return (
-    <View style={{ marginTop: 16 }}>
-      {/* Statistiken */}
-      <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-        <View style={{ flex: 1, backgroundColor: C.goldLight, borderRadius: 12, padding: 12, alignItems: "center" }}>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: C.gold }}>{totalCount}</Text>
-          <Text style={{ fontSize: 11, color: C.muted }}>Gesamt</Text>
-        </View>
-        <View style={{ flex: 1, backgroundColor: "#E8F5E9", borderRadius: 12, padding: 12, alignItems: "center" }}>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: "#4CAF50" }}>{activeCount}</Text>
-          <Text style={{ fontSize: 11, color: C.muted }}>Aktiviert</Text>
-        </View>
-        <View style={{ flex: 1, backgroundColor: C.roseLight, borderRadius: 12, padding: 12, alignItems: "center" }}>
-          <Text style={{ fontSize: 20, fontWeight: "700", color: C.rose }}>{unusedCount}</Text>
-          <Text style={{ fontSize: 11, color: C.muted }}>Verfügbar</Text>
-        </View>
-      </View>
-
-      {/* Codes generieren */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 }}>
-        <TextInput
-          style={{ flex: 1, backgroundColor: C.surface, borderRadius: 10, padding: 12, fontSize: 14, color: C.brown, borderWidth: 1, borderColor: C.border }}
-          value={count}
-          onChangeText={setCount}
-          keyboardType="number-pad"
-          placeholder="Anzahl"
-          placeholderTextColor={C.muted}
-        />
-        <TouchableOpacity
-          style={{ backgroundColor: C.gold, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12, opacity: generating ? 0.6 : 1 }}
-          onPress={generateCodes}
-          disabled={generating}
-          activeOpacity={0.8}
-        >
-          <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
-            {generating ? "..." : "Generieren"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Neu generierte Codes */}
-      {newCodes.length > 0 && (
-        <View style={{ backgroundColor: C.goldLight, borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <Text style={{ fontSize: 14, fontWeight: "600", color: C.gold, marginBottom: 8 }}>
-            Neue Codes ({newCodes.length}):
-          </Text>
-          {newCodes.map((code, i) => (
-            <Text key={i} style={{ fontSize: 13, color: C.brown, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace", marginBottom: 4 }}>
-              {code}
-            </Text>
-          ))}
-        </View>
-      )}
-
-      {/* Code-Liste */}
-      {loading ? (
-        <ActivityIndicator color={C.gold} />
-      ) : (
-        <View style={{ gap: 8 }}>
-          {codes.slice(0, 20).map((c: any, i: number) => (
-            <View key={i} style={{ flexDirection: "row", alignItems: "center", backgroundColor: C.surface, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: C.border }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: "600", color: C.brown, fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>
-                  {c.code}
-                </Text>
-                <Text style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>
-                  {c.activatedAt ? `Aktiviert: ${new Date(c.activatedAt).toLocaleDateString("de-DE")}` : "Noch nicht aktiviert"}
-                </Text>
-              </View>
-              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c.activatedAt ? "#4CAF50" : c.isActive ? C.gold : "#ccc" }} />
-            </View>
-          ))}
-          {codes.length > 20 && (
-            <Text style={{ fontSize: 12, color: C.muted, textAlign: "center", marginTop: 8 }}>
-              ... und {codes.length - 20} weitere Codes
-            </Text>
-          )}
-        </View>
-      )}
-    </View>
-  );
-}
 
 export default function AdminScreen() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -2048,7 +1859,7 @@ export default function AdminScreen() {
 
           {/* ═══════ RAUNÄCHTE TAB ═══════ */}
           {activeTab === "raunaechte" && (
-            <>
+            <RaunaechteAdminLogin>
               {/* Rauhnächte Warteliste */}
               <View style={s.section}>
                 <Text style={s.sectionTitle}>🕯️ Rauhnächte-Warteliste</Text>
@@ -2062,7 +1873,7 @@ export default function AdminScreen() {
                 </Text>
                 <RaunaechteAdmin />
               </View>
-            </>
+            </RaunaechteAdminLogin>
           )}
 
           {/* ═══════ EINSTELLUNGEN TAB ═══════ */}
