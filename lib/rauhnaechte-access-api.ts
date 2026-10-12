@@ -1,18 +1,28 @@
 import { getApiBaseUrl } from "@/constants/oauth";
 import { getAccess, getDeviceId } from "./raunaechte-store";
 import type { RaunaechteTag } from "./raunaechte-data";
+import { withRequestTimeout } from "./request-timeout";
 
 export async function requestRauhnaechteAccess<T>(path: string, extra: Record<string, unknown> = {}): Promise<T> {
   const access = await getAccess();
   if (!access?.verified || !access.code) throw new Error("Zugangscode erforderlich. Bitte buche die Begleitung und löse den von Lara vergebenen Code ein.");
-  const response = await fetch(`${getApiBaseUrl()}/api/rauhnaechte/${path}`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: access.code, deviceId: await getDeviceId(), ...extra }),
-    signal: AbortSignal.timeout(15000),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Zugang konnte nicht bestätigt werden.");
-  return data as T;
+  const deviceId = await getDeviceId();
+  try {
+    return await withRequestTimeout(async signal => {
+      const response = await fetch(`${getApiBaseUrl()}/api/rauhnaechte/${path}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: access.code, deviceId, ...extra }), signal,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Zugang konnte nicht bestätigt werden.");
+      return data as T;
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Zugang konnte nicht rechtzeitig bestätigt werden. Bitte erneut versuchen; die Code- und Datumssperre bleibt aktiv.");
+    }
+    throw error;
+  }
 }
 export async function checkRauhnaechteAccess(year: number): Promise<{ valid: boolean; year: number; currentDay: number }> {
   const data = await requestRauhnaechteAccess<{ valid: boolean; year: number; currentDay: number }>("access/check");

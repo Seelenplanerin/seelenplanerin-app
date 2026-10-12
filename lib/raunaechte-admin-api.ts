@@ -1,15 +1,26 @@
 import { getSessionToken } from "./_core/auth";
+import { withRequestTimeout } from "./request-timeout";
 
 let rauhAdminToken: string | null = null;
 export function clearRauhAdminSession() { rauhAdminToken = null; }
 export async function loginRauhAdmin(baseUrl: string, password: string): Promise<void> {
-  const response = await fetch(`${baseUrl}/api/rauhnaechte/admin/login`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }), signal: AbortSignal.timeout(15000),
-  });
-  const data = await response.json();
-  if (!response.ok || !data.token) throw new Error(data.error || "Admin-Anmeldung konnte nicht bestätigt werden.");
-  rauhAdminToken = data.token;
+  clearRauhAdminSession();
+  try {
+    await withRequestTimeout(async signal => {
+      const response = await fetch(`${baseUrl}/api/rauhnaechte/admin/login`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }), signal,
+      });
+      const data = await response.json();
+      if (!response.ok || typeof data.token !== "string" || !data.token) throw new Error(data.error || "Admin-Anmeldung konnte nicht bestätigt werden.");
+      rauhAdminToken = data.token;
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Die Anmeldung hat zu lange gedauert. Bitte erneut versuchen; es wurde nichts freigeschaltet.");
+    }
+    throw error;
+  }
 }
 
 export interface RaunaechteCodeRow {
