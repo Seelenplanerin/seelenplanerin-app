@@ -252,7 +252,7 @@ export default function RaunaechteTagScreen() {
                   accessibilityRole="link"
                 >
                   <Text style={styles.journalLinkText}>Im Rauhnächte-Journal weiterschreiben →</Text>
-                  <Text style={styles.journalLinkHint}>Impulsfragen, Traumtagebuch und 13 Wünsche · öffnet im Browser</Text>
+                  <Text style={styles.journalLinkHint}>Impulsfragen und Traumtagebuch · öffnet im Browser</Text>
                 </TouchableOpacity>
               </View>
             )}
